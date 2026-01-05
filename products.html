@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shop Inventory | Nusantara Trade</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        /* --- THEME VARIABLES --- */
+        :root {
+            --primary: #003366;       
+            --secondary: #00A86B;     
+            --accent: #FF9900;        
+            --bg-light: #F4F7F6;
+            --white: #ffffff;
+            --text-dark: #1F2937;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg-light); color: var(--text-dark); }
+
+        /* --- NAVBAR --- */
+        .navbar {
+            background: var(--white);
+            padding: 15px 5%;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky; top: 0; z-index: 1000;
+        }
+        .brand { font-size: 22px; font-weight: 700; color: var(--primary); }
+        .brand span { color: var(--secondary); }
+        .user-info { display: flex; align-items: center; gap: 15px; }
+        .user-email { font-size: 12px; color: #666; display: none; } /* Hidden on mobile */
+        
+        .btn-logout {
+            border: 1px solid #ff4444; color: #ff4444; background: white;
+            padding: 5px 15px; border-radius: 20px; font-size: 12px; cursor: pointer; transition: 0.3s;
+        }
+        .btn-logout:hover { background: #ff4444; color: white; }
+
+        /* --- CONTROLS SECTION (Search + Filter) --- */
+        .controls-section {
+            padding: 30px 5% 10px;
+            max-width: 1200px; margin: 0 auto;
+        }
+        
+        /* Search Bar */
+        .search-box {
+            position: relative; width: 100%; max-width: 500px; margin: 0 auto 20px;
+        }
+        .search-box input {
+            width: 100%; padding: 15px 20px 15px 50px;
+            border: none; border-radius: 30px;
+            background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            font-size: 16px; outline: none; transition: 0.3s;
+        }
+        .search-box input:focus { box-shadow: 0 4px 20px rgba(0, 168, 107, 0.2); }
+        .search-icon { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: #aaa; }
+
+        /* Category Pills */
+        .category-scroll {
+            display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px;
+            scrollbar-width: none; /* Hide scrollbar Firefox */
+            justify-content: center;
+        }
+        .category-scroll::-webkit-scrollbar { display: none; } /* Hide scrollbar Chrome */
+        
+        .cat-pill {
+            background: white; border: 1px solid #ddd;
+            padding: 8px 20px; border-radius: 20px;
+            font-size: 14px; cursor: pointer; white-space: nowrap; transition: 0.3s;
+            color: #666;
+        }
+        .cat-pill:hover, .cat-pill.active {
+            background: var(--primary); color: white; border-color: var(--primary);
+            box-shadow: 0 4px 10px rgba(0, 51, 102, 0.3);
+        }
+
+        /* --- PRODUCT GRID --- */
+        .shop-container {
+            padding: 20px 5%; max-width: 1200px; margin: 0 auto;
+        }
+        .grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 25px;
+        }
+
+        .card {
+            background: white; border-radius: 15px; overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05); transition: transform 0.3s;
+            display: flex; flex-direction: column;
+            position: relative;
+        }
+        .card:hover { transform: translateY(-5px); }
+
+        .card-img-box {
+            width: 100%; height: 200px; background: #eee; overflow: hidden; position: relative;
+        }
+        .card-img { width: 100%; height: 100%; object-fit: cover; transition: 0.5s; }
+        .card:hover .card-img { transform: scale(1.05); }
+
+        .card-body { padding: 15px; flex: 1; display: flex; flex-direction: column; }
+        
+        .card-cat { font-size: 10px; text-transform: uppercase; color: #999; letter-spacing: 1px; }
+        .card-title { font-size: 16px; font-weight: 600; color: var(--primary); margin: 5px 0; }
+        .card-price { font-size: 18px; font-weight: 700; color: var(--secondary); margin-bottom: 15px; }
+        
+        .whatsapp-btn {
+            margin-top: auto;
+            background: #25D366; color: white; border: none;
+            width: 100%; padding: 12px; border-radius: 8px;
+            font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+            transition: 0.3s; text-decoration: none;
+        }
+        .whatsapp-btn:hover { background: #1ebc57; }
+        
+        /* Status Badge */
+        .status-overlay {
+            position: absolute; top: 10px; right: 10px;
+            background: rgba(0,0,0,0.7); color: white;
+            padding: 5px 12px; border-radius: 20px; font-size: 10px; font-weight: bold;
+        }
+        
+        /* Sold Out State */
+        .card.sold-out { opacity: 0.7; }
+        .card.sold-out .whatsapp-btn { background: #ccc; pointer-events: none; }
+        .card.sold-out .status-overlay { background: #ff4444; }
+
+        /* Loader */
+        .loader {
+            text-align: center; width: 100%; margin-top: 50px;
+            font-size: 18px; color: #666; display: none;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .navbar { padding: 15px; }
+            .user-email { display: none; }
+            .category-scroll { justify-content: flex-start; padding-left: 5%; padding-right: 5%; }
+            .grid { grid-template-columns: repeat(2, 1fr); gap: 15px; } /* 2 Column on mobile */
+            .card-img-box { height: 150px; }
+            .card-title { font-size: 14px; }
+            .card-price { font-size: 14px; }
+            .whatsapp-btn { font-size: 12px; padding: 8px; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="brand">Nusantara<span>Trade</span></div>
+        <div class="user-info">
+            <span class="user-email" id="userEmailDisplay">loading...</span>
+            <button class="btn-logout" onclick="logout()">Log Out</button>
+        </div>
+    </nav>
+
+    <section class="controls-section">
+        <div class="search-box">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="searchInput" placeholder="Search products...">
+        </div>
+        
+        <div class="category-scroll" id="catFilters">
+            <div class="cat-pill active" onclick="filterData('All')">All</div>
+            <div class="cat-pill" onclick="filterData('Electronics')">Electronics</div>
+            <div class="cat-pill" onclick="filterData('Cosmetics')">Cosmetics</div>
+            <div class="cat-pill" onclick="filterData('Fashion')">Fashion</div>
+            <div class="cat-pill" onclick="filterData('Gadgets')">Gadgets</div>
+        </div>
+    </section>
+
+    <section class="shop-container">
+        <div id="loader" class="loader"><i class="fas fa-spinner fa-spin"></i> Loading Inventory...</div>
+        <div class="grid" id="shopGrid">
+            </div>
+    </section>
+
+    <script type="module">
+        import { auth, db } from './firebase-config.js';
+        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // DOM Elements
+        const shopGrid = document.getElementById('shopGrid');
+        const loader = document.getElementById('loader');
+        const searchInput = document.getElementById('searchInput');
+        const pills = document.querySelectorAll('.cat-pill');
+        const emailDisplay = document.getElementById('userEmailDisplay');
+        
+        let allProducts = []; // Store data locally for fast filtering
+
+        // 1. Check Auth
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                emailDisplay.innerText = user.email;
+                emailDisplay.style.display = 'block';
+                fetchProducts();
+            } else {
+                window.location.href = "login.html";
+            }
+        });
+
+        // 2. Fetch Products
+        async function fetchProducts() {
+            loader.style.display = 'block';
+            shopGrid.innerHTML = '';
+            
+            try {
+                const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
+                const snapshot = await getDocs(q);
+                
+                allProducts = [];
+                snapshot.forEach(doc => {
+                    allProducts.push({ id: doc.id, ...doc.data() });
+                });
+
+                renderProducts(allProducts);
+            } catch (error) {
+                console.error(error);
+                shopGrid.innerHTML = '<p style="text-align:center; width:100%">Error loading data.</p>';
+            } finally {
+                loader.style.display = 'none';
+            }
+        }
+
+        // 3. Render HTML
+        function renderProducts(products) {
+            shopGrid.innerHTML = '';
+            
+            if(products.length === 0) {
+                shopGrid.innerHTML = '<p style="text-align:center; width:100%; grid-column: 1/-1;">No products found.</p>';
+                return;
+            }
+
+            products.forEach(item => {
+                const isSold = item.status === 'Sold Out';
+                // WhatsApp Link Logic
+                const msg = `Hi Nusantara Trade, I want to order: ${item.name} (${item.price})`;
+                const waLink = `https://wa.me/601139660706?text=${encodeURIComponent(msg)}`;
+
+                const card = `
+                    <div class="card ${isSold ? 'sold-out' : ''}">
+                        <div class="card-img-box">
+                            <img src="${item.image}" class="card-img" loading="lazy">
+                            ${isSold ? '<div class="status-overlay">SOLD OUT</div>' : ''}
+                        </div>
+                        <div class="card-body">
+                            <span class="card-cat">${item.category}</span>
+                            <h3 class="card-title">${item.name}</h3>
+                            <div class="card-price">${item.price}</div>
+                            
+                            <a href="${waLink}" target="_blank" class="whatsapp-btn">
+                                <i class="fab fa-whatsapp"></i> ${isSold ? 'Sold Out' : 'Order on WhatsApp'}
+                            </a>
+                        </div>
+                    </div>
+                `;
+                shopGrid.innerHTML += card;
+            });
+        }
+
+        // 4. Filter Functions
+        window.filterData = (category) => {
+            // UI Active State
+            pills.forEach(p => p.classList.remove('active'));
+            event.target.classList.add('active');
+
+            // Logic
+            if(category === 'All') {
+                renderProducts(allProducts);
+            } else {
+                const filtered = allProducts.filter(p => p.category === category);
+                renderProducts(filtered);
+            }
+        };
+
+        // 5. Search Function
+        searchInput.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const filtered = allProducts.filter(p => p.name.toLowerCase().includes(term));
+            renderProducts(filtered);
+        });
+
+        // 6. Logout
+        window.logout = () => {
+            signOut(auth).then(() => window.location.href = "login.html");
+        };
+    </script>
+</body>
+</html>

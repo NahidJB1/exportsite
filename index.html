@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nusantara Trade | Global Sourcing</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- 1. THEME VARIABLES (Nusantara Trade) --- */
+        :root {
+            --primary: #003366;       /* Deep Ocean Blue - Authority */
+            --secondary: #00A86B;     /* Islamic Teal - Trust/Halal */
+            --accent: #FF9900;        /* Safety Orange - Action/Cargo */
+            --bg-light: #F4F7F6;
+            --white: #ffffff;
+            --text-dark: #1F2937;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg-light); color: var(--text-dark); overflow-x: hidden; }
+        a { text-decoration: none; color: inherit; }
+
+        /* --- 2. NAVIGATION BAR --- */
+        .navbar {
+            background-color: var(--primary);
+            color: var(--white);
+            padding: 15px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .nav-left { display: flex; align-items: center; gap: 20px; }
+        .brand-logo { font-size: 24px; font-weight: 700; letter-spacing: 1px; }
+        .brand-logo span { color: var(--secondary); }
+        
+        .cat-btn {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+        }
+        .cat-btn:hover { background: var(--secondary); border-color: var(--secondary); }
+
+        .auth-btn {
+            background-color: var(--accent);
+            color: var(--primary);
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-weight: 700;
+            transition: transform 0.2s;
+        }
+        .auth-btn:hover { transform: scale(1.05); background-color: #ffaa33; }
+
+        /* --- 3. HERO SLIDER --- */
+        .hero-section {
+            position: relative;
+            height: 60vh;
+            overflow: hidden;
+            background: #000;
+        }
+
+        .slide {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 1.5s ease-in-out;
+        }
+        .slide.active { opacity: 0.6; }
+
+        .hero-overlay {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            width: 90%;
+            z-index: 2;
+        }
+
+        .hero-overlay h1 {
+            color: var(--white);
+            font-size: 32px;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            margin-bottom: 10px;
+            /* Simple fade for hero text */
+            animation: fadeDown 1s ease-out;
+        }
+
+        /* --- 4. ANIMATED INFO BAR --- */
+        .info-bar {
+            background: var(--white);
+            padding: 30px 5%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            position: relative;
+            flex-wrap: wrap;
+            gap: 20px;
+            border-bottom: 4px solid var(--secondary);
+            z-index: 10;
+        }
+
+        .info-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .pulse-icon {
+            font-size: 40px;
+            color: var(--secondary);
+            background: #eafff5;
+            width: 80px; height: 80px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            animation: pulse-teal 2s infinite;
+        }
+
+        @keyframes pulse-teal {
+            0% { box-shadow: 0 0 0 0 rgba(0, 168, 107, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(0, 168, 107, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 168, 107, 0); }
+        }
+
+        .info-text h3 { color: var(--primary); margin-bottom: 5px; }
+        .info-text p { font-size: 14px; color: #666; max-width: 400px; }
+
+        .info-buttons { display: flex; gap: 10px; }
+        
+        .btn-view {
+            padding: 10px 25px;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            border-radius: 5px;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+        .btn-view:hover { background: var(--primary); color: white; }
+
+        /* --- 5. NEW ANIMATED SLOGAN STRIP (Like MEDeLIFE Header) --- */
+        .slogan-strip {
+            background-color: var(--primary);
+            padding: 40px 5%;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .slogan-content {
+            opacity: 0;
+            animation: slideUpFade 1.2s ease-out forwards; /* The MEDeLIFE Entry Animation */
+            animation-delay: 0.5s; /* Wait for slider to load first */
+        }
+
+        .slogan-title {
+            font-size: 28px;
+            color: var(--white);
+            font-weight: 600;
+            letter-spacing: 1px;
+            line-height: 1.4;
+        }
+
+        .slogan-sub {
+            font-size: 16px;
+            color: #cbd5e1; /* Light greyish blue */
+            margin-top: 10px;
+            font-weight: 300;
+        }
+
+        /* --- 6. SCROLL REVEAL ANIMATION (From MEDeLIFE) --- */
+        .reveal {
+            opacity: 0;
+            transform: translateY(50px);
+            transition: all 1s ease-out; /* Smooth transition */
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* --- 7. PRODUCT GRID --- */
+        .product-section { padding: 50px 5%; background: var(--bg-light); }
+        .section-title { text-align: center; color: var(--primary); margin-bottom: 30px; font-size: 28px; }
+        
+        .product-grid-container {
+            position: relative; 
+            overflow: hidden;
+            padding-bottom: 20px;
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); 
+            gap: 15px;
+        }
+
+        .product-card {
+            background: var(--white);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+            position: relative;
+        }
+        .product-card:hover { transform: translateY(-5px); }
+
+        .prod-img { width: 100%; height: 160px; object-fit: cover; background: #eee; }
+        .prod-info { padding: 12px; }
+        .prod-title { font-size: 14px; font-weight: 600; color: var(--primary); margin-bottom: 5px; display: block;}
+        .prod-price { color: var(--secondary); font-weight: 700; font-size: 16px; }
+
+        .lock-overlay {
+            position: absolute;
+            bottom: 0; left: 0;
+            width: 100%;
+            height: 300px; 
+            background: linear-gradient(to bottom, rgba(244,247,246,0) 0%, rgba(244,247,246,0.9) 40%, rgba(244,247,246,1) 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            pointer-events: none; 
+        }
+
+        .lock-btn {
+            pointer-events: auto; 
+            background-color: var(--primary);
+            color: var(--white);
+            padding: 15px 40px;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: bold;
+            box-shadow: 0 10px 20px rgba(0, 51, 102, 0.3);
+            cursor: pointer;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-10px);}
+            60% {transform: translateY(-5px);}
+        }
+        @keyframes slideUpFade { 
+            from { opacity: 0; transform: translateY(30px); } 
+            to { opacity: 1; transform: translateY(0); } 
+        }
+
+        /* --- 8. WHY US --- */
+        .why-us { padding: 60px 5%; background: var(--white); }
+        .why-grid {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .feature-card {
+            width: 250px;
+            padding: 30px 20px;
+            background: var(--white);
+            border-bottom: 5px solid var(--accent);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            text-align: center;
+            border-radius: 15px;
+            transition: 0.3s;
+        }
+        .feature-card:hover { transform: translateY(-10px); border-bottom-color: var(--secondary); }
+        .feat-icon { font-size: 40px; color: var(--primary); margin-bottom: 15px; }
+
+        /* --- 9. CONTACT CTA --- */
+        .contact-cta {
+            background: linear-gradient(135deg, var(--primary), #002244);
+            color: white;
+            padding: 50px 20px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            overflow: hidden;
+        }
+        .cta-center { flex: 1; z-index: 2; padding: 0 20px; }
+        .cta-img-group { display: flex; gap: 10px; opacity: 0.5; }
+        .cta-img { width: 100px; height: 140px; border-radius: 10px; object-fit: cover; transform: rotate(-5deg); }
+        
+        @media (max-width: 768px) {
+            .cta-img-group { display: none; }
+            .hero-overlay h1 { font-size: 24px; }
+            .slogan-title { font-size: 20px; }
+        }
+
+        /* --- 10. FOOTER --- */
+        footer { background: #001a33; color: white; padding: 40px 5% 10px; }
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 30px;
+        }
+        .office-box { flex: 1; min-width: 250px; font-size: 14px; line-height: 1.6; }
+        .footer-center { text-align: center; flex: 1; }
+        .social-icons { margin-top: 20px; display: flex; justify-content: center; gap: 15px; }
+        .soc-icon { 
+            width: 40px; height: 40px; background: rgba(255,255,255,0.1); 
+            display: flex; align-items: center; justify-content: center; 
+            border-radius: 50%; transition: 0.3s; 
+        }
+        .soc-icon:hover { background: var(--secondary); transform: scale(1.1); }
+
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="nav-left">
+            <div class="brand-logo">Nusantara<span>Trade</span></div>
+            <button class="cat-btn" onclick="toggleCategories()">
+                <i class="fas fa-th-large"></i> <span style="display:none;" class="desktop-text">Categories</span>
+            </button>
+        </div>
+        <a href="login.html" class="auth-btn">Log In / Register</a>
+    </nav>
+
+    <header class="hero-section">
+        <img src="https://via.placeholder.com/1200x600/003366/ffffff?text=Electronics+Sourcing" class="slide active">
+        <img src="https://via.placeholder.com/1200x600/00A86B/ffffff?text=Cosmetics+Export" class="slide">
+        <img src="https://via.placeholder.com/1200x600/FF9900/ffffff?text=Gadgets+KL+to+Dhaka" class="slide">
+        
+        <div class="hero-overlay">
+            <h1>Sourcing Global Quality for Bangladesh</h1>
+            <p style="color: #ddd; font-size: 16px; margin-bottom: 20px;">Direct from Kuala Lumpur to Dhaka. Trusted. Fast. Secure.</p>
+        </div>
+    </header>
+
+    <section class="info-bar">
+        <div class="info-left">
+            <div class="pulse-icon"><i class="fas fa-globe-asia"></i></div>
+            <div class="info-text">
+                <h3>Global Sourcing & Logistics</h3>
+                <p>We handle purchase, shipping, and customs. Door-to-door delivery.</p>
+            </div>
+        </div>
+        <div class="info-buttons">
+            <a href="#products" class="btn-view">View Products</a>
+            <a href="login.html" class="auth-btn">Get Started</a>
+        </div>
+    </section>
+
+    <section class="slogan-strip">
+        <div class="slogan-content">
+            <div class="slogan-title">
+                Bridging <span style="color: var(--accent);">Malaysia</span> & 
+                <span style="color: var(--secondary);">Bangladesh</span> with Integrity.
+            </div>
+            <p class="slogan-sub">Seamless Trade • Authentic Products • Guaranteed Delivery</p>
+        </div>
+    </section>
+
+    <section class="product-section reveal" id="products">
+        <h2 class="section-title">Latest Arrivals</h2>
+        
+        <div class="product-grid-container">
+            <div class="product-grid" id="productGrid">
+                <div class="product-card">
+                    <img src="https://via.placeholder.com/300?text=iPhone+13" class="prod-img">
+                    <div class="prod-info">
+                        <span class="prod-title">Used iPhone 13 (KL Set)</span>
+                        <span class="prod-price">BDT 45,000</span>
+                    </div>
+                </div>
+                <div class="product-card">
+                    <img src="https://via.placeholder.com/300?text=Laptop" class="prod-img">
+                    <div class="prod-info">
+                        <span class="prod-title">Dell Latitude 7490</span>
+                        <span class="prod-price">BDT 28,500</span>
+                    </div>
+                </div>
+                <div class="product-card">
+                    <img src="https://via.placeholder.com/300?text=Cosmetics" class="prod-img">
+                    <div class="prod-info">
+                        <span class="prod-title">The Ordinary Set</span>
+                        <span class="prod-price">BDT 3,200</span>
+                    </div>
+                </div>
+                 <div class="product-card">
+                    <img src="https://via.placeholder.com/300?text=Watch" class="prod-img">
+                    <div class="prod-info">
+                        <span class="prod-title">G-Shock Authentic</span>
+                        <span class="prod-price">BDT 8,000</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lock-overlay">
+                <button class="lock-btn" onclick="window.location.href='login.html'">
+                    <i class="fas fa-lock"></i> Login to View All Products
+                </button>
+                <p style="margin-top: 10px; color: #666; font-size: 14px;">Join 5,000+ registered buyers</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="why-us reveal">
+        <h2 class="section-title">Why Choose Nusantara Trade?</h2>
+        <div class="why-grid">
+            <div class="feature-card">
+                <i class="fas fa-handshake feat-icon"></i>
+                <h4>Two Offices</h4>
+                <p>Physical presence in both KL and Dhaka ensures your money is safe.</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-plane-departure feat-icon"></i>
+                <h4>Fast Air Cargo</h4>
+                <p>Weekly shipments. Get your products in 7-10 days.</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-check-circle feat-icon"></i>
+                <h4>Authentic Items</h4>
+                <p>We source directly from official brand stores in Malaysia.</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-headset feat-icon"></i>
+                <h4>24/7 Support</h4>
+                <p>Talk to our agents via WhatsApp anytime.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="contact-cta reveal">
+        <div class="cta-img-group">
+            <img src="https://via.placeholder.com/150" class="cta-img">
+            <img src="https://via.placeholder.com/150" class="cta-img">
+        </div>
+        
+        <div class="cta-center">
+            <h2>Ready to Import?</h2>
+            <p>Start your business with authentic Malaysian products today.</p>
+            <br>
+            <a href="https://wa.me/601139660706" class="auth-btn" style="background: #25D366; color: white;">
+                <i class="fab fa-whatsapp"></i> Chat on WhatsApp
+            </a>
+        </div>
+
+        <div class="cta-img-group">
+            <img src="https://via.placeholder.com/150" class="cta-img">
+            <img src="https://via.placeholder.com/150" class="cta-img">
+        </div>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <div class="office-box" style="text-align: left;">
+                <h4 style="color: var(--accent);">Malaysia Office (HQ)</h4>
+                <p>De Tropicana, 52, Jalan Kuchai Maju 13<br>
+                Kuchai Entrepreneurs Park<br>
+                58200 Kuala Lumpur</p>
+            </div>
+
+            <div class="footer-center">
+                <h3>Nusantara<span style="color: var(--secondary);">Trade</span></h3>
+                <div class="social-icons">
+                    <a href="#" class="soc-icon"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="soc-icon"><i class="fab fa-whatsapp"></i></a>
+                    <a href="#" class="soc-icon"><i class="fab fa-tiktok"></i></a>
+                </div>
+            </div>
+
+            <div class="office-box" style="text-align: right;">
+                <h4 style="color: var(--secondary);">Bangladesh Office</h4>
+                <p>House: 16, Road: 2/3, Block L<br>
+                Banani, Chairman Bari<br>
+                Dhaka 1213</p>
+            </div>
+        </div>
+        <div style="text-align: center; font-size: 12px; color: #888; margin-top: 20px;">
+            &copy; 2026 Nusantara Trade. Developed by Bhuiyan Mohamed Nahid Jahan.
+        </div>
+    </footer>
+
+    <script>
+        // --- 1. SLIDER SCRIPT ---
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+
+        function nextSlide() {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.add('active');
+        }
+        setInterval(nextSlide, 3500); 
+
+        // --- 2. POPULATE PRODUCTS ---
+        const grid = document.getElementById('productGrid');
+        const originalContent = grid.innerHTML;
+        for(let i=0; i<4; i++) {
+            grid.innerHTML += originalContent;
+        }
+
+        // --- 3. CATEGORY TOGGLE ---
+        function toggleCategories() {
+            alert("This will open the Category Side Menu.");
+        }
+
+        // --- 4. SCROLL REVEAL ANIMATION (Copied from MEDeLIFE) ---
+        window.addEventListener('scroll', reveal);
+
+        function reveal() {
+            var reveals = document.querySelectorAll('.reveal');
+
+            for (var i = 0; i < reveals.length; i++) {
+                var windowheight = window.innerHeight;
+                var revealtop = reveals[i].getBoundingClientRect().top;
+                var revealpoint = 150;
+
+                if (revealtop < windowheight - revealpoint) {
+                    reveals[i].classList.add('active');
+                } else {
+                    // Optional: remove this else block if you want elements to stay visible once revealed
+                    reveals[i].classList.remove('active');
+                }
+            }
+        }
+        
+        // Trigger once on load to show elements already in view
+        reveal();
+    </script>
+</body>
+</html>

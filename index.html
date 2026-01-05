@@ -8,14 +8,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 
     <style>
-        /* --- 1. THEME VARIABLES (Nusantara Trade) --- */
+        /* --- 1. THEME VARIABLES --- */
         :root {
-            --primary: #003366;       /* Deep Ocean Blue - Authority */
-            --secondary: #00A86B;     /* Islamic Teal - Trust/Halal */
-            --accent: #FF9900;        /* Safety Orange - Action/Cargo */
+            --primary: #003366;       
+            --secondary: #00A86B;     
+            --accent: #FF9900;        
             --bg-light: #F4F7F6;
             --white: #ffffff;
             --text-dark: #1F2937;
+            /* Official Flag Colors */
+            --my-blue: #000066;
+            --my-red: #cc0000;
+            --bd-green: #006a4e;
+            --bd-red: #f42a41;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -34,73 +39,136 @@
             top: 0;
             z-index: 1000;
             box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            width: 100%; /* Ensure full width */
+            width: 100%;
         }
-
         .nav-left { display: flex; align-items: center; gap: 20px; }
         .brand-logo { font-size: 24px; font-weight: 700; letter-spacing: 1px; white-space: nowrap; }
         .brand-logo span { color: var(--secondary); }
-        
         .cat-btn {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-            padding: 8px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: 0.3s;
+            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+            padding: 8px 15px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.3s;
         }
-        .cat-btn:hover { background: var(--secondary); border-color: var(--secondary); }
-
         .auth-btn {
-            background-color: var(--accent);
-            color: var(--primary);
-            padding: 8px 20px;
-            border-radius: 50px;
-            font-weight: 700;
-            transition: transform 0.2s;
-            white-space: nowrap; /* Prevent text wrapping */
+            background-color: var(--accent); color: var(--primary); padding: 8px 20px;
+            border-radius: 50px; font-weight: 700; transition: transform 0.2s; white-space: nowrap;
         }
-        .auth-btn:hover { transform: scale(1.05); background-color: #ffaa33; }
 
         /* --- 3. HERO SLIDER --- */
         .hero-section {
-            position: relative;
-            height: 60vh;
-            overflow: hidden;
-            background: #000;
+            position: relative; height: 60vh; overflow: hidden; background: #000;
         }
-
         .slide {
-            position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            object-fit: cover;
-            opacity: 0;
-            transition: opacity 1.5s ease-in-out;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover; opacity: 0; transition: opacity 1.5s ease-in-out;
         }
         .slide.active { opacity: 0.6; }
-
         .hero-overlay {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            width: 90%;
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            text-align: center; width: 90%; z-index: 2;
+        }
+        .hero-overlay h1 {
+            color: var(--white); font-size: 32px; text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            margin-bottom: 10px; animation: fadeDown 1s ease-out;
+        }
+
+        /* ================================================= */
+        /* === NEW: "HYPERLOOP" LOGISTICS TRACKER BAR === */
+        /* ================================================= */
+        .logistics-bar {
+            background: #0f172a; /* Deep Slate Blue */
+            padding: 40px 0;
+            overflow: hidden;
+            position: relative;
+            border-bottom: 4px solid var(--secondary);
+            /* Subtle Grid Background */
+            background-image: radial-gradient(#1e293b 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .tracker-container {
+            width: 90%; max-width: 700px; margin: 0 auto;
+            position: relative; height: 100px;
+            display: flex; justify-content: space-between; align-items: center;
             z-index: 2;
         }
 
-        .hero-overlay h1 {
-            color: var(--white);
-            font-size: 32px;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
-            margin-bottom: 10px;
-            animation: fadeDown 1s ease-out;
+        /* --- THE TRACK LINE --- */
+        .track-bg {
+            position: absolute; top: 50%; left: 60px; right: 60px; height: 4px;
+            background: rgba(255,255,255,0.1); border-radius: 4px; transform: translateY(-50%);
+        }
+        
+        .track-active {
+            position: absolute; top: 50%; left: 60px; right: 60px; height: 4px;
+            background: linear-gradient(90deg, var(--my-blue), var(--secondary));
+            transform: translateY(-50%);
+            width: 0%; /* Animates to 100% */
+            animation: fillTrack 3s ease-in-out infinite;
+            border-radius: 4px;
+            box-shadow: 0 0 10px var(--secondary);
         }
 
-        /* --- 4. ANIMATED INFO BAR --- */
+        /* --- THE HUBS (KUL & DAC) --- */
+        .hub {
+            width: 70px; height: 70px; background: #1e293b;
+            border-radius: 12px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            border: 2px solid rgba(255,255,255,0.1);
+            position: relative; z-index: 10;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            transition: 0.3s;
+        }
+
+        .hub-code { color: white; font-weight: 700; font-size: 18px; letter-spacing: 1px; }
+        .hub-name { color: #94a3b8; font-size: 10px; text-transform: uppercase; margin-top: 2px; }
+
+        /* KUL (Malaysia) Styling */
+        .hub-kul { border-bottom: 4px solid var(--my-red); }
+        .hub-kul::before {
+            content: ''; position: absolute; width: 100%; height: 100%; border-radius: 12px;
+            box-shadow: 0 0 15px rgba(204, 0, 0, 0.3); opacity: 0; animation: pulseGlow 3s infinite;
+        }
+
+        /* DAC (Bangladesh) Styling */
+        .hub-dac { border-bottom: 4px solid var(--bd-green); }
+        .hub-dac::before {
+            content: ''; position: absolute; width: 100%; height: 100%; border-radius: 12px;
+            box-shadow: 0 0 15px rgba(0, 168, 107, 0.3); opacity: 0; animation: pulseGlow 3s infinite 1.5s; /* Delayed pulse */
+        }
+
+        /* --- THE MOVING PLANE --- */
+        .plane-carrier {
+            position: absolute;
+            top: 50%; left: 60px; /* Start point */
+            transform: translate(-50%, -50%);
+            z-index: 20;
+            color: var(--accent);
+            font-size: 24px;
+            filter: drop-shadow(0 0 5px var(--accent));
+            animation: flyFast 3s ease-in-out infinite;
+        }
+
+        /* --- ANIMATIONS --- */
+        @keyframes fillTrack {
+            0% { width: 0%; opacity: 0; }
+            10% { opacity: 1; }
+            80% { width: calc(100% - 120px); opacity: 1; } /* Stops before hitting the box */
+            100% { width: calc(100% - 120px); opacity: 0; }
+        }
+
+        @keyframes flyFast {
+            0% { left: 70px; opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            10% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            80% { left: calc(100% - 70px); opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            90% { opacity: 0; transform: translate(-50%, -50%) scale(1.2); }
+            100% { left: calc(100% - 70px); opacity: 0; }
+        }
+
+        @keyframes pulseGlow {
+            0% { opacity: 0.2; } 50% { opacity: 0.8; } 100% { opacity: 0.2; }
+        }
+
+        /* --- 4. INFO BAR --- */
         .info-bar {
             background: var(--white);
             padding: 30px 5%;
@@ -114,180 +182,66 @@
             border-bottom: 4px solid var(--secondary);
             z-index: 10;
         }
-
-        .info-left {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            flex: 1;
-            min-width: 300px;
-        }
-
+        .info-left { display: flex; align-items: center; gap: 20px; flex: 1; min-width: 300px; }
         .pulse-icon {
-            font-size: 40px;
-            color: var(--secondary);
-            background: #eafff5;
-            min-width: 80px; /* Fixed width to prevent squishing */
-            height: 80px;
-            border-radius: 50%;
+            font-size: 40px; color: var(--secondary); background: #eafff5;
+            min-width: 80px; height: 80px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             animation: pulse-teal 2s infinite;
         }
-
         @keyframes pulse-teal {
             0% { box-shadow: 0 0 0 0 rgba(0, 168, 107, 0.4); }
             70% { box-shadow: 0 0 0 15px rgba(0, 168, 107, 0); }
             100% { box-shadow: 0 0 0 0 rgba(0, 168, 107, 0); }
         }
-
         .info-text h3 { color: var(--primary); margin-bottom: 5px; }
         .info-text p { font-size: 14px; color: #666; max-width: 400px; }
-
         .info-buttons { display: flex; gap: 10px; }
-        
         .btn-view {
-            padding: 10px 25px;
-            border: 2px solid var(--primary);
-            color: var(--primary);
-            border-radius: 5px;
-            font-weight: 600;
-            transition: 0.3s;
-            white-space: nowrap;
+            padding: 10px 25px; border: 2px solid var(--primary); color: var(--primary);
+            border-radius: 5px; font-weight: 600; transition: 0.3s; white-space: nowrap;
         }
         .btn-view:hover { background: var(--primary); color: white; }
 
-        /* --- 5. NEW ANIMATED SLOGAN STRIP --- */
-        .slogan-strip {
-            background-color: var(--primary);
-            padding: 40px 5%;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .slogan-content {
-            opacity: 0;
-            animation: slideUpFade 1.2s ease-out forwards;
-            animation-delay: 0.5s;
-        }
-
-        .slogan-title {
-            font-size: 28px;
-            color: var(--white);
-            font-weight: 600;
-            letter-spacing: 1px;
-            line-height: 1.4;
-        }
-
-        .slogan-sub {
-            font-size: 16px;
-            color: #cbd5e1;
-            margin-top: 10px;
-            font-weight: 300;
-        }
-
-        /* --- 6. SCROLL REVEAL ANIMATION --- */
-        .reveal {
-            opacity: 0;
-            transform: translateY(50px);
-            transition: all 1s ease-out;
-        }
-        .reveal.active { opacity: 1; transform: translateY(0); }
-
-        /* --- 7. PRODUCT GRID --- */
+        /* --- PRODUCTS & GRID --- */
         .product-section { padding: 50px 5%; background: var(--bg-light); }
         .section-title { text-align: center; color: var(--primary); margin-bottom: 30px; font-size: 28px; }
-        
-        .product-grid-container {
-            position: relative; 
-            overflow: hidden;
-            padding-bottom: 20px;
-        }
-
-        .product-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); 
-            gap: 15px;
-        }
-
+        .product-grid-container { position: relative; overflow: hidden; padding-bottom: 20px; }
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
         .product-card {
-            background: var(--white);
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-            transition: transform 0.3s;
-            position: relative;
+            background: var(--white); border-radius: 10px; overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05); transition: transform 0.3s;
         }
         .product-card:hover { transform: translateY(-5px); }
-
         .prod-img { width: 100%; height: 160px; object-fit: cover; background: #eee; }
         .prod-info { padding: 12px; }
-        .prod-title { font-size: 14px; font-weight: 600; color: var(--primary); margin-bottom: 5px; display: block;}
+        .prod-title { font-size: 14px; font-weight: 600; color: var(--primary); display: block; margin-bottom: 5px; }
         .prod-price { color: var(--secondary); font-weight: 700; font-size: 16px; }
 
         .lock-overlay {
-            position: absolute;
-            bottom: 0; left: 0;
-            width: 100%;
-            height: 300px; 
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 300px; 
             background: linear-gradient(to bottom, rgba(244,247,246,0) 0%, rgba(244,247,246,0.9) 40%, rgba(244,247,246,1) 100%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 10;
-            pointer-events: none; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; pointer-events: none; 
         }
-
         .lock-btn {
-            pointer-events: auto; 
-            background-color: var(--primary);
-            color: var(--white);
-            padding: 15px 40px;
-            border-radius: 30px;
-            font-size: 16px;
-            font-weight: bold;
-            box-shadow: 0 10px 20px rgba(0, 51, 102, 0.3);
-            cursor: pointer;
-            border: none;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            animation: bounce 2s infinite;
-        }
-        
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
-            40% {transform: translateY(-10px);}
-            60% {transform: translateY(-5px);}
-        }
-        @keyframes slideUpFade { 
-            from { opacity: 0; transform: translateY(30px); } 
-            to { opacity: 1; transform: translateY(0); } 
+            pointer-events: auto; background-color: var(--primary); color: var(--white);
+            padding: 15px 40px; border-radius: 30px; font-size: 16px; font-weight: bold;
+            box-shadow: 0 10px 20px rgba(0, 51, 102, 0.3); cursor: pointer; border: none;
+            display: flex; align-items: center; gap: 10px; animation: bounce 2s infinite;
         }
 
-        /* --- 8. WHY US --- */
+        /* --- WHY US --- */
         .why-us { padding: 60px 5%; background: var(--white); }
-        .why-grid {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
+        .why-grid { display: flex; justify-content: center; flex-wrap: wrap; gap: 20px; }
         .feature-card {
-            width: 250px;
-            padding: 30px 20px;
-            background: var(--white);
-            border-bottom: 5px solid var(--accent);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-            text-align: center;
-            border-radius: 15px;
-            transition: 0.3s;
+            width: 250px; padding: 30px 20px; background: var(--white);
+            border-bottom: 5px solid var(--accent); box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            text-align: center; border-radius: 15px; transition: 0.3s;
         }
         .feature-card:hover { transform: translateY(-10px); border-bottom-color: var(--secondary); }
         .feat-icon { font-size: 40px; color: var(--primary); margin-bottom: 15px; }
 
-        /* --- 9. CONTACT CTA --- */
+        /* --- CONTACT CTA (RESTORED) --- */
         .contact-cta {
             background: linear-gradient(135deg, var(--primary), #002244);
             color: white;
@@ -301,25 +255,13 @@
         .cta-center { flex: 1; z-index: 2; padding: 0 20px; }
         .cta-img-group { display: flex; gap: 10px; opacity: 0.5; }
         .cta-img { width: 100px; height: 140px; border-radius: 10px; object-fit: cover; transform: rotate(-5deg); }
-        
-        @media (max-width: 768px) {
-            .cta-img-group { display: none; }
-            .hero-overlay h1 { font-size: 24px; }
-            .slogan-title { font-size: 20px; }
-        }
 
-        /* --- 10. FOOTER --- */
+        /* --- FOOTER --- */
         footer { background: #001a33; color: white; padding: 40px 5% 10px; }
         .footer-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            flex-wrap: wrap;
-            gap: 30px;
-            max-width: 1200px;
-            margin: 0 auto;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            padding-bottom: 30px;
+            display: flex; justify-content: space-between; align-items: flex-start;
+            flex-wrap: wrap; gap: 30px; max-width: 1200px; margin: 0 auto;
+            border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 30px;
         }
         .office-box { flex: 1; min-width: 250px; font-size: 14px; line-height: 1.6; }
         .footer-center { text-align: center; flex: 1; }
@@ -331,81 +273,52 @@
         }
         .soc-icon:hover { background: var(--secondary); transform: scale(1.1); }
 
-        /* ========================================= */
-        /* === MOBILE RESPONSIVENESS FIXES (NEW) === */
-        /* ========================================= */
+        /* --- MOBILE RESPONSIVENESS --- */
         @media (max-width: 768px) {
-            /* 1. Navbar: Tighten space to fit logo and button */
-            .navbar {
-                padding: 10px 15px; 
+            .navbar { padding: 10px 15px; }
+            .nav-left { gap: 10px; }
+            .brand-logo { font-size: 18px; }
+            .cat-btn { padding: 6px 10px; }
+            .auth-btn { font-size: 12px; padding: 8px 12px; }
+            .hero-section { height: 50vh; }
+            .hero-overlay h1 { font-size: 22px; line-height: 1.3; }
+
+            /* Mobile Flight Fixes */
+            .tracker-container { width: 100%; padding: 0 10px; }
+            .hub { width: 60px; height: 60px; }
+            .hub-code { font-size: 14px; }
+            .hub-name { font-size: 9px; }
+            .track-bg, .track-active { left: 50px; right: 50px; }
+            
+            @keyframes fillTrack {
+                0% { width: 0%; opacity: 0; }
+                10% { opacity: 1; }
+                80% { width: calc(100% - 100px); opacity: 1; } 
+                100% { width: calc(100% - 100px); opacity: 0; }
             }
-            .nav-left {
-                gap: 10px;
-            }
-            .brand-logo {
-                font-size: 18px; /* Smaller Logo */
-            }
-            .cat-btn {
-                padding: 6px 10px;
-            }
-            .auth-btn {
-                font-size: 12px;
-                padding: 8px 12px;
+            @keyframes flyFast {
+                0% { left: 60px; opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+                10% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+                80% { left: calc(100% - 60px); opacity: 1; transform: translate(-50%, -50%) scale(1); }
+                90% { opacity: 0; transform: translate(-50%, -50%) scale(1.2); }
+                100% { left: calc(100% - 60px); opacity: 0; }
             }
 
-            /* 2. Hero: Adjust height and font */
-            .hero-section {
-                height: 50vh; /* Not too tall on mobile */
-            }
-            .hero-overlay h1 {
-                font-size: 22px;
-                line-height: 1.3;
-            }
-
-            /* 3. Info Bar: Stack Vertically (CRITICAL FIX) */
-            .info-bar {
-                flex-direction: column;
-                text-align: center;
-                gap: 15px;
-                padding: 25px 20px;
-            }
-            .info-left {
-                flex-direction: column;
-                min-width: auto;
-                width: 100%;
-            }
-            .info-text p {
-                margin: 0 auto; /* Center the text */
-            }
-            .info-buttons {
-                justify-content: center;
-                width: 100%;
-                margin-top: 10px;
-            }
-
-            /* 4. Slogan Strip */
-            .slogan-strip {
-                padding: 30px 15px;
-            }
-
-            /* 5. Footer: Force Center Alignment */
-            .footer-content {
-                flex-direction: column;
-                align-items: center;
-                text-align: center;
-            }
-            .office-box {
-                text-align: center !important;
-                min-width: 100%;
-            }
+            .info-bar { flexDirection: column; text-align: center; gap: 15px; padding: 25px 20px; }
+            .info-left { flexDirection: column; width: 100%; }
+            .info-buttons { justify-content: center; width: 100%; }
+            
+            /* Restored Contact CTA Mobile Styles */
+            .cta-img-group { display: none; }
+            
+            .footer-content { flexDirection: column; alignItems: center; textAlign: center; }
+            .office-box { textAlign: center !important; }
         }
-
-        /* Ultra Small Screens (iPhone SE, etc) */
-        @media (max-width: 370px) {
-            .brand-logo span { display: none; } /* Show only "Nusantara" if super tight */
-            .auth-btn { padding: 6px 10px; font-size: 11px; }
-        }
-
+        
+        @keyframes bounce { 0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 40% {transform: translateY(-10px);} 60% {transform: translateY(-5px);} }
+        @keyframes fadeDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        .reveal { opacity: 0; transform: translateY(50px); transition: all 1s ease-out; }
+        .reveal.active { opacity: 1; transform: translateY(0); }
     </style>
 </head>
 <body>
@@ -431,6 +344,26 @@
         </div>
     </header>
 
+    <section class="logistics-bar">
+        <div class="tracker-container">
+            
+            <div class="hub hub-kul">
+                <span class="hub-code">KUL</span>
+                <span class="hub-name">Malaysia</span>
+            </div>
+
+            <div class="track-bg"></div>
+            <div class="track-active"></div>
+            <i class="fas fa-plane plane-carrier"></i>
+
+            <div class="hub hub-dac">
+                <span class="hub-code">DAC</span>
+                <span class="hub-name">Dhaka</span>
+            </div>
+
+        </div>
+    </section>
+
     <section class="info-bar">
         <div class="info-left">
             <div class="pulse-icon"><i class="fas fa-globe-asia"></i></div>
@@ -445,19 +378,8 @@
         </div>
     </section>
 
-    <section class="slogan-strip">
-        <div class="slogan-content">
-            <div class="slogan-title">
-                Bridging <span style="color: var(--accent);">Malaysia</span> & 
-                <span style="color: var(--secondary);">Bangladesh</span> with Integrity.
-            </div>
-            <p class="slogan-sub">Seamless Trade • Authentic Products • Guaranteed Delivery</p>
-        </div>
-    </section>
-
     <section class="product-section reveal" id="products">
         <h2 class="section-title">Latest Arrivals</h2>
-        
         <div class="product-grid-container">
             <div class="product-grid" id="productGrid">
                 <div class="product-card">
@@ -580,7 +502,6 @@
         // --- 1. SLIDER SCRIPT ---
         let currentSlide = 0;
         const slides = document.querySelectorAll('.slide');
-
         function nextSlide() {
             slides[currentSlide].classList.remove('active');
             currentSlide = (currentSlide + 1) % slides.length;
@@ -596,31 +517,19 @@
         }
 
         // --- 3. CATEGORY TOGGLE ---
-        function toggleCategories() {
-            alert("This will open the Category Side Menu.");
-        }
+        function toggleCategories() { alert("This will open the Category Side Menu."); }
 
-        // --- 4. SCROLL REVEAL ANIMATION (Copied from MEDeLIFE) ---
+        // --- 4. SCROLL REVEAL ---
         window.addEventListener('scroll', reveal);
-
         function reveal() {
             var reveals = document.querySelectorAll('.reveal');
-
             for (var i = 0; i < reveals.length; i++) {
                 var windowheight = window.innerHeight;
                 var revealtop = reveals[i].getBoundingClientRect().top;
                 var revealpoint = 150;
-
-                if (revealtop < windowheight - revealpoint) {
-                    reveals[i].classList.add('active');
-                } else {
-                    // Optional: remove this else block if you want elements to stay visible once revealed
-                    reveals[i].classList.remove('active');
-                }
+                if (revealtop < windowheight - revealpoint) { reveals[i].classList.add('active'); }
             }
         }
-        
-        // Trigger once on load to show elements already in view
         reveal();
     </script>
 </body>

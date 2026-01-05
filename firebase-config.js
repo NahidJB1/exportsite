@@ -6,12 +6,12 @@ import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY_HERE",
-  authDomain: "nusantara-trade.firebaseapp.com",
-  projectId: "nusantara-trade",
-  storageBucket: "nusantara-trade.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyAcO6TPCVdhIIa1wmsbOiyWIaHFSOEvYUg",
+  authDomain: "nusantara-trade-28fe5.firebaseapp.com",
+  projectId: "nusantara-trade-28fe5",
+  storageBucket: "nusantara-trade-28fe5.firebasestorage.app",
+  messagingSenderId: "109481408620",
+  appId: "1:109481408620:web:a8d70848be5e4cdf784049"
 };
 
 // Initialize Firebase

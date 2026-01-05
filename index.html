@@ -484,74 +484,101 @@
         <i class="fab fa-whatsapp"></i>
     </a>
 
-    <script>
-        // --- 1. SLIDER SCRIPT ---
-        let currentSlide = 0;
-        const slides = document.querySelectorAll('.slide');
-        function nextSlide() {
-            slides[currentSlide].classList.remove('active');
-            currentSlide = (currentSlide + 1) % slides.length;
-            slides[currentSlide].classList.add('active');
-        }
-        setInterval(nextSlide, 3500); 
+    <script type="module">
+        // 1. Import Firebase
+    import { db } from './firebase-config.js';
+    import { collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // --- 2. POPULATE PRODUCTS ---
-        const grid = document.getElementById('productGrid');
-        const originalContent = grid.innerHTML;
-        for(let i=0; i<4; i++) {
-            grid.innerHTML += originalContent;
-        }
+    // --- SLIDER SCRIPT ---
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    function nextSlide() {
+        slides[currentSlide].classList.remove('active');
+        currentSlide = (currentSlide + 1) % slides.length;
+        slides[currentSlide].classList.add('active');
+    }
+    setInterval(nextSlide, 3500); 
 
-        // --- 3. CATEGORY TOGGLE ---
-        function toggleCategories() { alert("This will open the Category Side Menu."); }
+    // --- FLOATING BUTTON LOGIC ---
+    const floatBtn = document.getElementById('floatBtn');
+    const staticBtn = document.getElementById('staticWaBtn');
 
-        // --- 4. SCROLL REVEAL ---
-        window.addEventListener('scroll', reveal);
-        function reveal() {
-            var reveals = document.querySelectorAll('.reveal');
-            for (var i = 0; i < reveals.length; i++) {
-                var windowheight = window.innerHeight;
-                var revealtop = reveals[i].getBoundingClientRect().top;
-                var revealpoint = 150;
-                if (revealtop < windowheight - revealpoint) { reveals[i].classList.add('active'); }
-            }
-        }
-        reveal();
-
-        // --- 5. FLOATING BUTTON DOCKING LOGIC (MAGNET EFFECT) ---
-        const floatBtn = document.getElementById('floatBtn');
-        const staticBtn = document.getElementById('staticWaBtn');
-
+    if(staticBtn && floatBtn) { // Safety check
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
-                    // 1. Calculate the distance to fly
                     const floatRect = floatBtn.getBoundingClientRect();
                     const staticRect = staticBtn.getBoundingClientRect();
-
-                    // Calculate translation (Difference between centers)
                     const x = staticRect.left + (staticRect.width / 2) - (floatRect.left + (floatRect.width / 2));
                     const y = staticRect.top + (staticRect.height / 2) - (floatRect.top + (floatRect.height / 2));
-
-                    // 2. Apply Transformation (Fly & Shrink)
-                    floatBtn.style.transform = `translate(${x}px, ${y}px) scale(0.2)`;
-                    floatBtn.style.opacity = '0'; // Fade out at end of flight
                     
-                    // 3. Trigger Pulse on Static Button (Visual Feedback)
-                    setTimeout(() => {
-                        staticBtn.classList.add('pulse-active');
-                    }, 1200); // Wait for flight to land
-
+                    floatBtn.style.transform = `translate(${x}px, ${y}px) scale(0.2)`;
+                    floatBtn.style.opacity = '0'; 
+                    setTimeout(() => { staticBtn.classList.add('pulse-active'); }, 1200); 
                 } else {
-                    // 4. Reset (Fly Back Out)
                     floatBtn.style.transform = 'translate(0, 0) scale(1)';
                     floatBtn.style.opacity = '1';
                     staticBtn.classList.remove('pulse-active');
                 }
             });
-        }, { threshold: 0.1 }); // Trigger when 10% of static button is visible
-
+        }, { threshold: 0.1 });
         observer.observe(staticBtn);
+    }
+
+    // --- NEW: FETCH REAL PRODUCTS FROM FIREBASE ---
+    async function loadRealProducts() {
+        const grid = document.getElementById('productGrid');
+        grid.innerHTML = ""; // Clear the fake placeholder items
+
+        try {
+            // Get top 8 newest products
+            const q = query(collection(db, "products"), orderBy("createdAt", "desc"), limit(8));
+            const snapshot = await getDocs(q);
+
+            if (snapshot.empty) {
+                grid.innerHTML = "<p style='text-align:center; width:100%; color:#666;'>No products found. Please add some via Dashboard.</p>";
+                return;
+            }
+
+            snapshot.forEach((doc) => {
+                const item = doc.data();
+                
+                // Create HTML Card
+                const cardHTML = `
+                    <div class="product-card">
+                        <img src="${item.image}" class="prod-img" alt="${item.name}">
+                        <div class="prod-info">
+                            <span class="prod-title">${item.name}</span>
+                            <span class="prod-price">${item.price}</span>
+                            ${item.status === 'Sold Out' ? '<span style="color:red; font-size:12px; font-weight:bold;">(Sold Out)</span>' : ''}
+                        </div>
+                    </div>
+                `;
+                grid.innerHTML += cardHTML;
+            });
+
+        } catch (error) {
+            console.error("Error loading products:", error);
+            grid.innerHTML = "<p>Error loading products. Check console.</p>";
+        }
+    }
+
+    // Load products when page opens
+    loadRealProducts();
+
+    // --- SCROLL REVEAL ---
+    window.addEventListener('scroll', reveal);
+    function reveal() {
+        var reveals = document.querySelectorAll('.reveal');
+        for (var i = 0; i < reveals.length; i++) {
+            var windowheight = window.innerHeight;
+            var revealtop = reveals[i].getBoundingClientRect().top;
+            var revealpoint = 150;
+            if (revealtop < windowheight - revealpoint) { reveals[i].classList.add('active'); }
+        }
+    }
+    reveal();
+</script>
 
     </script>
 </body>

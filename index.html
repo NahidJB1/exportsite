@@ -241,12 +241,34 @@
             @keyframes fillTrack { 0% { width: 0%; opacity: 0; } 10% { opacity: 1; } 80% { width: calc(100% - 100px); opacity: 1; } 100% { width: calc(100% - 100px); opacity: 0; } }
             @keyframes flyFast { 0% { left: 60px; opacity: 0; transform: translate(-50%, -50%) scale(0.8); } 10% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 80% { left: calc(100% - 60px); opacity: 1; transform: translate(-50%, -50%) scale(1); } 90% { opacity: 0; transform: translate(-50%, -50%) scale(1.2); } 100% { left: calc(100% - 60px); opacity: 0; } }
 
-            .info-bar { flexDirection: column; text-align: center; gap: 15px; padding: 25px 20px; }
-            .info-left { flexDirection: column; width: 100%; }
-            .info-buttons { justify-content: center; width: 100%; }
+            /* --- FIXED SECTION START --- */
+            /* Changed flexDirection to flex-direction, etc. */
+            .info-bar { 
+                flex-direction: column; 
+                text-align: center; 
+                gap: 20px; 
+                padding: 30px 20px; 
+            }
+            .info-left { 
+                flex-direction: column; 
+                width: 100%; 
+                min-width: auto; /* Fixes spacing issue */
+            }
+            .info-buttons { 
+                justify-content: center; 
+                width: 100%; 
+            }
             .cta-img-group { display: none; }
-            .footer-content { flexDirection: column; alignItems: center; textAlign: center; }
-            .office-box { textAlign: center !important; }
+            
+            .footer-content { 
+                flex-direction: column; 
+                align-items: center; 
+                text-align: center; 
+            }
+            .office-box { 
+                text-align: center !important; 
+            }
+            /* --- FIXED SECTION END --- */
             
             /* Smaller floating button on mobile */
             .float-wa { width: 50px; height: 50px; font-size: 24px; bottom: 20px; right: 20px; }

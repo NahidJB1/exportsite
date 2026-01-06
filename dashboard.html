@@ -365,12 +365,14 @@
         };
 
         // --- 1. PRODUCT FUNCTIONS ---
+        // --- 1. PRODUCT FUNCTIONS ---
         document.getElementById('addProductForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
             const fileInput = document.getElementById('pFile');
             const files = fileInput.files;
 
+            // Validation
             if (files.length === 0) return showToast("Please select at least one image", "error");
             if (files.length > 6) return showToast("Maximum 6 images allowed", "error");
             
@@ -379,7 +381,7 @@
             btn.disabled = true;
 
             try {
-                // Upload images in parallel
+                // Upload images in parallel to Cloudinary
                 const uploadPromises = Array.from(files).map(async (file) => {
                     const formData = new FormData();
                     formData.append('file', file);
@@ -391,12 +393,15 @@
 
                 const imageUrls = await Promise.all(uploadPromises);
 
+                // Save to Firestore
+                // We save 'images' (array) for the gallery AND 'image' (string) for backward compatibility
                 await addDoc(collection(db, "products"), {
                     name: document.getElementById('pName').value,
                     price: document.getElementById('pPrice').value,
                     category: document.getElementById('pCategory').value,
                     status: document.getElementById('pStatus').value,
-                    images: imageUrls, // SAVING ARRAY NOW
+                    images: imageUrls,        // New Format: Array of 6 URLs
+                    image: imageUrls[0],      // Fallback: First image as main thumbnail
                     createdAt: serverTimestamp()
                 });
 

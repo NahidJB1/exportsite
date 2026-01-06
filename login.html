@@ -92,16 +92,15 @@
         </p>
     </div>
 
+    // REPLACE the <script type="module"> section in login.html with this:
+
     <script type="module">
-        import { auth } from './firebase-config.js';
+        import { auth, db } from './firebase-config.js';
         import { 
             signInWithEmailAndPassword, 
             createUserWithEmailAndPassword 
         } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-        // --- ADMIN CONFIGURATION ---
-        // Add all admin emails here. Everyone else goes to the homepage.
-        const ADMIN_EMAILS = ["nahidjahan696@gmail.com", "fuadhasansakir@gmail.comm"];
+        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const authForm = document.getElementById('authForm');
         const errorMsg = document.getElementById('errorMsg');
@@ -111,13 +110,12 @@
         const toggleBtn = document.getElementById('toggleBtn');
         const toggleText = document.getElementById('toggleText');
 
-        let isLoginMode = true; // State to track mode
+        let isLoginMode = true; 
 
-        // 1. Toggle between Login and Register views
+        // 1. Toggle Mode
         window.toggleMode = () => {
             isLoginMode = !isLoginMode;
             errorMsg.style.display = 'none';
-            
             if (isLoginMode) {
                 formTitle.innerText = "Welcome Back";
                 formSubtitle.innerText = "Login to continue";
@@ -133,7 +131,7 @@
             }
         };
 
-        // 2. Handle Form Submission
+        // 2. Handle Submit
         authForm.addEventListener('submit', (e) => {
             e.preventDefault();
             errorMsg.style.display = 'none';
@@ -144,33 +142,36 @@
             const password = document.getElementById('password').value;
 
             if (isLoginMode) {
-                // --- LOGIN LOGIC ---
                 signInWithEmailAndPassword(auth, email, password)
-                    .then((userCredential) => {
-                        handleRedirect(userCredential.user.email);
-                    })
+                    .then((userCredential) => checkAdminStatus(userCredential.user.email))
                     .catch((error) => handleError(error));
             } else {
-                // --- REGISTER LOGIC ---
                 createUserWithEmailAndPassword(auth, email, password)
                     .then((userCredential) => {
-                        // Registration successful, auto-login happens
-                        handleRedirect(userCredential.user.email);
+                        // New registers are never admins by default, so go to index
+                        window.location.href = "index.html"; 
                     })
                     .catch((error) => handleError(error));
             }
         });
 
-        // 3. Smart Redirect Logic
-        function handleRedirect(email) {
-            console.log("User verified:", email);
-            
-            // Check if the email belongs to an Admin
-            if (ADMIN_EMAILS.includes(email)) {
-                window.location.href = "dashboard.html"; // Admins go to Dashboard
-            } else {
-                // CHANGED THIS LINE: Clients now go to the Shop instead of Home
-                window.location.href = "products.html"; 
+        // 3. SECURE Redirect Logic
+        async function checkAdminStatus(email) {
+            try {
+                // Check if this email exists in the 'admins' collection
+                const docRef = doc(db, "admins", email);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    console.log("Admin verified.");
+                    window.location.href = "dashboard.html";
+                } else {
+                    console.log("User is customer.");
+                    window.location.href = "index.html";
+                }
+            } catch (error) {
+                console.error("Verification failed", error);
+                window.location.href = "index.html"; // Default to safe page
             }
         }
 
@@ -185,7 +186,6 @@
             if (error.code === 'auth/user-not-found') message = "No account found with this email.";
             if (error.code === 'auth/wrong-password') message = "Incorrect password.";
             if (error.code === 'auth/email-already-in-use') message = "This email is already registered.";
-            if (error.code === 'auth/weak-password') message = "Password should be at least 6 characters.";
             
             errorMsg.innerText = message;
             errorMsg.style.display = 'block';
@@ -193,4 +193,4 @@
     </script>
 
 </body>
-</html>
+</html>s

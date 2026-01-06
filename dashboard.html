@@ -206,7 +206,6 @@
                         </select>
                     </div>
                     <input type="file" id="pFile" accept="image/*" required>
-                    <input type="file" id="pFile" accept="image/*" multiple required>
                     <br><br>
                     <button type="submit" id="submitBtn" class="btn-submit">
                         <i class="fas fa-cloud-upload-alt"></i> Upload & Save Product
@@ -366,51 +365,40 @@
 
         // --- 1. PRODUCT FUNCTIONS ---
         document.getElementById('addProductForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const btn = document.getElementById('submitBtn');
-    const files = document.getElementById('pFile').files; // Get all files
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            const file = document.getElementById('pFile').files[0];
 
-    if (files.length === 0) return showToast("Please select at least one image", "error");
-    
-    const originalBtnText = btn.innerHTML;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading ' + files.length + ' images...'; 
-    btn.disabled = true;
-
-    try {
-        // 1. Create an array of upload promises
-        const uploadPromises = Array.from(files).map(file => {
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('upload_preset', CLOUDINARY_PRESET);
+            if (!file) return showToast("Please select an image", "error");
             
-            return fetch(CLOUDINARY_URL, { method: 'POST', body: formData })
-                .then(res => res.json())
-                .then(data => data.secure_url);
+            const originalBtnText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...'; 
+            btn.disabled = true;
+
+            try {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', CLOUDINARY_PRESET);
+                const res = await fetch(CLOUDINARY_URL, { method: 'POST', body: formData });
+                const data = await res.json();
+
+                await addDoc(collection(db, "products"), {
+                    name: document.getElementById('pName').value,
+                    price: document.getElementById('pPrice').value,
+                    category: document.getElementById('pCategory').value,
+                    status: document.getElementById('pStatus').value,
+                    image: data.secure_url,
+                    createdAt: serverTimestamp()
+                });
+
+                showToast("Product added successfully!");
+                document.getElementById('addProductForm').reset();
+                loadProducts();
+            } catch (err) { 
+                showToast(err.message, "error"); 
+            }
+            btn.innerHTML = originalBtnText; btn.disabled = false;
         });
-
-        // 2. Wait for all uploads to finish
-        const imageUrls = await Promise.all(uploadPromises); 
-
-        // 3. Save to Firestore with the new 'images' array
-        await addDoc(collection(db, "products"), {
-            name: document.getElementById('pName').value,
-            price: document.getElementById('pPrice').value,
-            category: document.getElementById('pCategory').value,
-            status: document.getElementById('pStatus').value,
-            images: imageUrls,       // Save the array of all photos
-            image: imageUrls[0],     // Keep main image for backward compatibility
-            createdAt: serverTimestamp()
-        });
-
-        showToast("Product added successfully!");
-        document.getElementById('addProductForm').reset();
-        loadProducts();
-    } catch (err) { 
-        console.error(err);
-        showToast("Upload failed: " + err.message, "error"); 
-    }
-    btn.innerHTML = originalBtnText; btn.disabled = false;
-});
 
         async function loadProducts() {
             const tbody = document.getElementById('productTableBody');
@@ -575,7 +563,7 @@
             btn.innerText = "Save Changes";
             btn.disabled = false;
         });
-
+        
     </script>
 
 

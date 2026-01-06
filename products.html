@@ -208,15 +208,21 @@ import { collection, getDocs, query, orderBy, doc, getDoc } from "https://www.gs
         let allProducts = []; // Store data locally for fast filtering
 
         // 1. Check Auth & Load Name
+// 1. Check Auth & Load Name
 onAuthStateChanged(auth, async (user) => {
     if (user) {
-        // Fetch User Name for Navbar
-        const userDoc = await getDoc(doc(db, "users", user.uid));
-        if (userDoc.exists() && userDoc.data().fullName) {
-            const firstName = userDoc.data().fullName.split(' ')[0]; // Get first name
-            document.getElementById('navUserName').innerText = `Hi, ${firstName}`;
+        // SAFETY BLOCK: Try to get the name, but don't crash if it fails
+        try {
+            const userDoc = await getDoc(doc(db, "users", user.uid));
+            if (userDoc.exists() && userDoc.data().fullName) {
+                const firstName = userDoc.data().fullName.split(' ')[0]; 
+                document.getElementById('navUserName').innerText = `Hi, ${firstName}`;
+            }
+        } catch (error) {
+            console.log("Could not load name (Permission issue), but continuing to load products...");
         }
         
+        // This is now OUTSIDE the crash zone, so products will ALWAYS load
         fetchProducts();
     } else {
         window.location.href = "login.html";

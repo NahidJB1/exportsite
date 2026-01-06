@@ -59,8 +59,9 @@
         <div class="product-summary">
             <img id="summImg" class="summary-img">
             <div class="summary-details">
-                <h4 id="summName">Loading Product...</h4>
+                <h4 id="summName">Loading...</h4>
                 <p id="summPrice">...</p>
+                <p id="summQty" style="font-size:12px; color:#666; margin-top:2px;">Quantity: 1</p>
             </div>
         </div>
 
@@ -89,11 +90,13 @@
         const pPrice = urlParams.get('price');
         const pImg = urlParams.get('img');
         const pId = urlParams.get('id');
+        const pQty = urlParams.get('qty') || 1;
 
         if(pName) {
             document.getElementById('summName').innerText = pName;
             document.getElementById('summPrice').innerText = pPrice;
             document.getElementById('summImg').src = pImg;
+            document.getElementById('summQty').innerText = `Quantity: ${pQty}`;
         } else {
             window.location.href = "products.html";
         }
@@ -108,15 +111,21 @@
 
             try {
                 await addDoc(collection(db, "orders"), {
-                    product: { id: pId, name: pName, price: pPrice, image: pImg },
-                    customer: {
-                        name: document.getElementById('cName').value,
-                        phone: phoneVal,
-                        address: document.getElementById('cAddress').value
-                    },
-                    status: "Pending",
-                    createdAt: serverTimestamp()
-                });
+    product: { 
+        id: pId, 
+        name: pName, 
+        price: pPrice, 
+        image: pImg,
+        quantity: pQty // <--- ADD THIS LINE
+    },
+    customer: {
+        name: document.getElementById('cName').value,
+        phone: phoneVal,
+        address: document.getElementById('cAddress').value
+    },
+    status: "Pending",
+    createdAt: serverTimestamp()
+});
 
                 // Show Success Overlay without Alert
                 document.getElementById('successScreen').style.display = 'flex';

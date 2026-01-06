@@ -3,194 +3,583 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login | Nusantara Trade</title>
+    <title>Nusantara Trade | Global Sourcing</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-    
+
     <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: #003366; /* Primary Blue */
+        /* --- 1. THEME VARIABLES --- */
+        :root {
+            --primary: #003366;       
+            --secondary: #00A86B;     
+            --accent: #FF9900;        
+            --bg-light: #F4F7F6;
+            --white: #ffffff;
+            --text-dark: #1F2937;
+            /* Official Flag Colors */
+            --my-blue: #000066;
+            --my-red: #cc0000;
+            --bd-green: #006a4e;
+            --bd-red: #f42a41;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg-light); color: var(--text-dark); overflow-x: hidden; }
+        a { text-decoration: none; color: inherit; }
+
+        /* --- 2. NAVIGATION BAR --- */
+        .navbar {
+            background-color: var(--primary);
+            color: var(--white);
+            padding: 15px 5%;
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .login-card {
-            background: white;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
             width: 100%;
-            max-width: 400px;
-            text-align: center;
         }
-        .brand { font-size: 24px; font-weight: 700; color: #003366; margin-bottom: 20px; }
-        .brand span { color: #00A86B; }
-        
-        input {
-            width: 100%;
-            padding: 15px;
-            margin-bottom: 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            box-sizing: border-box; /* Fixes padding issues */
+        .nav-left { display: flex; align-items: center; gap: 20px; }
+        .brand-logo { font-size: 24px; font-weight: 700; letter-spacing: 1px; white-space: nowrap; }
+        .brand-logo span { color: var(--secondary); }
+        .cat-btn {
+            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+            padding: 8px 15px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: 0.3s;
         }
-        
-        button {
-            width: 100%;
-            padding: 15px;
-            background: #00A86B; /* Secondary Teal */
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-weight: bold;
-            cursor: pointer;
+        .auth-btn {
+            background-color: var(--accent); color: var(--primary); padding: 8px 20px;
+            border-radius: 50px; font-weight: 700; transition: transform 0.2s; white-space: nowrap;
+        }
+
+        /* --- 3. HERO SLIDER --- */
+        .hero-section {
+            position: relative; height: 60vh; overflow: hidden; background: #000;
+        }
+        .slide {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover; opacity: 0; transition: opacity 1.5s ease-in-out;
+        }
+        .slide.active { opacity: 0.6; }
+        .hero-overlay {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            text-align: center; width: 90%; z-index: 2;
+        }
+        .hero-overlay h1 {
+            color: var(--white); font-size: 32px; text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            margin-bottom: 10px; animation: fadeDown 1s ease-out;
+        }
+
+        /* --- 4. HYPERLOOP LOGISTICS BAR --- */
+        .logistics-bar {
+            background: #0f172a; 
+            padding: 40px 0;
+            overflow: hidden;
+            position: relative;
+            border-bottom: 4px solid var(--secondary);
+            background-image: radial-gradient(#1e293b 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .tracker-container {
+            width: 90%; max-width: 700px; margin: 0 auto;
+            position: relative; height: 100px;
+            display: flex; justify-content: space-between; align-items: center;
+            z-index: 2;
+        }
+        .track-bg {
+            position: absolute; top: 50%; left: 60px; right: 60px; height: 4px;
+            background: rgba(255,255,255,0.1); border-radius: 4px; transform: translateY(-50%);
+        }
+        .track-active {
+            position: absolute; top: 50%; left: 60px; right: 60px; height: 4px;
+            background: linear-gradient(90deg, var(--my-blue), var(--secondary));
+            transform: translateY(-50%);
+            width: 0%; animation: fillTrack 3s ease-in-out infinite;
+            border-radius: 4px; box-shadow: 0 0 10px var(--secondary);
+        }
+        .hub {
+            width: 70px; height: 70px; background: #1e293b;
+            border-radius: 12px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            border: 2px solid rgba(255,255,255,0.1);
+            position: relative; z-index: 10;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
             transition: 0.3s;
         }
-        button:hover { background: #008f5b; }
-        
-        .error {
-            color: red;
-            font-size: 14px;
-            margin-bottom: 15px;
-            display: none;
+        .hub-code { color: white; font-weight: 700; font-size: 18px; letter-spacing: 1px; }
+        .hub-name { color: #94a3b8; font-size: 10px; text-transform: uppercase; margin-top: 2px; }
+        .hub-kul { border-bottom: 4px solid var(--my-red); }
+        .hub-dac { border-bottom: 4px solid var(--bd-green); }
+        .plane-carrier {
+            position: absolute; top: 50%; left: 60px; transform: translate(-50%, -50%);
+            z-index: 20; color: var(--accent); font-size: 24px;
+            filter: drop-shadow(0 0 5px var(--accent)); animation: flyFast 3s ease-in-out infinite;
         }
 
-        /* Add these new styles */
-        .toggle-text { margin-top: 20px; font-size: 13px; color: #666; }
-        .toggle-link { color: #003366; font-weight: bold; cursor: pointer; text-decoration: underline; }
-        .toggle-link:hover { color: #00A86B; }
-        .hidden { display: none; }
+        @keyframes fillTrack { 0% { width: 0%; opacity: 0; } 10% { opacity: 1; } 80% { width: calc(100% - 120px); opacity: 1; } 100% { width: calc(100% - 120px); opacity: 0; } }
+        @keyframes flyFast { 0% { left: 70px; opacity: 0; transform: translate(-50%, -50%) scale(0.8); } 10% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 80% { left: calc(100% - 70px); opacity: 1; transform: translate(-50%, -50%) scale(1); } 90% { opacity: 0; transform: translate(-50%, -50%) scale(1.2); } 100% { left: calc(100% - 70px); opacity: 0; } }
 
+        /* --- 5. INFO BAR --- */
+        .info-bar {
+            background: var(--white); padding: 30px 5%; display: flex; align-items: center; justify-content: space-between;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05); position: relative; flex-wrap: wrap; gap: 20px;
+            border-bottom: 4px solid var(--secondary); z-index: 10;
+        }
+        .info-left { display: flex; align-items: center; gap: 20px; flex: 1; min-width: 300px; }
+        .pulse-icon {
+            font-size: 40px; color: var(--secondary); background: #eafff5; min-width: 80px; height: 80px;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; animation: pulse-teal 2s infinite;
+        }
+        @keyframes pulse-teal { 0% { box-shadow: 0 0 0 0 rgba(0, 168, 107, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(0, 168, 107, 0); } 100% { box-shadow: 0 0 0 0 rgba(0, 168, 107, 0); } }
+        .info-text h3 { color: var(--primary); margin-bottom: 5px; }
+        .info-text p { font-size: 14px; color: #666; max-width: 400px; }
+        .info-buttons { display: flex; gap: 10px; }
+        .btn-view { padding: 10px 25px; border: 2px solid var(--primary); color: var(--primary); border-radius: 5px; font-weight: 600; transition: 0.3s; white-space: nowrap; }
+        .btn-view:hover { background: var(--primary); color: white; }
+
+        /* --- 6. PROCESS STEPS (NEW) --- */
+        .process-steps { padding: 50px 5%; background: #fff; text-align: center; }
+        .steps-container { display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; margin-top: 30px; }
+        .step-item { flex: 1; min-width: 250px; position: relative; }
+        .step-num { 
+            width: 40px; height: 40px; background: var(--primary); color: white; border-radius: 50%; 
+            display: flex; align-items: center; justify-content: center; font-weight: bold; margin: 0 auto 15px; 
+        }
+        .step-item h4 { color: var(--primary); margin-bottom: 10px; }
+        .step-item p { font-size: 14px; color: #666; }
+
+        /* --- 7. PRODUCTS & GRID --- */
+        .product-section { padding: 50px 5%; background: var(--bg-light); }
+        .section-title { text-align: center; color: var(--primary); margin-bottom: 30px; font-size: 28px; }
+        .product-grid-container { position: relative; overflow: hidden; padding-bottom: 20px; }
+        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
+        .product-card {
+            background: var(--white); border-radius: 10px; overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05); transition: transform 0.3s;
+        }
+        .product-card:hover { transform: translateY(-5px); }
+        .prod-img { width: 100%; height: 160px; object-fit: cover; background: #eee; }
+        .prod-info { padding: 12px; }
+        .prod-title { font-size: 14px; font-weight: 600; color: var(--primary); display: block; margin-bottom: 5px; }
+        .prod-price { color: var(--secondary); font-weight: 700; font-size: 16px; }
+        .lock-overlay {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 300px; 
+            background: linear-gradient(to bottom, rgba(244,247,246,0) 0%, rgba(244,247,246,0.9) 40%, rgba(244,247,246,1) 100%);
+            display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10; pointer-events: none; 
+        }
+        .lock-btn {
+            pointer-events: auto; background-color: var(--primary); color: var(--white);
+            padding: 15px 40px; border-radius: 30px; font-size: 16px; font-weight: bold;
+            box-shadow: 0 10px 20px rgba(0, 51, 102, 0.3); cursor: pointer; border: none;
+            display: flex; align-items: center; gap: 10px; animation: bounce 2s infinite;
+        }
+
+        /* --- 8. WHY US --- */
+        .why-us { padding: 60px 5%; background: var(--white); }
+        .why-grid { display: flex; justify-content: center; flex-wrap: wrap; gap: 20px; }
+        .feature-card {
+            width: 250px; padding: 30px 20px; background: var(--white);
+            border-bottom: 5px solid var(--accent); box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            text-align: center; border-radius: 15px; transition: 0.3s;
+        }
+        .feature-card:hover { transform: translateY(-10px); border-bottom-color: var(--secondary); }
+        .feat-icon { font-size: 40px; color: var(--primary); margin-bottom: 15px; }
+
+        /* --- 9. CONTACT CTA --- */
+        .contact-cta {
+            background: linear-gradient(135deg, var(--primary), #002244);
+            color: white; padding: 50px 20px; text-align: center;
+            display: flex; align-items: center; justify-content: space-between; overflow: hidden;
+            position: relative; /* Essential for Observer */
+        }
+        .cta-center { flex: 1; z-index: 2; padding: 0 20px; }
+        .cta-img-group { display: flex; gap: 10px; opacity: 0.5; }
+        .cta-img { width: 100px; height: 140px; border-radius: 10px; object-fit: cover; transform: rotate(-5deg); }
+
+        /* --- 10. FOOTER --- */
+        footer { background: #001a33; color: white; padding: 40px 5% 10px; }
+        .footer-content {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            flex-wrap: wrap; gap: 30px; max-width: 1200px; margin: 0 auto;
+            border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 30px;
+        }
+        .office-box { flex: 1; min-width: 250px; font-size: 14px; line-height: 1.6; }
+        .footer-center { text-align: center; flex: 1; }
+        .social-icons { margin-top: 20px; display: flex; justify-content: center; gap: 15px; }
+        .soc-icon { 
+            width: 40px; height: 40px; background: rgba(255,255,255,0.1); 
+            display: flex; align-items: center; justify-content: center; 
+            border-radius: 50%; transition: 0.3s; 
+        }
+        .soc-icon:hover { background: var(--secondary); transform: scale(1.1); }
+
+        /* --- 11. FLOATING BUTTON STYLES --- */
+        .float-wa {
+            position: fixed; bottom: 30px; right: 30px;
+            width: 60px; height: 60px; background-color: #25D366; color: white;
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 30px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 2000;
+            transition: all 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Bouncy flight */
+        }
+        .float-wa:hover { transform: scale(1.1); }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            .navbar { padding: 10px 15px; }
+            .nav-left { gap: 10px; }
+            .brand-logo { font-size: 18px; }
+            .cat-btn { padding: 6px 10px; }
+            .auth-btn { font-size: 12px; padding: 8px 12px; }
+            .hero-section { height: 50vh; }
+            .tracker-container { width: 100%; padding: 0 10px; }
+            .hub { width: 60px; height: 60px; }
+            .hub-code { font-size: 14px; }
+            .track-bg, .track-active { left: 50px; right: 50px; }
+            
+            @keyframes fillTrack { 0% { width: 0%; opacity: 0; } 10% { opacity: 1; } 80% { width: calc(100% - 100px); opacity: 1; } 100% { width: calc(100% - 100px); opacity: 0; } }
+            @keyframes flyFast { 0% { left: 60px; opacity: 0; transform: translate(-50%, -50%) scale(0.8); } 10% { opacity: 1; transform: translate(-50%, -50%) scale(1); } 80% { left: calc(100% - 60px); opacity: 1; transform: translate(-50%, -50%) scale(1); } 90% { opacity: 0; transform: translate(-50%, -50%) scale(1.2); } 100% { left: calc(100% - 60px); opacity: 0; } }
+
+            /* --- FIXED SECTION START --- */
+            /* Changed flexDirection to flex-direction, etc. */
+            .info-bar { 
+                flex-direction: column; 
+                text-align: center; 
+                gap: 20px; 
+                padding: 30px 20px; 
+            }
+            .info-left { 
+                flex-direction: column; 
+                width: 100%; 
+                min-width: auto; /* Fixes spacing issue */
+            }
+            .info-buttons { 
+                justify-content: center; 
+                width: 100%; 
+            }
+            .cta-img-group { display: none; }
+            
+            .footer-content { 
+                flex-direction: column; 
+                align-items: center; 
+                text-align: center; 
+            }
+            .office-box { 
+                text-align: center !important; 
+            }
+            /* --- FIXED SECTION END --- */
+            
+            /* Smaller floating button on mobile */
+            .float-wa { width: 50px; height: 50px; font-size: 24px; bottom: 20px; right: 20px; }
+        }
+        
+        .reveal { opacity: 0; transform: translateY(50px); transition: all 1s ease-out; }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+        
+        /* Pulse Effect for Static Button when Docked */
+        @keyframes receiptPulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); }
+            70% { transform: scale(1.1); box-shadow: 0 0 0 20px rgba(37, 211, 102, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+        }
+        .pulse-active { animation: receiptPulse 1s ease-out; }
 
     </style>
 </head>
 <body>
 
-    <div class="login-card">
-        <div class="brand">Nusantara<span>Trade</span></div>
-        
-        <h3 id="formTitle" style="color: #333; margin-bottom: 5px;">Welcome Back</h3>
-        <p id="formSubtitle" style="color: #666; font-size: 14px; margin-bottom: 30px;">Login to continue</p>
-        
-        <div id="errorMsg" class="error"></div>
+    <nav class="navbar">
+        <div class="nav-left">
+            <div class="brand-logo">Nusantara<span>Trade</span></div>
+            <button class="cat-btn" onclick="toggleCategories()">
+                <i class="fas fa-th-large"></i> <span style="display:none;" class="desktop-text">Categories</span>
+            </button>
+        </div>
+        <a href="login.html" class="auth-btn">Log In / Register</a>
+    </nav>
 
-        <form id="authForm">
-            <input type="email" id="email" placeholder="Email Address" required>
-            <input type="password" id="password" placeholder="Password (Min 6 chars)" required>
-            <button type="submit" id="submitBtn">Login</button>
-        </form>
+    <header class="hero-section">
+        <img src="https://via.placeholder.com/1200x600/003366/ffffff?text=Electronics+Sourcing" class="slide active">
+        <img src="https://via.placeholder.com/1200x600/00A86B/ffffff?text=Cosmetics+Export" class="slide">
+        <img src="https://via.placeholder.com/1200x600/FF9900/ffffff?text=Gadgets+KL+to+Dhaka" class="slide">
         
-        <div class="toggle-text">
-            <span id="toggleText">Don't have an account? </span>
-            <span id="toggleBtn" class="toggle-link" onclick="toggleMode()">Register here</span>
+        <div class="hero-overlay">
+            <h1>Sourcing Global Quality for Bangladesh</h1>
+            <p style="color: #ddd; font-size: 16px; margin-bottom: 20px;">Direct from Kuala Lumpur to Dhaka. Trusted. Fast. Secure.</p>
+        </div>
+    </header>
+
+    <section class="logistics-bar">
+        <div class="tracker-container">
+            <div class="hub hub-kul">
+                <span class="hub-code">KUL</span>
+                <span class="hub-name">Malaysia</span>
+            </div>
+            <div class="track-bg"></div>
+            <div class="track-active"></div>
+            <i class="fas fa-plane plane-carrier"></i>
+            <div class="hub hub-dac">
+                <span class="hub-code">DAC</span>
+                <span class="hub-name">Dhaka</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="info-bar">
+        <div class="info-left">
+            <div class="pulse-icon"><i class="fas fa-globe-asia"></i></div>
+            <div class="info-text">
+                <h3>Global Sourcing & Logistics</h3>
+                <p>We handle purchase, shipping, and customs. Door-to-door delivery.</p>
+            </div>
+        </div>
+        <div class="info-buttons">
+            <a href="#products" class="btn-view">View Products</a>
+            <a href="login.html" class="auth-btn">Get Started</a>
+        </div>
+    </section>
+
+    <section class="process-steps reveal">
+        <h2 class="section-title">How It Works</h2>
+        <div class="steps-container">
+            <div class="step-item">
+                <div class="step-num">1</div>
+                <h4>Select Product</h4>
+                <p>Choose from our list or send us a link from any Malaysian store.</p>
+            </div>
+            <div class="step-item">
+                <div class="step-num">2</div>
+                <h4>Get Quotation</h4>
+                <p>We calculate shipping & customs and give you a final price in BDT.</p>
+            </div>
+            <div class="step-item">
+                <div class="step-num">3</div>
+                <h4>Fast Delivery</h4>
+                <p>Pay securely. Receive your item in Dhaka within 7-10 days.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="product-section reveal" id="products">
+        <h2 class="section-title">Latest Arrivals</h2>
+        <div class="product-grid-container">
+            <div class="product-grid" id="productGrid">
+                <div class="product-card">
+                    <img src="https://via.placeholder.com/300?text=iPhone+13" class="prod-img">
+                    <div class="prod-info">
+                        <span class="prod-title">Used iPhone 13 (KL Set)</span>
+                        <span class="prod-price">BDT 45,000</span>
+                    </div>
+                </div>
+                <div class="product-card">
+                    <img src="https://via.placeholder.com/300?text=Laptop" class="prod-img">
+                    <div class="prod-info">
+                        <span class="prod-title">Dell Latitude 7490</span>
+                        <span class="prod-price">BDT 28,500</span>
+                    </div>
+                </div>
+                <div class="product-card">
+                    <img src="https://via.placeholder.com/300?text=Cosmetics" class="prod-img">
+                    <div class="prod-info">
+                        <span class="prod-title">The Ordinary Set</span>
+                        <span class="prod-price">BDT 3,200</span>
+                    </div>
+                </div>
+                 <div class="product-card">
+                    <img src="https://via.placeholder.com/300?text=Watch" class="prod-img">
+                    <div class="prod-info">
+                        <span class="prod-title">G-Shock Authentic</span>
+                        <span class="prod-price">BDT 8,000</span>
+                    </div>
+                </div>
+            </div>
+            <div class="lock-overlay">
+                <button class="lock-btn" onclick="window.location.href='login.html'">
+                    <i class="fas fa-lock"></i> Login to View All Products
+                </button>
+                <p style="margin-top: 10px; color: #666; font-size: 14px;">Join 5,000+ registered buyers</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="why-us reveal">
+        <h2 class="section-title">Why Choose Nusantara Trade?</h2>
+        <div class="why-grid">
+            <div class="feature-card">
+                <i class="fas fa-handshake feat-icon"></i>
+                <h4>Two Offices</h4>
+                <p>Physical presence in both KL and Dhaka ensures your money is safe.</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-plane-departure feat-icon"></i>
+                <h4>Fast Air Cargo</h4>
+                <p>Weekly shipments. Get your products in 7-10 days.</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-check-circle feat-icon"></i>
+                <h4>Authentic Items</h4>
+                <p>We source directly from official brand stores in Malaysia.</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-headset feat-icon"></i>
+                <h4>24/7 Support</h4>
+                <p>Talk to our agents via WhatsApp anytime.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="contact-cta reveal">
+        <div class="cta-img-group">
+            <img src="https://via.placeholder.com/150" class="cta-img">
+            <img src="https://via.placeholder.com/150" class="cta-img">
+        </div>
+        
+        <div class="cta-center">
+            <h2>Ready to Import?</h2>
+            <p>Start your business with authentic Malaysian products today.</p>
+            <br>
+            <a href="https://wa.me/601139660706" id="staticWaBtn" class="auth-btn" style="background: #25D366; color: white;">
+                <i class="fab fa-whatsapp"></i> Chat on WhatsApp
+            </a>
         </div>
 
-        <p style="margin-top: 20px; font-size: 12px; color: #aaa;">
-            <a href="products.html" style="color: #aaa; text-decoration: none;">&larr; Back to Website</a>
-        </p>
-    </div>
+        <div class="cta-img-group">
+            <img src="https://via.placeholder.com/150" class="cta-img">
+            <img src="https://via.placeholder.com/150" class="cta-img">
+        </div>
+    </section>
 
-    
+    <footer>
+        <div class="footer-content">
+            <div class="office-box" style="text-align: left;">
+                <h4 style="color: var(--accent);">Malaysia Office (HQ)</h4>
+                <p>De Tropicana, 52, Jalan Kuchai Maju 13<br>
+                Kuchai Entrepreneurs Park<br>
+                58200 Kuala Lumpur</p>
+            </div>
+
+            <div class="footer-center">
+                <h3>Nusantara<span style="color: var(--secondary);">Trade</span></h3>
+                <div class="social-icons">
+                    <a href="#" class="soc-icon"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="soc-icon"><i class="fab fa-whatsapp"></i></a>
+                    <a href="#" class="soc-icon"><i class="fab fa-tiktok"></i></a>
+                </div>
+            </div>
+
+            <div class="office-box" style="text-align: right;">
+                <h4 style="color: var(--secondary);">Bangladesh Office</h4>
+                <p>House: 16, Road: 2/3, Block L<br>
+                Banani, Chairman Bari<br>
+                Dhaka 1213</p>
+            </div>
+        </div>
+        <div style="text-align: center; font-size: 12px; color: #888; margin-top: 20px;">
+            &copy; 2026 Nusantara Trade. Developed by Bhuiyan Mohamed Nahid Jahan.
+        </div>
+    </footer>
+
+    <a href="https://wa.me/601139660706" class="float-wa" id="floatBtn" target="_blank">
+        <i class="fab fa-whatsapp"></i>
+    </a>
 
     <script type="module">
-        import { auth, db } from './firebase-config.js';
-        import { 
-            signInWithEmailAndPassword, 
-            createUserWithEmailAndPassword 
-        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        // 1. Import Firebase
+    import { db } from './firebase-config.js';
+    import { collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        const authForm = document.getElementById('authForm');
-        const errorMsg = document.getElementById('errorMsg');
-        const submitBtn = document.getElementById('submitBtn');
-        const formTitle = document.getElementById('formTitle');
-        const formSubtitle = document.getElementById('formSubtitle');
-        const toggleBtn = document.getElementById('toggleBtn');
-        const toggleText = document.getElementById('toggleText');
+    // --- SLIDER SCRIPT ---
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    function nextSlide() {
+        slides[currentSlide].classList.remove('active');
+        currentSlide = (currentSlide + 1) % slides.length;
+        slides[currentSlide].classList.add('active');
+    }
+    setInterval(nextSlide, 3500); 
 
-        let isLoginMode = true; 
+    // --- FLOATING BUTTON LOGIC ---
+    const floatBtn = document.getElementById('floatBtn');
+    const staticBtn = document.getElementById('staticWaBtn');
 
-        // 1. Toggle Mode
-        window.toggleMode = () => {
-            isLoginMode = !isLoginMode;
-            errorMsg.style.display = 'none';
-            if (isLoginMode) {
-                formTitle.innerText = "Welcome Back";
-                formSubtitle.innerText = "Login to continue";
-                submitBtn.innerText = "Login";
-                toggleText.innerText = "Don't have an account? ";
-                toggleBtn.innerText = "Register here";
-            } else {
-                formTitle.innerText = "Create Account";
-                formSubtitle.innerText = "Join us to start importing";
-                submitBtn.innerText = "Register Instantly";
-                toggleText.innerText = "Already have an account? ";
-                toggleBtn.innerText = "Login here";
-            }
-        };
-
-        // 2. Handle Submit
-        authForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            errorMsg.style.display = 'none';
-            submitBtn.disabled = true;
-            submitBtn.innerText = "Processing...";
-
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
-
-            if (isLoginMode) {
-                signInWithEmailAndPassword(auth, email, password)
-                    .then((userCredential) => checkAdminStatus(userCredential.user.email))
-                    .catch((error) => handleError(error));
-            } else {
-                createUserWithEmailAndPassword(auth, email, password)
-                    .then((userCredential) => {
-                        // New registers are never admins by default, so go to index
-                        window.location.href = "index.html"; 
-                    })
-                    .catch((error) => handleError(error));
-            }
-        });
-
-        // 3. SECURE Redirect Logic
-        async function checkAdminStatus(email) {
-            try {
-                // Check if this email exists in the 'admins' collection
-                const docRef = doc(db, "admins", email);
-                const docSnap = await getDoc(docRef);
-
-                if (docSnap.exists()) {
-                    console.log("Admin verified.");
-                    window.location.href = "dashboard.html";
+    if(staticBtn && floatBtn) { // Safety check
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const floatRect = floatBtn.getBoundingClientRect();
+                    const staticRect = staticBtn.getBoundingClientRect();
+                    const x = staticRect.left + (staticRect.width / 2) - (floatRect.left + (floatRect.width / 2));
+                    const y = staticRect.top + (staticRect.height / 2) - (floatRect.top + (floatRect.height / 2));
+                    
+                    floatBtn.style.transform = `translate(${x}px, ${y}px) scale(0.2)`;
+                    floatBtn.style.opacity = '0'; 
+                    setTimeout(() => { staticBtn.classList.add('pulse-active'); }, 1200); 
                 } else {
-                    console.log("User is customer.");
-                    window.location.href = "index.html";
+                    floatBtn.style.transform = 'translate(0, 0) scale(1)';
+                    floatBtn.style.opacity = '1';
+                    staticBtn.classList.remove('pulse-active');
                 }
-            } catch (error) {
-                console.error("Verification failed", error);
-                window.location.href = "index.html"; // Default to safe page
+            });
+        }, { threshold: 0.1 });
+        observer.observe(staticBtn);
+    }
+
+    // --- NEW: FETCH REAL PRODUCTS FROM FIREBASE ---
+    async function loadRealProducts() {
+        const grid = document.getElementById('productGrid');
+        grid.innerHTML = ""; // Clear the fake placeholder items
+
+        try {
+            // Get top 8 newest products
+            const q = query(collection(db, "products"), orderBy("createdAt", "desc"), limit(8));
+            const snapshot = await getDocs(q);
+
+            if (snapshot.empty) {
+                grid.innerHTML = "<p style='text-align:center; width:100%; color:#666;'>No products found. Please add some via Dashboard.</p>";
+                return;
             }
-        }
 
-        // 4. Error Handler
-        function handleError(error) {
-            console.error(error);
-            submitBtn.disabled = false;
-            submitBtn.innerText = isLoginMode ? "Login" : "Register Instantly";
-            
-            let message = "An error occurred.";
-            if (error.code === 'auth/invalid-email') message = "Invalid email address.";
-            if (error.code === 'auth/user-not-found') message = "No account found with this email.";
-            if (error.code === 'auth/wrong-password') message = "Incorrect password.";
-            if (error.code === 'auth/email-already-in-use') message = "This email is already registered.";
-            
-            errorMsg.innerText = message;
-            errorMsg.style.display = 'block';
+            snapshot.forEach((doc) => {
+                const item = doc.data();
+                
+                // Create HTML Card
+                const cardHTML = `
+                    <div class="product-card">
+                        <img src="${item.image}" class="prod-img" alt="${item.name}">
+                        <div class="prod-info">
+                            <span class="prod-title">${item.name}</span>
+                            <span class="prod-price">${item.price}</span>
+                            ${item.status === 'Sold Out' ? '<span style="color:red; font-size:12px; font-weight:bold;">(Sold Out)</span>' : ''}
+                        </div>
+                    </div>
+                `;
+                grid.innerHTML += cardHTML;
+            });
+
+        } catch (error) {
+            console.error("Error loading products:", error);
+            grid.innerHTML = "<p>Error loading products. Check console.</p>";
         }
+    }
+
+    // Load products when page opens
+    loadRealProducts();
+
+    // --- SCROLL REVEAL ---
+    window.addEventListener('scroll', reveal);
+    function reveal() {
+        var reveals = document.querySelectorAll('.reveal');
+        for (var i = 0; i < reveals.length; i++) {
+            var windowheight = window.innerHeight;
+            var revealtop = reveals[i].getBoundingClientRect().top;
+            var revealpoint = 150;
+            if (revealtop < windowheight - revealpoint) { reveals[i].classList.add('active'); }
+        }
+    }
+    reveal();
+</script>
+
     </script>
-
 </body>
 </html>

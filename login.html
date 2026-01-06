@@ -148,8 +148,8 @@
             } else {
                 createUserWithEmailAndPassword(auth, email, password)
                     .then((userCredential) => {
-                        // New registers are never admins by default, so go to index
-                        window.location.href = "index.html"; 
+                        // New registers go to products page
+                        window.location.href = "products.html"; 
                     })
                     .catch((error) => handleError(error));
             }
@@ -163,15 +163,13 @@
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
-                    console.log("Admin verified.");
                     window.location.href = "dashboard.html";
                 } else {
-                    console.log("User is customer.");
-                    window.location.href = "index.html";
+                    window.location.href = "products.html";
                 }
             } catch (error) {
                 console.error("Verification failed", error);
-                window.location.href = "index.html"; // Default to safe page
+                window.location.href = "products.html"; 
             }
         }
 

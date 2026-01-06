@@ -15,36 +15,55 @@
 
         .profile-container {
             background: white; width: 100%; max-width: 500px;
-            padding: 40px; border-radius: 20px;
+            padding: 30px; border-radius: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.05);
             position: relative;
         }
 
         .back-link {
-            position: absolute; top: 20px; left: 20px;
-            color: #666; text-decoration: none; font-size: 14px;
-            display: flex; align-items: center; gap: 5px; transition: 0.3s;
+            display: inline-flex; align-items: center; gap: 5px;
+            color: #666; text-decoration: none; font-size: 14px; margin-bottom: 20px;
         }
         .back-link:hover { color: var(--primary); }
 
-        .profile-header { text-align: center; margin-bottom: 30px; }
+        .profile-header { text-align: center; margin-bottom: 25px; }
         .avatar-circle {
-            width: 80px; height: 80px; background: var(--primary); color: white;
-            border-radius: 50%; font-size: 32px; display: flex; align-items: center; justify-content: center;
-            margin: 0 auto 15px;
+            width: 70px; height: 70px; background: var(--primary); color: white;
+            border-radius: 50%; font-size: 28px; display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 10px;
         }
-        .user-email { color: #888; font-size: 14px; margin-top: 5px; }
+        
+        /* --- ACCORDION STYLES --- */
+        .accordion-item { border: 1px solid #eee; border-radius: 10px; margin-bottom: 15px; overflow: hidden; }
+        
+        .accordion-header {
+            padding: 15px 20px; background: #fafafa; cursor: pointer;
+            font-weight: 600; color: var(--primary); display: flex; justify-content: space-between; align-items: center;
+            user-select: none;
+        }
+        .accordion-header:hover { background: #f0f0f0; }
+        .accordion-header i.fa-chevron-down { transition: 0.3s; }
+        
+        /* Rotate arrow when open */
+        .accordion-item.active .accordion-header i.fa-chevron-down { transform: rotate(180deg); }
 
-        .form-group { margin-bottom: 20px; }
+        .accordion-content {
+            display: none; padding: 20px; border-top: 1px solid #eee; background: white;
+        }
+        .accordion-item.active .accordion-content { display: block; animation: slideDown 0.3s ease; }
+
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- FORMS --- */
+        .form-group { margin-bottom: 15px; }
         .form-group label { display: block; font-size: 12px; color: #666; margin-bottom: 5px; font-weight: 600; }
         .form-group input, .form-group textarea {
             width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;
-            font-size: 14px; outline: none; transition: 0.3s;
+            font-size: 14px; outline: none; transition: 0.3s; background: #fff;
         }
-        .form-group input:focus, .form-group textarea:focus { border-color: var(--primary); }
+        .form-group input:focus { border-color: var(--primary); }
 
-        .action-buttons { display: flex; flex-direction: column; gap: 10px; margin-top: 30px; }
-        
+        /* --- BUTTONS --- */
         .btn {
             width: 100%; padding: 12px; border: none; border-radius: 8px;
             font-weight: 600; cursor: pointer; transition: 0.3s;
@@ -52,18 +71,19 @@
             font-size: 14px; text-decoration: none;
         }
 
-        .btn-save { background: var(--primary); color: white; }
-        .btn-save:hover { background: #002244; }
-
-        .btn-track { background: var(--secondary); color: white; }
+        .btn-track { background: var(--secondary); color: white; margin-top: 5px; }
         .btn-track:hover { background: #008f5b; }
 
-        .btn-logout { background: #fff; border: 1px solid #ff4444; color: #ff4444; margin-top: 10px; }
+        .btn-save { background: var(--primary); color: white; display: none; /* Hidden by default */ }
+        
+        .btn-logout { 
+            background: transparent; color: #ff4444; border: 1px solid #ff4444; 
+            margin-top: 20px; width: auto; padding: 8px 20px; font-size: 12px; margin-left: auto; margin-right: auto;
+        }
         .btn-logout:hover { background: #ff4444; color: white; }
 
-        #message { text-align: center; font-size: 12px; margin-top: 10px; min-height: 18px; }
+        #message { text-align: center; font-size: 12px; margin-top: 10px; height: 15px; }
         .success { color: green; }
-        .error { color: red; }
     </style>
 </head>
 <body>
@@ -73,40 +93,51 @@
         
         <div class="profile-header">
             <div class="avatar-circle"><i class="fas fa-user"></i></div>
-            <h2>My Profile</h2>
-            <div id="displayEmail" class="user-email">Loading...</div>
+            <h3 id="displayHeader">My Profile</h3>
+            <div id="displayEmail" style="font-size:12px; color:#888;">Loading...</div>
         </div>
 
-        <div class="form-group">
-            <label>Full Name</label>
-            <input type="text" id="fullName" placeholder="Enter your full name">
+        <div class="accordion-item active" id="acc-track">
+            <div class="accordion-header" onclick="toggleAccordion('acc-track')">
+                <span><i class="fas fa-box"></i> Track My Orders</span>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="accordion-content">
+                <p style="font-size:13px; color:#666; margin-bottom:10px;">Check the status of your recent purchases.</p>
+                <a href="track-order.html" id="trackLink" class="btn btn-track">
+                    Go to Tracking Page <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
         </div>
 
-        <div class="form-group">
-            <label>Phone Number</label>
-            <input type="tel" id="phone" placeholder="Enter your phone number">
+        <div class="accordion-item" id="acc-details">
+            <div class="accordion-header" onclick="toggleAccordion('acc-details')">
+                <span><i class="fas fa-address-card"></i> Account Details</span>
+                <i class="fas fa-chevron-down"></i>
+            </div>
+            <div class="accordion-content">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="fullName" placeholder="Name">
+                </div>
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="tel" id="phone" placeholder="Phone">
+                </div>
+                <div class="form-group">
+                    <label>Shipping Address</label>
+                    <textarea id="address" rows="2" placeholder="Address"></textarea>
+                </div>
+                
+                <div id="message"></div>
+                
+                <button class="btn btn-save" id="saveBtn" onclick="saveProfile()">
+                    Save Changes
+                </button>
+            </div>
         </div>
 
-        <div class="form-group">
-            <label>Shipping Address</label>
-            <textarea id="address" rows="3" placeholder="Enter full delivery address"></textarea>
-        </div>
-
-        <div id="message"></div>
-
-        <div class="action-buttons">
-            <button class="btn btn-save" onclick="saveProfile()">
-                <i class="fas fa-save"></i> Save Changes
-            </button>
-
-            <a href="track-order.html" class="btn btn-track">
-                <i class="fas fa-box-open"></i> Track My Order
-            </a>
-
-            <button class="btn btn-logout" onclick="logout()">
-                <i class="fas fa-sign-out-alt"></i> Log Out
-            </button>
-        </div>
+        <button class="btn btn-logout" onclick="logout()">Log Out</button>
     </div>
 
     <script type="module">
@@ -115,46 +146,73 @@
         import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         let currentUser = null;
+        let originalData = {}; // To check if data changed
 
-        // 1. Auth Check & Data Load
+        // 1. Auth & Load
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
                 document.getElementById('displayEmail').innerText = user.email;
-                loadUserData(user.uid);
+                await loadUserData(user.uid);
             } else {
                 window.location.href = "login.html";
             }
         });
 
-        // 2. Load User Data from Firestore
+        // 2. Load Data from Firestore
         async function loadUserData(uid) {
-            try {
-                const docRef = doc(db, "users", uid);
-                const docSnap = await getDoc(docRef);
+            const docRef = doc(db, "users", uid);
+            const docSnap = await getDoc(docRef);
 
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    document.getElementById('fullName').value = data.fullName || '';
-                    document.getElementById('phone').value = data.phone || '';
-                    document.getElementById('address').value = data.address || '';
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                originalData = data; // Store original state
+
+                // Fill Inputs
+                document.getElementById('fullName').value = data.fullName || '';
+                document.getElementById('phone').value = data.phone || '';
+                document.getElementById('address').value = data.address || '';
+
+                // Update Header Name
+                if(data.fullName) {
+                    document.getElementById('displayHeader').innerText = data.fullName;
                 }
-            } catch (error) {
-                console.error("Error fetching data:", error);
+
+                // Update Tracking Link with phone number if available
+                if(data.phone) {
+                    document.getElementById('trackLink').href = `track-order.html?phone=${data.phone}`;
+                }
             }
         }
 
-        // 3. Save Profile Function
-        window.saveProfile = async () => {
-            if (!currentUser) return;
+        // 3. Detect Changes to Show "Save" Button
+        const inputs = ['fullName', 'phone', 'address'];
+        inputs.forEach(id => {
+            document.getElementById(id).addEventListener('input', checkChanges);
+        });
 
-            const btn = document.querySelector('.btn-save');
-            const msg = document.getElementById('message');
-            
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+        function checkChanges() {
+            const currentName = document.getElementById('fullName').value;
+            const currentPhone = document.getElementById('phone').value;
+            const currentAddr = document.getElementById('address').value;
+
+            // Check if anything is different from original data
+            const hasChanged = 
+                currentName !== (originalData.fullName || '') ||
+                currentPhone !== (originalData.phone || '') ||
+                currentAddr !== (originalData.address || '');
+
+            const saveBtn = document.getElementById('saveBtn');
+            saveBtn.style.display = hasChanged ? 'flex' : 'none';
+        }
+
+        // 4. Save Profile
+        window.saveProfile = async () => {
+            const btn = document.getElementById('saveBtn');
+            btn.innerText = "Saving...";
             
             try {
-                const userData = {
+                const newData = {
                     email: currentUser.email,
                     fullName: document.getElementById('fullName').value,
                     phone: document.getElementById('phone').value,
@@ -162,21 +220,40 @@
                     updatedAt: new Date()
                 };
 
-                await setDoc(doc(db, "users", currentUser.uid), userData, { merge: true });
+                await setDoc(doc(db, "users", currentUser.uid), newData, { merge: true });
                 
-                msg.innerText = "Profile updated successfully!";
-                msg.className = "success";
+                // Update original data to new state
+                originalData = newData; 
+                
+                document.getElementById('message').innerText = "Saved successfully!";
+                document.getElementById('message').className = "success";
+                
+                // Hide button again since data is now synced
+                btn.style.display = 'none';
+                btn.innerText = "Save Changes";
+                
+                // Update header immediately
+                if(newData.fullName) document.getElementById('displayHeader').innerText = newData.fullName;
+
+                setTimeout(() => document.getElementById('message').innerText = '', 3000);
+
             } catch (error) {
-                console.error("Error saving:", error);
-                msg.innerText = "Failed to save profile.";
-                msg.className = "error";
-            } finally {
-                btn.innerHTML = '<i class="fas fa-save"></i> Save Changes';
-                setTimeout(() => msg.innerText = '', 3000);
+                console.error(error);
+                btn.innerText = "Error";
             }
         };
 
-        // 4. Logout Function
+        // 5. Accordion Logic
+        window.toggleAccordion = (id) => {
+            const item = document.getElementById(id);
+            // Optional: Close other accordions
+            document.querySelectorAll('.accordion-item').forEach(div => {
+                if(div.id !== id) div.classList.remove('active');
+            });
+            // Toggle clicked
+            item.classList.toggle('active');
+        };
+
         window.logout = () => {
             signOut(auth).then(() => window.location.href = "login.html");
         };

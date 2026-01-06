@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Checkout | Nusantara Trade</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background: #f4f7f6; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        
+        .checkout-card {
+            background: white; width: 100%; max-width: 500px; padding: 30px;
+            border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        h2 { color: #003366; margin-bottom: 20px; text-align: center; }
+        
+        .product-summary {
+            background: #e6fffa; padding: 15px; border-radius: 8px;
+            border-left: 5px solid #00A86B; margin-bottom: 25px; display: flex; gap: 15px; align-items: center;
+        }
+        .summary-img { width: 60px; height: 60px; object-fit: cover; border-radius: 5px; background: #ddd; }
+        .summary-details h4 { margin: 0; color: #003366; font-size: 16px; }
+        .summary-details p { margin: 5px 0 0; color: #00A86B; font-weight: bold; }
+
+        label { display: block; margin-bottom: 5px; font-weight: 600; color: #333; font-size: 14px; }
+        input, textarea {
+            width: 100%; padding: 12px; margin-bottom: 15px;
+            border: 1px solid #ccc; border-radius: 5px; font-family: inherit; box-sizing: border-box;
+        }
+        
+        .btn-confirm {
+            width: 100%; padding: 15px; background: #003366; color: white; border: none;
+            border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s;
+        }
+        .btn-confirm:hover { background: #002244; }
+        .btn-back { display: block; text-align: center; margin-top: 15px; color: #666; text-decoration: none; font-size: 13px; }
+    </style>
+</head>
+<body>
+
+    <div class="checkout-card">
+        <h2>Checkout</h2>
+        
+        <div class="product-summary">
+            <img id="summImg" class="summary-img">
+            <div class="summary-details">
+                <h4 id="summName">Loading Product...</h4>
+                <p id="summPrice">...</p>
+            </div>
+        </div>
+
+        <form id="orderForm">
+            <label>Full Name</label>
+            <input type="text" id="cName" placeholder="e.g. Rahim Uddin" required>
+
+            <label>Phone Number (WhatsApp Preferred)</label>
+            <input type="tel" id="cPhone" placeholder="e.g. 01712345678" required>
+
+            <label>Shipping Address</label>
+            <textarea id="cAddress" rows="3" placeholder="House, Road, Area, City..." required></textarea>
+
+            <button type="submit" id="submitBtn" class="btn-confirm">Confirm Order</button>
+        </form>
+
+        <a href="products.html" class="btn-back">Cancel & Go Back</a>
+    </div>
+
+    <script type="module">
+        import { db } from './firebase-config.js';
+        import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // 1. Get Product Data from URL Parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const pName = urlParams.get('name');
+        const pPrice = urlParams.get('price');
+        const pImg = urlParams.get('img');
+        const pId = urlParams.get('id');
+
+        // 2. Display Data on Page
+        if(pName) {
+            document.getElementById('summName').innerText = pName;
+            document.getElementById('summPrice').innerText = pPrice;
+            document.getElementById('summImg').src = pImg;
+        } else {
+            alert("No product selected!");
+            window.location.href = "products.html";
+        }
+
+        // 3. Handle Form Submit
+        document.getElementById('orderForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerText = "Processing...";
+
+            try {
+                // Save Order to Firebase "orders" collection
+                await addDoc(collection(db, "orders"), {
+                    product: { id: pId, name: pName, price: pPrice, image: pImg },
+                    customer: {
+                        name: document.getElementById('cName').value,
+                        phone: document.getElementById('cPhone').value,
+                        address: document.getElementById('cAddress').value
+                    },
+                    status: "Pending", // Default status
+                    createdAt: serverTimestamp()
+                });
+
+                alert("Order Placed Successfully! We will contact you soon.");
+                window.location.href = "products.html"; // Go back to shop
+
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Something went wrong. Please try again.");
+                btn.disabled = false;
+                btn.innerText = "Confirm Order";
+            }
+        });
+    </script>
+</body>
+</html>

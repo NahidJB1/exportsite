@@ -259,6 +259,44 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="editModal">
+    <div class="modal-box" style="text-align: left; max-width: 450px;">
+        <h3 style="margin-top:0; border-bottom:1px solid #e2e8f0; padding-bottom:10px;">Edit Product</h3>
+        
+        <input type="hidden" id="editId">
+        
+        <label style="font-size:12px; font-weight:600; color:#64748b; display:block; margin:10px 0 5px;">Product Name</label>
+        <input type="text" id="editName">
+
+        <label style="font-size:12px; font-weight:600; color:#64748b; display:block; margin:10px 0 5px;">Price</label>
+        <input type="text" id="editPrice">
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div>
+                <label style="font-size:12px; font-weight:600; color:#64748b; display:block; margin:10px 0 5px;">Category</label>
+                <select id="editCategory">
+                    <option value="Electronics">Electronics</option>
+                    <option value="Cosmetics">Cosmetics</option>
+                    <option value="Fashion">Fashion</option>
+                    <option value="Gadgets">Gadgets</option>
+                </select>
+            </div>
+            <div>
+                <label style="font-size:12px; font-weight:600; color:#64748b; display:block; margin:10px 0 5px;">Status</label>
+                <select id="editStatus">
+                    <option value="Available">Available</option>
+                    <option value="Sold Out">Sold Out</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="modal-actions" style="margin-top: 25px;">
+            <button class="btn-modal btn-cancel" onclick="closeEditModal()">Cancel</button>
+            <button class="btn-modal btn-confirm" id="saveEditBtn">Save Changes</button>
+        </div>
+    </div>
+</div>
+
     <script type="module">
         import { db, auth } from './firebase-config.js';
         import { collection, addDoc, getDocs, deleteDoc, updateDoc, doc, orderBy, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -378,14 +416,22 @@
 
                 snapshot.forEach(doc => {
                     const item = doc.data();
+                    // Escaping quotes for the onclick function to prevent errors
+                    const safeName = item.name.replace(/'/g, "\\'"); 
+                    
                     tbody.innerHTML += `
                         <tr>
                             <td data-label="Image"><img src="${item.image}" class="thumb"></td>
                             <td data-label="Name"><b>${item.name}</b><br><small style="color:#64748b">${item.category}</small></td>
                             <td data-label="Price" style="color:var(--accent); font-weight:600">${item.price}</td>
                             <td data-label="Status"><span style="padding:4px 8px; border-radius:4px; background:${item.status === 'Available' ? '#dcfce7' : '#fee2e2'}; color:${item.status === 'Available' ? '#166534' : '#991b1b'}; font-size:12px; font-weight:bold">${item.status}</span></td>
-                            <td data-label="Action">
-                                <button onclick="triggerDelete('${doc.id}')" style="color:var(--danger); border:1px solid #fee2e2; background:white; width:35px; height:35px; border-radius:50%; cursor:pointer; transition:0.2s">
+                            <td data-label="Action" style="display:flex; gap:8px; justify-content:flex-end;">
+                                <button onclick="openEditModal('${doc.id}', '${safeName}', '${item.price}', '${item.category}', '${item.status}')" 
+                                    style="color:var(--accent); border:1px solid #e0f2fe; background:white; width:35px; height:35px; border-radius:50%; cursor:pointer; transition:0.2s">
+                                    <i class="fas fa-pen"></i>
+                                </button>
+                                <button onclick="triggerDelete('${doc.id}')" 
+                                    style="color:var(--danger); border:1px solid #fee2e2; background:white; width:35px; height:35px; border-radius:50%; cursor:pointer; transition:0.2s">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </td>
@@ -470,6 +516,56 @@
         };
 
         window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
+
+        // --- EDIT FUNCTIONS ---
+        
+        // 1. Open Modal and Fill Data
+        window.openEditModal = (id, name, price, category, status) => {
+            document.getElementById('editId').value = id;
+            document.getElementById('editName').value = name;
+            document.getElementById('editPrice').value = price;
+            document.getElementById('editCategory').value = category;
+            document.getElementById('editStatus').value = status;
+            
+            document.getElementById('editModal').style.display = 'flex';
+        };
+
+        // 2. Close Modal
+        window.closeEditModal = () => {
+            document.getElementById('editModal').style.display = 'none';
+        };
+
+        // 3. Save Changes to Firebase
+        document.getElementById('saveEditBtn').addEventListener('click', async () => {
+            const id = document.getElementById('editId').value;
+            const btn = document.getElementById('saveEditBtn');
+            
+            btn.innerText = "Saving...";
+            btn.disabled = true;
+
+            try {
+                const docRef = doc(db, "products", id);
+                await updateDoc(docRef, {
+                    name: document.getElementById('editName').value,
+                    price: document.getElementById('editPrice').value,
+                    category: document.getElementById('editCategory').value,
+                    status: document.getElementById('editStatus').value
+                });
+
+                showToast("Product updated successfully!");
+                closeEditModal();
+                loadProducts(); // Refresh list
+            } catch (error) {
+                console.error(error);
+                showToast("Error updating product", "error");
+            }
+
+            btn.innerText = "Save Changes";
+            btn.disabled = false;
+        });
+        
     </script>
+
+
 </body>
 </html>

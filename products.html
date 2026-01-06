@@ -145,6 +145,51 @@
             .card-price { font-size: 14px; }
             .whatsapp-btn { font-size: 12px; padding: 8px; }
         }
+
+        /* --- PRODUCT DETAILS MODAL --- */
+.product-modal {
+    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center;
+    backdrop-filter: blur(5px);
+}
+.pm-content {
+    background: white; width: 90%; max-width: 800px; border-radius: 15px; overflow: hidden;
+    display: flex; flex-direction: column; max-height: 90vh;
+    animation: zoomIn 0.3s ease; position: relative;
+}
+@keyframes zoomIn { from {transform: scale(0.9); opacity:0;} to {transform: scale(1); opacity:1;} }
+
+.pm-close {
+    position: absolute; top: 15px; right: 20px; font-size: 24px; cursor: pointer; color: #333; z-index: 10;
+}
+
+.pm-body { display: flex; overflow-y: auto; }
+.pm-gallery { flex: 1.5; background: #f0f0f0; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+.pm-details { flex: 1; padding: 30px; display: flex; flex-direction: column; }
+
+/* Gallery Styles */
+.main-img { width: 100%; height: 300px; object-fit: contain; background: white; border-radius: 10px; }
+.thumb-grid { display: flex; gap: 10px; overflow-x: auto; padding: 5px 0; }
+.thumb-img { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 2px solid transparent; opacity: 0.6; }
+.thumb-img.active { border-color: var(--primary); opacity: 1; }
+
+/* Quantity & Buttons */
+.qty-selector { display: flex; align-items: center; gap: 15px; margin: 20px 0; }
+.qty-btn { width: 35px; height: 35px; background: #eee; border: none; border-radius: 5px; cursor: pointer; font-size: 18px; }
+.qty-input { width: 50px; text-align: center; border: 1px solid #ddd; height: 35px; border-radius: 5px; font-weight: bold; }
+
+.btn-buy-now {
+    background: var(--secondary); color: white; border: none; padding: 15px;
+    border-radius: 30px; font-weight: 700; cursor: pointer; width: 100%;
+    font-size: 16px; margin-top: auto; transition: 0.3s;
+}
+.btn-buy-now:hover { background: #008f5b; box-shadow: 0 5px 15px rgba(0, 168, 107, 0.3); }
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .pm-body { flex-direction: column; }
+    .main-img { height: 250px; }
+}
     </style>
 </head>
 <body>
@@ -175,6 +220,36 @@
             <div class="cat-pill" onclick="filterData('Fashion')">Fashion</div>
             <div class="cat-pill" onclick="filterData('Gadgets')">Gadgets</div>
         </div>
+
+        <div id="productModal" class="product-modal">
+    <div class="pm-content">
+        <span class="pm-close" onclick="closeModal()">&times;</span>
+        <div class="pm-body">
+            <div class="pm-gallery">
+                <img id="pmMainImg" class="main-img" src="">
+                <div class="thumb-grid" id="pmThumbGrid"></div>
+            </div>
+            <div class="pm-details">
+                <small id="pmCategory" style="color:#999; text-transform:uppercase; letter-spacing:1px;"></small>
+                <h2 id="pmTitle" style="margin: 5px 0 10px; color:var(--primary);"></h2>
+                <h3 id="pmPrice" style="color:var(--secondary); font-size:24px;"></h3>
+                
+                <div class="qty-selector">
+                    <span>Quantity:</span>
+                    <button class="qty-btn" onclick="updateQty(-1)">-</button>
+                    <input type="text" id="pmQty" class="qty-input" value="1" readonly>
+                    <button class="qty-btn" onclick="updateQty(1)">+</button>
+                </div>
+
+                <button class="btn-buy-now" onclick="proceedToCheckout()">
+                    Buy Now <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
     </section>
 
     <section class="shop-container">
@@ -232,7 +307,8 @@
         }
 
         // 3. Render HTML
-        // REPLACE your old renderProducts function with this:
+// A. REPLACE THE EXISTING renderProducts FUNCTION WITH THIS:
+
 function renderProducts(products) {
     shopGrid.innerHTML = '';
     
@@ -243,16 +319,13 @@ function renderProducts(products) {
 
     products.forEach(item => {
         const isSold = item.status === 'Sold Out';
-        
-        // --- CHANGE START: Create Link to Checkout Page ---
-        // We pass the product details in the URL
-        const checkoutUrl = `checkout.html?id=${item.id}&name=${encodeURIComponent(item.name)}&price=${encodeURIComponent(item.price)}&img=${encodeURIComponent(item.image)}`;
-        // --- CHANGE END ---
+        // Use the first image from array, fallback to string if array missing
+        const displayImage = (item.images && item.images.length > 0) ? item.images[0] : item.image;
 
         const card = `
-            <div class="card ${isSold ? 'sold-out' : ''}">
+            <div class="card ${isSold ? 'sold-out' : ''}" onclick="openProductModal('${item.id}')">
                 <div class="card-img-box">
-                    <img src="${item.image}" class="card-img" loading="lazy">
+                    <img src="${displayImage}" class="card-img" loading="lazy">
                     ${isSold ? '<div class="status-overlay">SOLD OUT</div>' : ''}
                 </div>
                 <div class="card-body">
@@ -260,16 +333,89 @@ function renderProducts(products) {
                     <h3 class="card-title">${item.name}</h3>
                     <div class="card-price">${item.price}</div>
                     
-                    ${isSold 
-                        ? `<button class="whatsapp-btn" style="background:#ccc; cursor:not-allowed;">Sold Out</button>` 
-                        : `<a href="${checkoutUrl}" class="whatsapp-btn">Buy Now</a>`
-                    }
+                    <button class="whatsapp-btn">
+                         ${isSold ? 'Sold Out' : 'View Details & Buy'}
+                    </button>
                 </div>
             </div>
         `;
         shopGrid.innerHTML += card;
     });
 }
+
+// B. APPEND THESE NEW FUNCTIONS TO THE END OF YOUR SCRIPT:
+
+let currentProduct = {};
+let currentQty = 1;
+
+window.openProductModal = (id) => {
+    // Find the product data
+    currentProduct = allProducts.find(p => p.id === id);
+    if(!currentProduct || currentProduct.status === 'Sold Out') return;
+
+    // Handle Image Array vs Old String
+    let images = currentProduct.images || [currentProduct.image];
+
+    // Populate Data
+    document.getElementById('pmTitle').innerText = currentProduct.name;
+    document.getElementById('pmCategory').innerText = currentProduct.category;
+    document.getElementById('pmPrice').innerText = currentProduct.price;
+    
+    // Set Main Image
+    document.getElementById('pmMainImg').src = images[0];
+    
+    // Build Thumbnails
+    const thumbGrid = document.getElementById('pmThumbGrid');
+    thumbGrid.innerHTML = '';
+    
+    if(images.length > 1) {
+        images.forEach((img, index) => {
+            const thumb = document.createElement('img');
+            thumb.src = img;
+            thumb.className = `thumb-img ${index === 0 ? 'active' : ''}`;
+            thumb.onclick = () => {
+                document.getElementById('pmMainImg').src = img;
+                document.querySelectorAll('.thumb-img').forEach(t => t.classList.remove('active'));
+                thumb.classList.add('active');
+            };
+            thumbGrid.appendChild(thumb);
+        });
+    }
+
+    // Reset Quantity
+    currentQty = 1;
+    document.getElementById('pmQty').value = 1;
+    
+    // Show Modal
+    document.getElementById('productModal').style.display = 'flex';
+};
+
+window.closeModal = () => {
+    document.getElementById('productModal').style.display = 'none';
+};
+
+window.updateQty = (change) => {
+    let newQty = currentQty + change;
+    if(newQty < 1) newQty = 1;
+    currentQty = newQty;
+    document.getElementById('pmQty').value = currentQty;
+};
+
+window.proceedToCheckout = () => {
+    // Save order data to LocalStorage to use it on checkout.html
+    const orderData = {
+        productId: currentProduct.id,
+        name: currentProduct.name,
+        price: currentProduct.price,
+        image: (currentProduct.images ? currentProduct.images[0] : currentProduct.image),
+        quantity: currentQty
+    };
+    
+    localStorage.setItem('pendingOrder', JSON.stringify(orderData));
+    
+    // Redirect to checkout page
+    window.location.href = "checkout.html";
+};
 
         // 4. Filter Functions
         window.filterData = (category) => {

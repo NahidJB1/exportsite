@@ -31,29 +31,28 @@
         }
         .brand { font-size: 22px; font-weight: 700; color: var(--primary); }
         .brand span { color: var(--secondary); }
+        
+        /* NEW: Profile Icon Style */
         .user-info { display: flex; align-items: center; gap: 15px; }
-        .user-email { font-size: 12px; color: #666; display: none; } /* Hidden on mobile */
-
-
+        
         .profile-icon-btn {
-    width: 40px; height: 40px;
-    background: var(--bg-light);
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    color: var(--primary);
-    font-size: 18px;
-    text-decoration: none;
-    border: 1px solid #ddd;
-    transition: all 0.3s ease;
-}
+            width: 40px; height: 40px;
+            background: var(--bg-light);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--primary);
+            font-size: 18px;
+            text-decoration: none;
+            border: 1px solid #ddd;
+            transition: all 0.3s ease;
+        }
 
-.profile-icon-btn:hover {
-    background: var(--primary);
-    color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-}
-
+        .profile-icon-btn:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
 
         /* --- CONTROLS SECTION (Search + Filter) --- */
         .controls-section {
@@ -164,11 +163,14 @@
 </head>
 <body>
 
-<div class="user-info">
-    <a href="profile.html" class="profile-icon-btn" title="My Profile">
-        <i class="fas fa-user"></i>
-    </a>
-</div>
+    <nav class="navbar">
+        <div class="brand">Nusantara<span>Trade</span></div>
+        <div class="user-info">
+            <a href="profile.html" class="profile-icon-btn" title="My Profile">
+                <i class="fas fa-user"></i>
+            </a>
+        </div>
+    </nav>
 
     <section class="controls-section">
         <div class="search-box">
@@ -187,13 +189,12 @@
 
     <section class="shop-container">
         <div id="loader" class="loader"><i class="fas fa-spinner fa-spin"></i> Loading Inventory...</div>
-        <div class="grid" id="shopGrid">
-            </div>
+        <div class="grid" id="shopGrid"></div>
     </section>
 
     <script type="module">
         import { auth, db } from './firebase-config.js';
-        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // DOM Elements
@@ -202,20 +203,17 @@
         const searchInput = document.getElementById('searchInput');
         const pills = document.querySelectorAll('.cat-pill');
         
-        
         let allProducts = []; // Store data locally for fast filtering
 
         // 1. Check Auth
-        
-onAuthStateChanged(auth, (user) => {
-    if (user) {
-        emailDisplay.innerText = user.email; // REMOVE THIS LINE
-        emailDisplay.style.display = 'block'; // REMOVE THIS LINE
-        fetchProducts();
-    } else {
-        window.location.href = "login.html";
-    }
-});
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // We no longer need to update emailDisplay here
+                fetchProducts();
+            } else {
+                window.location.href = "login.html";
+            }
+        });
 
         // 2. Fetch Products
         async function fetchProducts() {
@@ -241,45 +239,42 @@ onAuthStateChanged(auth, (user) => {
         }
 
         // 3. Render HTML
-// 3. Render HTML
         function renderProducts(products) {
-    shopGrid.innerHTML = '';
-    
-    if(products.length === 0) {
-        shopGrid.innerHTML = '<p style="text-align:center; width:100%; grid-column: 1/-1;">No products found.</p>';
-        return;
-    }
+            shopGrid.innerHTML = '';
+            
+            if(products.length === 0) {
+                shopGrid.innerHTML = '<p style="text-align:center; width:100%; grid-column: 1/-1;">No products found.</p>';
+                return;
+            }
 
-    products.forEach(item => {
-        const isSold = item.status === 'Sold Out';
-        const displayImg = (item.images && item.images.length > 0) ? item.images[0] : item.image;
+            products.forEach(item => {
+                const isSold = item.status === 'Sold Out';
+                const displayImg = (item.images && item.images.length > 0) ? item.images[0] : item.image;
 
-        // CHANGED: Point to product-details.html instead of checkout.html
-        // We only need to pass the ID now, because the details page fetches the rest.
-        const detailsUrl = `product-details.html?id=${item.id}`;
+                // Only pass the ID, details page handles the rest
+                const detailsUrl = `product-details.html?id=${item.id}`;
 
-        const card = `
-            <div class="card ${isSold ? 'sold-out' : ''}">
-                <div class="card-img-box">
-                    <img src="${displayImg}" class="card-img" loading="lazy" alt="${item.name}">
-                    ${isSold ? '<div class="status-overlay">SOLD OUT</div>' : ''}
-                </div>
-                <div class="card-body">
-                    <span class="card-cat">${item.category}</span>
-                    <h3 class="card-title">${item.name}</h3>
-                    <div class="card-price">${item.price}</div>
-                    
-                    ${isSold 
-                        ? `<button class="whatsapp-btn" style="background:#ccc; cursor:not-allowed;">Sold Out</button>` 
-                        : `<a href="${detailsUrl}" class="whatsapp-btn">View Details</a>` 
-                        // CHANGED: Updated label to "View Details" to match the behavior
-                    }
-                </div>
-            </div>
-        `;
-        shopGrid.innerHTML += card;
-    });
-}
+                const card = `
+                    <div class="card ${isSold ? 'sold-out' : ''}">
+                        <div class="card-img-box">
+                            <img src="${displayImg}" class="card-img" loading="lazy" alt="${item.name}">
+                            ${isSold ? '<div class="status-overlay">SOLD OUT</div>' : ''}
+                        </div>
+                        <div class="card-body">
+                            <span class="card-cat">${item.category}</span>
+                            <h3 class="card-title">${item.name}</h3>
+                            <div class="card-price">${item.price}</div>
+                            
+                            ${isSold 
+                                ? `<button class="whatsapp-btn" style="background:#ccc; cursor:not-allowed;">Sold Out</button>` 
+                                : `<a href="${detailsUrl}" class="whatsapp-btn">View Details</a>` 
+                            }
+                        </div>
+                    </div>
+                `;
+                shopGrid.innerHTML += card;
+            });
+        }
 
         // 4. Filter Functions
         window.filterData = (category) => {
@@ -303,7 +298,7 @@ onAuthStateChanged(auth, (user) => {
             renderProducts(filtered);
         });
 
-        
+        // REMOVED: window.logout function (It is now handled in profile.html)
     </script>
 </body>
 </html>

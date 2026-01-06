@@ -23,33 +23,31 @@
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         .btn-logout { background: #ff4444; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; }
 
-        /* Add Product Form */
+        /* Sections */
+        .section { display: none; } /* Hide all sections by default */
+        .section.active { display: block; } /* Show active section */
+
+        /* Card & Forms */
         .card { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 30px; }
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
         input, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 5px; font-family: inherit; }
         
-        .upload-box { 
-            border: 2px dashed #003366; padding: 20px; text-align: center; border-radius: 5px; cursor: pointer; background: #f8fbff;
-        }
-        .preview-img { max-height: 100px; margin-top: 10px; display: none; border-radius: 5px; }
-
-        .btn-submit { 
-            background: #003366; color: white; border: none; padding: 12px 30px; 
-            border-radius: 5px; font-weight: 600; cursor: pointer; width: 100%;
-        }
-        .btn-submit:hover { background: #002244; }
-        .btn-submit:disabled { background: #ccc; cursor: not-allowed; }
-
-        /* Product List Table */
+        /* Tables */
         table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         th { text-align: left; color: #666; font-size: 12px; padding: 10px; border-bottom: 2px solid #eee; }
-        td { padding: 15px 10px; border-bottom: 1px solid #eee; font-size: 14px; vertical-align: middle; }
+        td { padding: 15px 10px; border-bottom: 1px solid #eee; font-size: 14px; vertical-align: top; }
+        
         .thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 5px; background: #eee; }
-        .status-badge { padding: 5px 10px; border-radius: 20px; font-size: 10px; font-weight: bold; }
+        .status-badge { padding: 5px 10px; border-radius: 20px; font-size: 10px; font-weight: bold; display: inline-block; }
         .status-active { background: #e6fffa; color: #00A86B; }
         .status-sold { background: #fff5f5; color: #ff4444; }
-        .action-btn { background: none; border: none; cursor: pointer; color: #666; transition: 0.2s; }
-        .action-btn:hover { color: #ff4444; }
+
+        .btn-submit { background: #003366; color: white; border: none; padding: 12px 30px; border-radius: 5px; font-weight: 600; cursor: pointer; width: 100%; }
+        .btn-submit:hover { background: #002244; }
+        
+        /* Order Specifics */
+        .order-select { padding: 5px; font-size: 12px; border-radius: 4px; }
+        .customer-info small { display: block; color: #888; margin-top: 2px; }
 
     </style>
 </head>
@@ -57,189 +55,224 @@
 
     <div class="sidebar">
         <div class="brand">Nusantara<span>Trade</span></div>
-        <div class="menu-item active"><i class="fas fa-box"></i> Products</div>
-        <div class="menu-item"><i class="fas fa-shopping-cart"></i> Orders (Coming Soon)</div>
+        <div class="menu-item active" id="menu-products" onclick="showSection('products')">
+            <i class="fas fa-box"></i> Products
+        </div>
+        <div class="menu-item" id="menu-orders" onclick="showSection('orders')">
+            <i class="fas fa-shopping-cart"></i> Orders
+        </div>
     </div>
 
     <div class="main-content">
         <div class="header">
-            <h2>Product Management</h2>
+            <h2 id="pageTitle">Product Management</h2>
             <button class="btn-logout" onclick="logout()">Log Out</button>
         </div>
 
-        <div class="card">
-            <h3>Add New Product</h3>
-            <form id="addProductForm">
-                <div class="form-grid">
-                    <input type="text" id="pName" placeholder="Product Name (e.g. iPhone 13)" required>
-                    <input type="text" id="pPrice" placeholder="Price (e.g. BDT 45,000)" required>
-                    <select id="pCategory">
-                        <option value="Electronics">Electronics</option>
-                        <option value="Cosmetics">Cosmetics</option>
-                        <option value="Fashion">Fashion</option>
-                        <option value="Gadgets">Gadgets</option>
-                    </select>
-                    <select id="pStatus">
-                        <option value="Available">Available</option>
-                        <option value="Sold Out">Sold Out</option>
-                    </select>
-                </div>
+        <div id="section-products" class="section active">
+            <div class="card">
+                <h3>Add New Product</h3>
+                <form id="addProductForm">
+                    <div class="form-grid">
+                        <input type="text" id="pName" placeholder="Product Name" required>
+                        <input type="text" id="pPrice" placeholder="Price (e.g. BDT 45,000)" required>
+                        <select id="pCategory">
+                            <option value="Electronics">Electronics</option>
+                            <option value="Cosmetics">Cosmetics</option>
+                            <option value="Fashion">Fashion</option>
+                            <option value="Gadgets">Gadgets</option>
+                        </select>
+                        <select id="pStatus">
+                            <option value="Available">Available</option>
+                            <option value="Sold Out">Sold Out</option>
+                        </select>
+                    </div>
+                    <input type="file" id="pFile" accept="image/*" required>
+                    <br><br>
+                    <button type="submit" id="submitBtn" class="btn-submit">Upload & Save Product</button>
+                </form>
+            </div>
 
-                <div class="upload-box" onclick="document.getElementById('pFile').click()">
-                    <i class="fas fa-cloud-upload-alt"></i> Click to Upload Image
-                    <input type="file" id="pFile" style="display: none" accept="image/*" onchange="previewImage(event)">
-                    <br>
-                    <img id="imgPreview" class="preview-img">
-                </div>
-                <br>
-
-                <button type="submit" id="submitBtn" class="btn-submit">Upload & Save Product</button>
-                <p id="statusMsg" style="text-align: center; margin-top: 10px; font-size: 12px; color: #666;"></p>
-            </form>
+            <div class="card">
+                <h3>Inventory List</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>IMAGE</th><th>NAME</th><th>PRICE</th><th>STATUS</th><th>ACTION</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productTableBody"></tbody>
+                </table>
+            </div>
         </div>
 
-        <div class="card">
-            <h3>Inventory List</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>IMAGE</th>
-                        <th>NAME</th>
-                        <th>PRICE</th>
-                        <th>STATUS</th>
-                        <th>ACTION</th>
-                    </tr>
-                </thead>
-                <tbody id="productTableBody">
-                    </tbody>
-            </table>
+        <div id="section-orders" class="section">
+            <div class="card">
+                <h3>Incoming Orders</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>DATE</th>
+                            <th>CUSTOMER</th>
+                            <th>PRODUCT</th>
+                            <th>ADDRESS</th>
+                            <th>STATUS</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orderTableBody"></tbody>
+                </table>
+            </div>
         </div>
+
     </div>
 
     <script type="module">
-        // 1. Import Firebase Services
         import { db, auth } from './firebase-config.js';
-        import { collection, addDoc, getDocs, deleteDoc, doc, orderBy, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { collection, addDoc, getDocs, deleteDoc, updateDoc, doc, orderBy, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // --- CONFIGURATION ---
         const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dounsisel/image/upload";
         const CLOUDINARY_PRESET = "nusantara_upload";
 
-        const productForm = document.getElementById('addProductForm');
-        const tableBody = document.getElementById('productTableBody');
-        const statusMsg = document.getElementById('statusMsg');
-
-        // 2. Check Authentication (Protect the page)
+        // --- AUTH CHECK ---
         onAuthStateChanged(auth, (user) => {
-            if (!user) {
-                // If not logged in, kick them back to login page
-                window.location.href = "login.html"; 
-            } else {
-                console.log("Admin Logged In:", user.email);
-                loadProducts(); // Load data only if logged in
+            if (!user) window.location.href = "login.html"; 
+            else {
+                loadProducts();
+                loadOrders();
             }
         });
 
-        // 3. Handle Form Submit (Upload -> Save)
-        productForm.addEventListener('submit', async (e) => {
+        // --- NAVIGATION LOGIC ---
+        window.showSection = (sectionName) => {
+            // Hide all sections
+            document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
+
+            // Show selected
+            document.getElementById(`section-${sectionName}`).classList.add('active');
+            document.getElementById(`menu-${sectionName}`).classList.add('active');
+            
+            // Update Title
+            const title = sectionName === 'products' ? 'Product Management' : 'Order Management';
+            document.getElementById('pageTitle').innerText = title;
+        };
+
+        // --- 1. PRODUCT FUNCTIONS ---
+        document.getElementById('addProductForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
-            const fileInput = document.getElementById('pFile');
-            const file = fileInput.files[0];
+            const file = document.getElementById('pFile').files[0];
 
-            if (!file) { alert("Please select an image!"); return; }
+            if (!file) return alert("Select image");
+            btn.innerText = "Uploading..."; btn.disabled = true;
 
             try {
-                btn.disabled = true;
-                btn.innerText = "Uploading Image...";
-
-                // A. Upload Image to Cloudinary
+                // Upload Image
                 const formData = new FormData();
                 formData.append('file', file);
                 formData.append('upload_preset', CLOUDINARY_PRESET);
+                const res = await fetch(CLOUDINARY_URL, { method: 'POST', body: formData });
+                const data = await res.json();
 
-                const response = await fetch(CLOUDINARY_URL, {
-                    method: 'POST',
-                    body: formData
-                });
-                const data = await response.json();
-                const imageURL = data.secure_url;
-
-                btn.innerText = "Saving to Database...";
-
-                // B. Save Text Data to Firebase
+                // Save to Firestore
                 await addDoc(collection(db, "products"), {
                     name: document.getElementById('pName').value,
                     price: document.getElementById('pPrice').value,
                     category: document.getElementById('pCategory').value,
                     status: document.getElementById('pStatus').value,
-                    image: imageURL,
+                    image: data.secure_url,
                     createdAt: serverTimestamp()
                 });
 
-                // C. Cleanup
-                statusMsg.innerText = "Success! Product Added.";
-                productForm.reset();
-                document.getElementById('imgPreview').style.display = 'none';
-                loadProducts(); // Refresh list
-
-            } catch (error) {
-                console.error(error);
-                alert("Error: " + error.message);
-            } finally {
-                btn.disabled = false;
-                btn.innerText = "Upload & Save Product";
-            }
+                alert("Product Added!");
+                document.getElementById('addProductForm').reset();
+                loadProducts();
+            } catch (err) { alert(err.message); }
+            btn.innerText = "Upload & Save"; btn.disabled = false;
         });
 
-        // 4. Load Products from Firebase
         async function loadProducts() {
-            tableBody.innerHTML = "<tr><td colspan='5'>Loading...</td></tr>";
-            
-            // Get products sorted by newest first
+            const tbody = document.getElementById('productTableBody');
+            tbody.innerHTML = "<tr><td colspan='5'>Loading...</td></tr>";
             const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
             const snapshot = await getDocs(q);
-            
-            tableBody.innerHTML = ""; // Clear loader
+            tbody.innerHTML = "";
 
-            snapshot.forEach((doc) => {
+            snapshot.forEach(doc => {
                 const item = doc.data();
-                const row = `
+                tbody.innerHTML += `
                     <tr>
                         <td><img src="${item.image}" class="thumb"></td>
-                        <td>${item.name}<br><small style="color:#999">${item.category}</small></td>
+                        <td>${item.name}</td>
                         <td>${item.price}</td>
-                        <td><span class="status-badge ${item.status === 'Available' ? 'status-active' : 'status-sold'}">${item.status}</span></td>
-                        <td><button class="action-btn" onclick="deleteProduct('${doc.id}')"><i class="fas fa-trash"></i></button></td>
-                    </tr>
-                `;
-                tableBody.innerHTML += row;
+                        <td>${item.status}</td>
+                        <td><button onclick="deleteProduct('${doc.id}')" style="color:red;border:none;background:none;cursor:pointer"><i class="fas fa-trash"></i></button></td>
+                    </tr>`;
             });
         }
 
-        // 5. Global Functions (for HTML onclick attributes)
-        window.previewImage = (event) => {
-            const reader = new FileReader();
-            reader.onload = function(){
-                const output = document.getElementById('imgPreview');
-                output.src = reader.result;
-                output.style.display = 'block';
-            };
-            reader.readAsDataURL(event.target.files[0]);
+        // --- 2. ORDER FUNCTIONS ---
+        async function loadOrders() {
+            const tbody = document.getElementById('orderTableBody');
+            tbody.innerHTML = "<tr><td colspan='5'>Loading...</td></tr>";
+            
+            // Fetch Orders
+            const q = query(collection(db, "orders"), orderBy("createdAt", "desc"));
+            const snapshot = await getDocs(q);
+            tbody.innerHTML = "";
+
+            snapshot.forEach(doc => {
+                const order = doc.data();
+                const date = order.createdAt ? order.createdAt.toDate().toLocaleDateString() : 'N/A';
+                
+                // Color code status
+                let statusColor = '#333';
+                if(order.status === 'Pending') statusColor = '#FF9900';
+                if(order.status === 'Shipped') statusColor = '#003366';
+                if(order.status === 'Delivered') statusColor = '#00A86B';
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${date}</td>
+                        <td class="customer-info">
+                            <b>${order.customer.name}</b>
+                            <small>${order.customer.phone}</small>
+                        </td>
+                        <td>
+                            ${order.product.name}
+                            <br><small>${order.product.price}</small>
+                        </td>
+                        <td><small>${order.customer.address}</small></td>
+                        <td>
+                            <select class="order-select" 
+                                style="border-color:${statusColor}; color:${statusColor}; font-weight:bold;"
+                                onchange="updateOrderStatus('${doc.id}', this.value)">
+                                <option value="Pending" ${order.status==='Pending'?'selected':''}>Pending</option>
+                                <option value="Shipped" ${order.status==='Shipped'?'selected':''}>Shipped</option>
+                                <option value="Delivered" ${order.status==='Delivered'?'selected':''}>Delivered</option>
+                                <option value="Cancelled" ${order.status==='Cancelled'?'selected':''}>Cancelled</option>
+                            </select>
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        window.updateOrderStatus = async (id, newStatus) => {
+            if(confirm(`Change status to ${newStatus}?`)) {
+                await updateDoc(doc(db, "orders", id), { status: newStatus });
+                loadOrders(); // Refresh table to see color change
+            }
         };
 
-        window.logout = () => {
-            signOut(auth).then(() => window.location.href = "login.html");
-        };
-
-        // Attach delete function to window so the HTML button can see it
         window.deleteProduct = async (id) => {
-            if(confirm("Are you sure you want to delete this item?")) {
+            if(confirm("Delete this product?")) {
                 await deleteDoc(doc(db, "products", id));
                 loadProducts();
             }
         };
+
+        window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
     </script>
 </body>
 </html>

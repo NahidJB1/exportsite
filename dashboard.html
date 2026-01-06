@@ -205,7 +205,8 @@
                             <option value="Sold Out">Sold Out</option>
                         </select>
                     </div>
-                    <input type="file" id="pFile" accept="image/*" required>
+                    <label style="font-size:12px; font-weight:600; color:#64748b; margin-top:10px; display:block;">Product Images (Max 6)</label>
+                    <input type="file" id="pFile" accept="image/*" multiple required>
                     <br><br>
                     <button type="submit" id="submitBtn" class="btn-submit">
                         <i class="fas fa-cloud-upload-alt"></i> Upload & Save Product
@@ -367,27 +368,35 @@
         document.getElementById('addProductForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
-            const file = document.getElementById('pFile').files[0];
+            const fileInput = document.getElementById('pFile');
+            const files = fileInput.files;
 
-            if (!file) return showToast("Please select an image", "error");
+            if (files.length === 0) return showToast("Please select at least one image", "error");
+            if (files.length > 6) return showToast("Maximum 6 images allowed", "error");
             
             const originalBtnText = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...'; 
             btn.disabled = true;
 
             try {
-                const formData = new FormData();
-                formData.append('file', file);
-                formData.append('upload_preset', CLOUDINARY_PRESET);
-                const res = await fetch(CLOUDINARY_URL, { method: 'POST', body: formData });
-                const data = await res.json();
+                // Upload images in parallel
+                const uploadPromises = Array.from(files).map(async (file) => {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    formData.append('upload_preset', CLOUDINARY_PRESET);
+                    const res = await fetch(CLOUDINARY_URL, { method: 'POST', body: formData });
+                    const data = await res.json();
+                    return data.secure_url;
+                });
+
+                const imageUrls = await Promise.all(uploadPromises);
 
                 await addDoc(collection(db, "products"), {
                     name: document.getElementById('pName').value,
                     price: document.getElementById('pPrice').value,
                     category: document.getElementById('pCategory').value,
                     status: document.getElementById('pStatus').value,
-                    image: data.secure_url,
+                    images: imageUrls, // SAVING ARRAY NOW
                     createdAt: serverTimestamp()
                 });
 
@@ -395,7 +404,8 @@
                 document.getElementById('addProductForm').reset();
                 loadProducts();
             } catch (err) { 
-                showToast(err.message, "error"); 
+                console.error(err);
+                showToast("Error uploading images", "error"); 
             }
             btn.innerHTML = originalBtnText; btn.disabled = false;
         });
@@ -421,7 +431,9 @@
                     
                     tbody.innerHTML += `
                         <tr>
-                            <td data-label="Image"><img src="${item.image}" class="thumb"></td>
+                           // Helper to get first image safely
+                            const displayImg = item.images ? item.images[0] : item.image;
+                            <td data-label="Image"><img src="${displayImg}" class="thumb"></td>
                             <td data-label="Name"><b>${item.name}</b><br><small style="color:#64748b">${item.category}</small></td>
                             <td data-label="Price" style="color:var(--accent); font-weight:600">${item.price}</td>
                             <td data-label="Status"><span style="padding:4px 8px; border-radius:4px; background:${item.status === 'Available' ? '#dcfce7' : '#fee2e2'}; color:${item.status === 'Available' ? '#166534' : '#991b1b'}; font-size:12px; font-weight:bold">${item.status}</span></td>

@@ -232,44 +232,46 @@
         }
 
         // 3. Render HTML
-        // REPLACE your old renderProducts function with this:
-function renderProducts(products) {
-    shopGrid.innerHTML = '';
-    
-    if(products.length === 0) {
-        shopGrid.innerHTML = '<p style="text-align:center; width:100%; grid-column: 1/-1;">No products found.</p>';
-        return;
-    }
+// 3. Render HTML
+        function renderProducts(products) {
+            shopGrid.innerHTML = '';
+            
+            if(products.length === 0) {
+                shopGrid.innerHTML = '<p style="text-align:center; width:100%; grid-column: 1/-1;">No products found.</p>';
+                return;
+            }
 
-    products.forEach(item => {
-        const isSold = item.status === 'Sold Out';
-        
-        // --- CHANGE START: Create Link to Checkout Page ---
-        // We pass the product details in the URL
-        const detailsUrl = `product-details.html?id=${item.id}`;
-        // --- CHANGE END ---
+            products.forEach(item => {
+                const isSold = item.status === 'Sold Out';
+                
+                // FIX: Check if 'images' array exists, otherwise use old 'image' string
+                // This handles both new uploads (with 6 pics) and old products
+                const displayImg = (item.images && item.images.length > 0) ? item.images[0] : item.image;
 
-        const card = `
-            <div class="card ${isSold ? 'sold-out' : ''}">
-                <div class="card-img-box">
-                    <img src="${item.image}" class="card-img" loading="lazy">
-                    ${isSold ? '<div class="status-overlay">SOLD OUT</div>' : ''}
-                </div>
-                <div class="card-body">
-                    <span class="card-cat">${item.category}</span>
-                    <h3 class="card-title">${item.name}</h3>
-                    <div class="card-price">${item.price}</div>
-                    
-                    ${isSold 
-                        ? `<button class="whatsapp-btn" style="background:#ccc; cursor:not-allowed;">Sold Out</button>` 
-                        : `<a href="${detailsUrl}" class="whatsapp-btn">View Details</a>`
-                    }
-                </div>
-            </div>
-        `;
-        shopGrid.innerHTML += card;
-    });
-}
+                // Pass the correct display image to the checkout URL
+                const checkoutUrl = `checkout.html?id=${item.id}&name=${encodeURIComponent(item.name)}&price=${encodeURIComponent(item.price)}&img=${encodeURIComponent(displayImg)}`;
+
+                const card = `
+                    <div class="card ${isSold ? 'sold-out' : ''}">
+                        <div class="card-img-box">
+                            <img src="${displayImg}" class="card-img" loading="lazy" alt="${item.name}">
+                            ${isSold ? '<div class="status-overlay">SOLD OUT</div>' : ''}
+                        </div>
+                        <div class="card-body">
+                            <span class="card-cat">${item.category}</span>
+                            <h3 class="card-title">${item.name}</h3>
+                            <div class="card-price">${item.price}</div>
+                            
+                            ${isSold 
+                                ? `<button class="whatsapp-btn" style="background:#ccc; cursor:not-allowed;">Sold Out</button>` 
+                                : `<a href="${checkoutUrl}" class="whatsapp-btn">Buy Now</a>`
+                            }
+                        </div>
+                    </div>
+                `;
+                shopGrid.innerHTML += card;
+            });
+        }
 
         // 4. Filter Functions
         window.filterData = (category) => {

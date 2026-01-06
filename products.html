@@ -153,6 +153,11 @@
         <div class="brand">Nusantara<span>Trade</span></div>
         <div class="user-info">
             <span class="user-email" id="userEmailDisplay">loading...</span>
+            
+            <a href="track-order.html" style="text-decoration:none; color: #003366; font-size:14px; margin-right:10px; font-weight:600;">
+                <i class="fas fa-box-open"></i> Track Order
+            </a>
+
             <button class="btn-logout" onclick="logout()">Log Out</button>
         </div>
     </nav>
@@ -227,40 +232,44 @@
         }
 
         // 3. Render HTML
-        function renderProducts(products) {
-            shopGrid.innerHTML = '';
-            
-            if(products.length === 0) {
-                shopGrid.innerHTML = '<p style="text-align:center; width:100%; grid-column: 1/-1;">No products found.</p>';
-                return;
-            }
+        // REPLACE your old renderProducts function with this:
+function renderProducts(products) {
+    shopGrid.innerHTML = '';
+    
+    if(products.length === 0) {
+        shopGrid.innerHTML = '<p style="text-align:center; width:100%; grid-column: 1/-1;">No products found.</p>';
+        return;
+    }
 
-            products.forEach(item => {
-                const isSold = item.status === 'Sold Out';
-                // WhatsApp Link Logic
-                const msg = `Hi Nusantara Trade, I want to order: ${item.name} (${item.price})`;
-                const waLink = `https://wa.me/601139660706?text=${encodeURIComponent(msg)}`;
+    products.forEach(item => {
+        const isSold = item.status === 'Sold Out';
+        
+        // --- CHANGE START: Create Link to Checkout Page ---
+        // We pass the product details in the URL
+        const checkoutUrl = `checkout.html?id=${item.id}&name=${encodeURIComponent(item.name)}&price=${encodeURIComponent(item.price)}&img=${encodeURIComponent(item.image)}`;
+        // --- CHANGE END ---
 
-                const card = `
-                    <div class="card ${isSold ? 'sold-out' : ''}">
-                        <div class="card-img-box">
-                            <img src="${item.image}" class="card-img" loading="lazy">
-                            ${isSold ? '<div class="status-overlay">SOLD OUT</div>' : ''}
-                        </div>
-                        <div class="card-body">
-                            <span class="card-cat">${item.category}</span>
-                            <h3 class="card-title">${item.name}</h3>
-                            <div class="card-price">${item.price}</div>
-                            
-                            <a href="${waLink}" target="_blank" class="whatsapp-btn">
-                                <i class="fab fa-whatsapp"></i> ${isSold ? 'Sold Out' : 'Order on WhatsApp'}
-                            </a>
-                        </div>
-                    </div>
-                `;
-                shopGrid.innerHTML += card;
-            });
-        }
+        const card = `
+            <div class="card ${isSold ? 'sold-out' : ''}">
+                <div class="card-img-box">
+                    <img src="${item.image}" class="card-img" loading="lazy">
+                    ${isSold ? '<div class="status-overlay">SOLD OUT</div>' : ''}
+                </div>
+                <div class="card-body">
+                    <span class="card-cat">${item.category}</span>
+                    <h3 class="card-title">${item.name}</h3>
+                    <div class="card-price">${item.price}</div>
+                    
+                    ${isSold 
+                        ? `<button class="whatsapp-btn" style="background:#ccc; cursor:not-allowed;">Sold Out</button>` 
+                        : `<a href="${checkoutUrl}" class="whatsapp-btn">Buy Now</a>`
+                    }
+                </div>
+            </div>
+        `;
+        shopGrid.innerHTML += card;
+    });
+}
 
         // 4. Filter Functions
         window.filterData = (category) => {

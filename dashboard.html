@@ -431,13 +431,15 @@
 
                 snapshot.forEach(doc => {
                     const item = doc.data();
-                    // Escaping quotes for the onclick function to prevent errors
+                    // Escaping quotes for the onclick function
                     const safeName = item.name.replace(/'/g, "\\'"); 
                     
+                    // --- FIX: Logic must happen HERE, outside the HTML string ---
+                    const displayImg = (item.images && item.images.length > 0) ? item.images[0] : item.image;
+                    // ------------------------------------------------------------
+
                     tbody.innerHTML += `
                         <tr>
-                           // Helper to get first image safely
-                            const displayImg = item.images ? item.images[0] : item.image;
                             <td data-label="Image"><img src="${displayImg}" class="thumb"></td>
                             <td data-label="Name"><b>${item.name}</b><br><small style="color:#64748b">${item.category}</small></td>
                             <td data-label="Price" style="color:var(--accent); font-weight:600">${item.price}</td>
@@ -457,6 +459,7 @@
             } catch (err) { console.error(err); }
         }
 
+        
         // --- 2. ORDER FUNCTIONS ---
         async function loadOrders() {
             const tbody = document.getElementById('orderTableBody');

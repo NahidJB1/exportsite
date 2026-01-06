@@ -246,7 +246,7 @@ function renderProducts(products) {
         
         // --- CHANGE START: Create Link to Checkout Page ---
         // We pass the product details in the URL
-        const checkoutUrl = `checkout.html?id=${item.id}&name=${encodeURIComponent(item.name)}&price=${encodeURIComponent(item.price)}&img=${encodeURIComponent(item.image)}`;
+        const detailsUrl = `product-details.html?id=${item.id}`;
         // --- CHANGE END ---
 
         const card = `
@@ -262,7 +262,7 @@ function renderProducts(products) {
                     
                     ${isSold 
                         ? `<button class="whatsapp-btn" style="background:#ccc; cursor:not-allowed;">Sold Out</button>` 
-                        : `<a href="${checkoutUrl}" class="whatsapp-btn">Buy Now</a>`
+                        : `<a href="${detailsUrl}" class="whatsapp-btn">View Details</a>`
                     }
                 </div>
             </div>

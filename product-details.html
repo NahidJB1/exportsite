@@ -71,21 +71,28 @@
         }
 
         function renderPage(product) {
-            // Handle Old vs New Image structure
-            // If 'images' array exists use it, otherwise wrap single 'image' in array
-            const images = product.images || [product.image];
-            
-            const thumbsHtml = images.map((img, index) => 
-                `<img src="${img}" class="thumb ${index===0?'active':''}" onclick="changeImage('${img}', this)">`
-            ).join('');
+    const images = product.images || [product.image];
+    
+    // Create the thumbnails HTML
+    const thumbsHtml = images.map((img, index) => 
+        `<img src="${img}" class="thumb ${index===0?'active':''}" onclick="changeImage('${img}', this)">`
+    ).join('');
 
-            const descriptionText = product.description 
-        ? product.description.replace(/\n/g, '<br>') // Convert newlines to HTML breaks
+    const descriptionText = product.description 
+        ? product.description.replace(/\n/g, '<br>') 
         : "No description available for this product.";
+
+    // Main Image
+    const mainImgSrc = images[0];
 
     document.getElementById('productContainer').innerHTML = `
         <div class="gallery-section">
+            <div class="main-img-box">
+                <img src="${mainImgSrc}" class="main-img" id="mainImage">
             </div>
+            <div class="thumb-grid">
+                ${thumbsHtml} </div>
+        </div>
         
         <div class="details-section">
             <span class="cat-badge">${product.category}</span>
@@ -98,7 +105,13 @@
             </div>
 
             <div class="qty-wrapper">
+                <span style="font-weight:600; margin-right:10px;">Quantity:</span>
+                <div class="qty-box">
+                    <button class="qty-btn" onclick="updateQty(-1)">-</button>
+                    <input type="text" id="qtyInput" value="1" readonly>
+                    <button class="qty-btn" onclick="updateQty(1)">+</button>
                 </div>
+            </div>
 
             <button class="btn-buy" onclick="goToCheckout()">
                 Proceed to Checkout <i class="fas fa-arrow-right"></i>

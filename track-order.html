@@ -136,7 +136,7 @@
 
     <script type="module">
         import { db } from './firebase-config.js';
-        import { collection, getDocs, query, where, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         window.findOrder = async () => {
             const phone = document.getElementById('trackPhone').value.trim();
@@ -156,11 +156,10 @@
             loader.style.display = 'block';
 
             try {
-                // Query: Find orders where customer.phone matches input
+                // FIXED: Removed orderBy to prevent "Missing Index" error
                 const q = query(
                     collection(db, "orders"), 
-                    where("customer.phone", "==", phone),
-                    orderBy("createdAt", "desc") // Requires Index (see note below)
+                    where("customer.phone", "==", phone)
                 );
 
                 const snapshot = await getDocs(q);
@@ -171,7 +170,14 @@
                     return;
                 }
 
-                snapshot.forEach(doc => {
+                // FIXED: Sort results here in JavaScript instead of Firestore
+                const sortedDocs = snapshot.docs.sort((a, b) => {
+                    const dateA = a.data().createdAt ? a.data().createdAt.seconds : 0;
+                    const dateB = b.data().createdAt ? b.data().createdAt.seconds : 0;
+                    return dateB - dateA; // Newest first
+                });
+
+                sortedDocs.forEach(doc => {
                     const data = doc.data();
                     const status = data.status || 'Pending';
                     const date = data.createdAt ? data.createdAt.toDate().toLocaleDateString() : 'Just now';
@@ -200,13 +206,7 @@
             } catch (error) {
                 console.error(error);
                 loader.style.display = 'none';
-                // If index error, it usually defaults to a standard error. 
-                // Fallback for missing index: remove orderBy and sort in JS
-                if(error.message.includes("index")) {
-                     alert("System Note: An index is building. Please try again in a few minutes.");
-                } else {
-                    showMsg("Error fetching data. Check internet connection.", "error");
-                }
+                showMsg("Error: " + error.message, "error");
             }
         };
 

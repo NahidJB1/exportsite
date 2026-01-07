@@ -447,22 +447,26 @@
                     // ------------------------------------------------------------
 
                     tbody.innerHTML += `
-                        <tr>
-                            <td data-label="Image"><img src="${displayImg}" class="thumb"></td>
-                            <td data-label="Name"><b>${item.name}</b><br><small style="color:#64748b">${item.category}</small></td>
-                            <td data-label="Price" style="color:var(--accent); font-weight:600">${item.price}</td>
-                            <td data-label="Status"><span style="padding:4px 8px; border-radius:4px; background:${item.status === 'Available' ? '#dcfce7' : '#fee2e2'}; color:${item.status === 'Available' ? '#166534' : '#991b1b'}; font-size:12px; font-weight:bold">${item.status}</span></td>
-                            <td data-label="Action" style="display:flex; gap:8px; justify-content:flex-end;">
-                                <button onclick="openEditModal('${doc.id}', '${safeName}', '${item.price}', '${item.category}', '${item.status}')" 
-                                    style="color:var(--accent); border:1px solid #e0f2fe; background:white; width:35px; height:35px; border-radius:50%; cursor:pointer; transition:0.2s">
-                                    <i class="fas fa-pen"></i>
-                                </button>
-                                <button onclick="triggerDelete('${doc.id}')" 
-                                    style="color:var(--danger); border:1px solid #fee2e2; background:white; width:35px; height:35px; border-radius:50%; cursor:pointer; transition:0.2s">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </td>
-                        </tr>`;
+    <tr>
+        <td data-label="Image"><img src="${displayImg}" class="thumb"></td>
+        <td data-label="Name"><b>${item.name}</b><br><small style="color:#64748b">${item.category}</small></td>
+        <td data-label="Price" style="color:var(--accent); font-weight:600">${item.price}</td>
+        <td data-label="Status">
+            <span style="padding:4px 8px; border-radius:4px; background:${item.status === 'Available' ? '#dcfce7' : '#fee2e2'}; color:${item.status === 'Available' ? '#166534' : '#991b1b'}; font-size:12px; font-weight:bold">
+                ${item.status}
+            </span>
+        </td>
+        <td data-label="Action" style="display:flex; gap:8px; justify-content:flex-end;">
+            <button onclick="openEditModal('${doc.id}', '${safeName}', '${item.price}', '${item.category}', '${item.status}', '${safeDesc}')" 
+                style="color:var(--accent); border:1px solid #e0f2fe; background:white; width:35px; height:35px; border-radius:50%; cursor:pointer; transition:0.2s">
+                <i class="fas fa-pen"></i>
+            </button>
+            <button onclick="triggerDelete('${doc.id}')" 
+                style="color:var(--danger); border:1px solid #fee2e2; background:white; width:35px; height:35px; border-radius:50%; cursor:pointer; transition:0.2s">
+                <i class="fas fa-trash"></i>
+            </button>
+        </td>
+    </tr>`;
                 });
             } catch (err) { console.error(err); }
         }

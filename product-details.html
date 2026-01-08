@@ -10,26 +10,30 @@
         body { font-family: 'Poppins', sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
         .container { max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 15px; display: flex; flex-wrap: wrap; gap: 40px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
         
-        /* Gallery Styles */
         .gallery-section { flex: 1; min-width: 300px; }
         .main-img-box { width: 100%; height: 350px; background: #eee; border-radius: 10px; overflow: hidden; margin-bottom: 15px; }
-        .main-img { width: 100%; height: 100%; object-fit: contain; transition: 0.3s; }
+        .main-img { width: 100%; height: 100%; object-fit: contain; }
         .thumb-grid { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; }
         .thumb { width: 70px; height: 70px; border-radius: 8px; cursor: pointer; border: 2px solid transparent; object-fit: cover; background: #f9f9f9; }
         .thumb.active { border-color: #003366; }
 
-        /* Details Styles */
         .details-section { flex: 1; min-width: 300px; }
         .cat-badge { background: #e0f2fe; color: #003366; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
         h1 { margin: 15px 0; color: #003366; font-size: 28px; }
         .price { font-size: 24px; color: #00A86B; font-weight: 700; margin-bottom: 25px; }
         
-        /* Quantity Selector */
-        .qty-wrapper { display: flex; align-items: center; gap: 15px; margin-bottom: 30px; }
+        .qty-wrapper { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
         .qty-box { display: flex; align-items: center; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; }
         .qty-btn { background: #f8fafc; border: none; padding: 10px 15px; cursor: pointer; font-size: 16px; transition: 0.2s; }
         .qty-btn:hover { background: #e2e8f0; }
         #qtyInput { width: 50px; text-align: center; border: none; font-weight: 600; font-family: inherit; outline: none; }
+
+        /* NEW: Total Price Box Style */
+        .total-box {
+            background: #f0fdf4; border: 1px solid #bbf7d0; padding: 15px; 
+            border-radius: 8px; margin-bottom: 25px; 
+            display: flex; justify-content: space-between; align-items: center;
+        }
 
         .btn-buy { background: #003366; color: white; border: none; width: 100%; padding: 15px; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; }
         .btn-buy:hover { background: #002244; transform: translateY(-2px); }
@@ -58,6 +62,20 @@
         let currentProduct = null;
         let qty = 1;
 
+        // --- 1. Helper: Get Number from "BDT 45,000" ---
+        function parsePrice(priceStr) {
+            if(!priceStr) return 0;
+            // Remove everything except numbers and dots
+            return parseFloat(priceStr.replace(/[^0-9.]/g, '')) || 0;
+        }
+
+        // --- 2. Helper: Get Currency Name like "BDT" or "$" ---
+        function getCurrency(priceStr) {
+            if(!priceStr) return '';
+            // Remove numbers, commas and dots to find text
+            return priceStr.replace(/[0-9.,]/g, '').trim();
+        }
+
         async function loadProduct() {
             const docRef = doc(db, "products", productId);
             const docSnap = await getDoc(docRef);
@@ -71,76 +89,83 @@
         }
 
         function renderPage(product) {
-    const images = product.images || [product.image];
-    
-    // Create the thumbnails HTML
-    const thumbsHtml = images.map((img, index) => 
-        `<img src="${img}" class="thumb ${index===0?'active':''}" onclick="changeImage('${img}', this)">`
-    ).join('');
+            const images = product.images || [product.image];
+            const thumbsHtml = images.map((img, index) => 
+                `<img src="${img}" class="thumb ${index===0?'active':''}" onclick="changeImage('${img}', this)">`
+            ).join('');
 
-    const descriptionText = product.description 
-        ? product.description.replace(/\n/g, '<br>') 
-        : "No description available for this product.";
+            const descriptionText = product.description 
+                ? product.description.replace(/\n/g, '<br>') 
+                : "No description available for this product.";
 
-    // Main Image
-    const mainImgSrc = images[0];
+            const mainImgSrc = images[0];
 
-    document.getElementById('productContainer').innerHTML = `
-        <div class="gallery-section">
-            <div class="main-img-box">
-                <img src="${mainImgSrc}" class="main-img" id="mainImage">
-            </div>
-            <div class="thumb-grid">
-                ${thumbsHtml} </div>
-        </div>
-        
-        <div class="details-section">
-            <span class="cat-badge">${product.category}</span>
-            <h1>${product.name}</h1>
-            <div class="price">${product.price}</div>
-            
-            <div style="margin-bottom: 25px; color: #555; line-height: 1.6; border-top: 1px solid #eee; padding-top: 20px;">
-                <h3 style="margin:0 0 10px; color:#333; font-size:16px;">Description</h3>
-                <p style="margin:0; font-size:14px;">${descriptionText}</p>
-            </div>
-
-            <div class="qty-wrapper">
-                <span style="font-weight:600; margin-right:10px;">Quantity:</span>
-                <div class="qty-box">
-                    <button class="qty-btn" onclick="updateQty(-1)">-</button>
-                    <input type="text" id="qtyInput" value="1" readonly>
-                    <button class="qty-btn" onclick="updateQty(1)">+</button>
+            document.getElementById('productContainer').innerHTML = `
+                <div class="gallery-section">
+                    <div class="main-img-box">
+                        <img src="${mainImgSrc}" class="main-img" id="mainImage">
+                    </div>
+                    <div class="thumb-grid">
+                        ${thumbsHtml} </div>
                 </div>
-            </div>
+                
+                <div class="details-section">
+                    <span class="cat-badge">${product.category}</span>
+                    <h1>${product.name}</h1>
+                    <div class="price">Unit Price: ${product.price}</div>
+                    
+                    <div style="margin-bottom: 25px; color: #555; line-height: 1.6; border-top: 1px solid #eee; padding-top: 20px;">
+                        <h3 style="margin:0 0 10px; color:#333; font-size:16px;">Description</h3>
+                        <p style="margin:0; font-size:14px;">${descriptionText}</p>
+                    </div>
 
-            <button class="btn-buy" onclick="goToCheckout()">
-                Proceed to Checkout <i class="fas fa-arrow-right"></i>
-            </button>
-        </div>
-    `;
-}
+                    <div class="qty-wrapper">
+                        <span style="font-weight:600; margin-right:10px;">Quantity:</span>
+                        <div class="qty-box">
+                            <button class="qty-btn" onclick="updateQty(-1)">-</button>
+                            <input type="text" id="qtyInput" value="1" readonly>
+                            <button class="qty-btn" onclick="updateQty(1)">+</button>
+                        </div>
+                    </div>
 
-        // Make functions global for HTML onclick access
+                    <div class="total-box">
+                        <span style="color:#065f46; font-weight:600;">Total Amount:</span>
+                        <span id="totalPrice" style="font-size:22px; font-weight:700; color:#059669;">${product.price}</span>
+                    </div>
+
+                    <button class="btn-buy" onclick="goToCheckout()">
+                        Proceed to Checkout <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            `;
+        }
+
         window.changeImage = (src, el) => {
             document.getElementById('mainImage').src = src;
             document.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
             el.classList.add('active');
         };
 
+        // --- 3. Updated Logic: Calculate Total ---
         window.updateQty = (change) => {
             const input = document.getElementById('qtyInput');
             let val = parseInt(input.value);
             val += change;
             if(val < 1) val = 1;
-            if(val > 10) val = 10; // Max limit
+            if(val > 10) val = 10; 
             input.value = val;
             qty = val;
+
+            // Math Magic
+            const unitPrice = parsePrice(currentProduct.price);
+            const totalPrice = unitPrice * qty;
+            const currency = getCurrency(currentProduct.price);
+
+            // Update the display with commas (e.g., 45,000)
+            document.getElementById('totalPrice').innerText = currency + " " + totalPrice.toLocaleString();
         };
 
         window.goToCheckout = () => {
-            // Pass ID and Quantity to checkout page
-            // We re-encode product data to avoid extra DB calls on checkout if possible, 
-            // but passing ID + Qty is safer. Let's pass basic data.
             const params = new URLSearchParams({
                 id: productId,
                 name: currentProduct.name,

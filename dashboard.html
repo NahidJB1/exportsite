@@ -364,10 +364,11 @@
                 }
                 closeModal();
             } catch (error) {
-                console.error("Action failed:", error);
-                alert("Error: " + error.message); // Show error to user
-                closeModal();
-            }
+    console.error("Action failed:", error);
+    // Use your custom Toast instead of alert
+    showToast("Error: " + error.message, "error"); 
+    closeModal();
+}
 
             btn.innerText = originalText;
             btn.disabled = false;

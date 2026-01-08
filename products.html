@@ -148,6 +148,59 @@
             font-size: 18px; color: #666; display: none;
         }
 
+        /* --- 1. SKELETON LOADING ANIMATION --- */
+        .skeleton {
+            background: #eee;
+            background: linear-gradient(110deg, #ececec 8%, #f5f5f5 18%, #ececec 33%);
+            border-radius: 5px;
+            background-size: 200% 100%;
+            animation: 1.5s shimmer linear infinite;
+        }
+        @keyframes shimmer {
+            to { background-position-x: -200%; }
+        }
+        .card.skeleton-card { pointer-events: none; }
+        .skeleton-img { width: 100%; height: 200px; }
+        .skeleton-text { height: 20px; margin-bottom: 10px; width: 80%; }
+        .skeleton-text.short { width: 40%; }
+        .skeleton-btn { height: 40px; width: 100%; border-radius: 8px; margin-top: auto; }
+
+        /* --- 2. WISHLIST HEART BUTTON --- */
+        .wishlist-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px; /* Left side to not conflict with 'Sold Out' badge on right */
+            width: 35px; height: 35px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            border: none;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.2s, color 0.2s;
+            color: #ccc; /* Default gray */
+            font-size: 16px;
+        }
+        
+        .wishlist-btn:hover { transform: scale(1.1); }
+        
+        /* Active State (Liked) */
+        .wishlist-btn.active {
+            color: #ff4444; /* Red Heart */
+            background: #fff;
+        }
+        
+        /* Animation when clicking */
+        .wishlist-btn.active i {
+            animation: heartPop 0.3s ease-out;
+        }
+        @keyframes heartPop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.4); }
+            100% { transform: scale(1); }
+        }
+
         /* Mobile Responsive */
         @media (max-width: 768px) {
             .navbar { padding: 15px; }
@@ -231,8 +284,9 @@ onAuthStateChanged(auth, async (user) => {
 
         // 2. Fetch Products
         async function fetchProducts() {
-            loader.style.display = 'block';
-            shopGrid.innerHTML = '';
+            // NEW: Show skeletons instead of text spinner
+            renderSkeletons(); 
+            // loader.style.display = 'block'; // (We don't need the old loader text anymore)
             
             try {
                 const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
@@ -247,9 +301,8 @@ onAuthStateChanged(auth, async (user) => {
             } catch (error) {
                 console.error(error);
                 shopGrid.innerHTML = '<p style="text-align:center; width:100%">Error loading data.</p>';
-            } finally {
-                loader.style.display = 'none';
-            }
+            } 
+            // Note: We don't need 'finally' to hide loader, because renderProducts overwrites the skeletons.
         }
 
         // 3. Render HTML
@@ -261,17 +314,26 @@ onAuthStateChanged(auth, async (user) => {
                 return;
             }
 
+            // NEW: Get current favorites to see which hearts should be red
+            const favorites = getFavorites();
+
             products.forEach(item => {
                 const isSold = item.status === 'Sold Out';
                 const displayImg = (item.images && item.images.length > 0) ? item.images[0] : item.image;
-
-                // Only pass the ID, details page handles the rest
                 const detailsUrl = `product-details.html?id=${item.id}`;
+
+                // NEW: Check if this item is in favorites
+                const isLiked = favorites.includes(item.id);
 
                 const card = `
                     <div class="card ${isSold ? 'sold-out' : ''}">
                         <div class="card-img-box">
                             <img src="${displayImg}" class="card-img" loading="lazy" alt="${item.name}">
+                            
+                            <button class="wishlist-btn ${isLiked ? 'active' : ''}" onclick="toggleWishlist('${item.id}', this)">
+                                <i class="fas fa-heart"></i>
+                            </button>
+
                             ${isSold ? '<div class="status-overlay">SOLD OUT</div>' : ''}
                         </div>
                         <div class="card-body">
@@ -313,6 +375,53 @@ onAuthStateChanged(auth, async (user) => {
         });
 
         // REMOVED: window.logout function (It is now handled in profile.html)
+
+        // --- FEATURE: SKELETON LOADER ---
+        function renderSkeletons() {
+            shopGrid.innerHTML = '';
+            // Create 4 dummy cards
+            for(let i=0; i<4; i++) {
+                shopGrid.innerHTML += `
+                    <div class="card skeleton-card">
+                        <div class="skeleton skeleton-img"></div>
+                        <div class="card-body">
+                            <div class="skeleton skeleton-text short"></div>
+                            <div class="skeleton skeleton-text"></div>
+                            <div class="skeleton skeleton-text short"></div>
+                            <div class="skeleton skeleton-btn"></div>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // --- FEATURE: WISHLIST LOGIC (Local Storage) ---
+        // 1. Get Favorites list
+        function getFavorites() {
+            const stored = localStorage.getItem('myFavorites');
+            return stored ? JSON.parse(stored) : [];
+        }
+
+        // 2. Toggle Function (Attached to window so HTML can see it)
+        window.toggleWishlist = (id, btn) => {
+            // Stop the click from opening the product details page (if we wrap card in link later)
+            event.preventDefault(); 
+            
+            let favs = getFavorites();
+            const index = favs.indexOf(id);
+
+            if (index === -1) {
+                // Add to favorites
+                favs.push(id);
+                btn.classList.add('active');
+            } else {
+                // Remove from favorites
+                favs.splice(index, 1);
+                btn.classList.remove('active');
+            }
+
+            localStorage.setItem('myFavorites', JSON.stringify(favs));
+        };
     </script>
 </body>
 </html>

@@ -21,7 +21,10 @@
         }
         .summary-img { width: 60px; height: 60px; object-fit: cover; border-radius: 5px; background: #ddd; }
         .summary-details h4 { margin: 0; color: #003366; font-size: 16px; }
-        .summary-details p { margin: 5px 0 0; color: #00A86B; font-weight: bold; }
+        
+        /* Updated Price Style */
+        .summary-details .total-price { margin: 5px 0 0; color: #00A86B; font-weight: 700; font-size: 18px; }
+        .summary-details .unit-info { font-size: 12px; color: #666; margin-top: 2px; }
 
         label { display: block; margin-bottom: 5px; font-weight: 600; color: #333; font-size: 14px; }
         input, textarea {
@@ -36,7 +39,6 @@
         .btn-confirm:hover { background: #002244; }
         .btn-back { display: block; text-align: center; margin-top: 15px; color: #666; text-decoration: none; font-size: 13px; }
 
-        /* Success Overlay */
         .success-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(255,255,255,0.95); border-radius: 10px;
@@ -60,8 +62,8 @@
             <img id="summImg" class="summary-img">
             <div class="summary-details">
                 <h4 id="summName">Loading...</h4>
-                <p id="summPrice">...</p>
-                <p id="summQty" style="font-size:12px; color:#666; margin-top:2px;">Quantity: 1</p>
+                <div id="summTotal" class="total-price">...</div>
+                <div id="summBreakdown" class="unit-info">Quantity: 1</div>
             </div>
         </div>
 
@@ -89,28 +91,41 @@
         // 1. Get URL Params
         const urlParams = new URLSearchParams(window.location.search);
         const pName = urlParams.get('name');
-        const pPrice = urlParams.get('price');
+        const pPrice = urlParams.get('price'); // Unit Price (e.g. "BDT 20")
         const pImg = urlParams.get('img');
         const pId = urlParams.get('id');
-        const pQty = urlParams.get('qty') || 1;
+        const pQty = parseInt(urlParams.get('qty')) || 1;
+
+        // --- MATH HELPERS ---
+        function parsePrice(str) { return parseFloat(str.replace(/[^0-9.]/g, '')) || 0; }
+        function getCurrency(str) { return str.replace(/[0-9.,]/g, '').trim(); }
 
         let currentUser = null;
+        let finalTotalString = pPrice; // Default if math fails
 
-        // 2. Load Product Summary
+        // 2. Load Product Summary & Calculate Total
         if(pName) {
             document.getElementById('summName').innerText = pName;
-            document.getElementById('summPrice').innerText = pPrice;
             document.getElementById('summImg').src = pImg;
-            document.getElementById('summQty').innerText = `Quantity: ${pQty}`;
+
+            // Calculate Total
+            const unitPriceNum = parsePrice(pPrice);
+            const totalNum = unitPriceNum * pQty;
+            const currency = getCurrency(pPrice);
+            
+            // Format: "BDT 60"
+            finalTotalString = currency + " " + totalNum.toLocaleString();
+
+            document.getElementById('summTotal').innerText = finalTotalString;
+            document.getElementById('summBreakdown').innerText = `${pPrice} x ${pQty} items`;
         } else {
             window.location.href = "products.html";
         }
 
-        // 3. Auth Check & Auto-Fill Data
+        // 3. Auth Check & Auto-Fill
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
-                // Fetch existing profile data to pre-fill form
                 try {
                     const userDoc = await getDoc(doc(db, "users", user.uid));
                     if (userDoc.exists()) {
@@ -119,13 +134,11 @@
                         if(data.phone) document.getElementById('cPhone').value = data.phone;
                         if(data.address) document.getElementById('cAddress').value = data.address;
                     }
-                } catch (err) {
-                    console.log("No saved profile found yet.");
-                }
+                } catch (err) { console.log("No saved profile found."); }
             }
         });
 
-        // 4. Handle Order Submission
+        // 4. Handle Order
         document.getElementById('orderForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
@@ -137,16 +150,23 @@
             btn.innerText = "Processing...";
 
             try {
-                // A. Create Order
+                // Save Order
                 await addDoc(collection(db, "orders"), {
-                    product: { id: pId, name: pName, price: pPrice, image: pImg, quantity: pQty },
+                    product: { 
+                        id: pId, 
+                        name: pName, 
+                        unitPrice: pPrice, 
+                        totalPrice: finalTotalString, // Saving the calculated total
+                        image: pImg, 
+                        quantity: pQty 
+                    },
                     customer: { name: nameVal, phone: phoneVal, address: addressVal },
                     status: "Pending",
                     userId: currentUser ? currentUser.uid : "guest",
                     createdAt: serverTimestamp()
                 });
 
-                // B. Update User Profile (Auto-Save for next time)
+                // Update User Profile
                 if(currentUser) {
                     await setDoc(doc(db, "users", currentUser.uid), {
                         fullName: nameVal,
@@ -156,7 +176,6 @@
                     }, { merge: true });
                 }
 
-                // C. Success & Redirect
                 document.getElementById('successScreen').style.display = 'flex';
                 setTimeout(() => {
                     window.location.href = `track-order.html?phone=${phoneVal}`;

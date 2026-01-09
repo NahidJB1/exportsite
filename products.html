@@ -26,22 +26,27 @@
             background: var(--white);
             padding: 10px 5%;
             display: flex; 
-            justify-content: space-between; 
             align-items: center;
-            gap: 20px; /* Space between logo, search, profile */
+            justify-content: space-between;
+            gap: 15px; 
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             position: sticky; top: 0; z-index: 1000;
-            flex-wrap: wrap; /* Allows wrapping on mobile */
+            flex-wrap: wrap; 
         }
-        .brand { font-size: 22px; font-weight: 700; color: var(--primary); white-space: nowrap; }
+        .brand { font-size: 22px; font-weight: 700; color: var(--primary); white-space: nowrap; margin-right: 10px;}
         .brand span { color: var(--secondary); }
         
-        /* MOVED: Search Bar inside Navbar */
+        /* Middle Section: Search + Cart + Fav */
+        .nav-center-group {
+            display: flex; align-items: center; gap: 10px;
+            flex: 1; /* Takes available space */
+            justify-content: center;
+        }
+
         .nav-search-box {
             position: relative; 
-            flex: 1; /* Takes available middle space */
-            max-width: 600px; 
-            margin: 0 15px;
+            width: 100%;
+            max-width: 500px; 
         }
         .nav-search-box input {
             width: 100%; 
@@ -61,59 +66,48 @@
             transform: translateY(-50%); color: #999; font-size: 14px;
         }
 
-        /* User Controls */
-        .user-info { display: flex; align-items: center; gap: 10px; }
+        /* Action Icons (Cart/Fav) next to search */
+        .nav-action-icons { display: flex; gap: 8px; margin-left: 5px;}
         
-        /* New: Favorites Icon in Nav */
         .nav-icon-btn {
-            width: 35px; height: 35px;
+            width: 40px; height: 40px;
             border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             color: var(--primary);
-            font-size: 16px;
+            font-size: 18px;
             text-decoration: none;
             transition: all 0.2s ease;
             position: relative;
+            background: #f8f9fa;
         }
-        .nav-icon-btn:hover { background: #f0f0f0; color: var(--secondary); }
-        .nav-icon-btn.active-link { color: #ff4444; } /* For favorites page active state */
+        .nav-icon-btn:hover { background: #e9ecef; color: var(--secondary); }
 
-        /* --- CONTROLS SECTION (Just Filters now) --- */
-        .controls-section {
-            padding: 20px 5% 10px;
-            max-width: 1200px; margin: 0 auto;
+        /* Right Section: Name + Profile */
+        .user-info { 
+            display: flex; align-items: center; gap: 12px; 
+            margin-left: auto; /* Pushes to right */
         }
-        
-        /* Category Pills */
-        .category-scroll {
-            display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px;
-            scrollbar-width: none; justify-content: center;
-        }
-        .category-scroll::-webkit-scrollbar { display: none; }
-        
-        .cat-pill {
-            background: white; border: 1px solid #ddd;
-            padding: 6px 16px; border-radius: 20px;
-            font-size: 13px; cursor: pointer; white-space: nowrap; transition: 0.3s;
-            color: #666;
-        }
-        .cat-pill:hover, .cat-pill.active {
-            background: var(--primary); color: white; border-color: var(--primary);
+        #navUserName { 
+            font-size: 14px; font-weight: 600; color: #003366; 
+            white-space: nowrap;
         }
 
-        /* Mobile Responsive Updates */
+        /* Mobile Responsive */
         @media (max-width: 768px) {
-            .navbar { padding: 10px 5%; gap: 10px; }
-            .brand { font-size: 18px; }
+            .navbar { gap: 10px; padding: 10px 3%; }
+            .brand { font-size: 18px; order: 1; }
+            .user-info { order: 2; gap: 8px; }
             
-            /* On mobile, Search drops to second row */
-            .nav-search-box {
-                order: 3; /* Force to bottom */
+            /* Move center group to new row on mobile */
+            .nav-center-group {
+                order: 3; 
                 min-width: 100%;
-                margin: 5px 0 0;
+                margin-top: 5px;
+                justify-content: space-between; /* Spread search and icons */
             }
-            .category-scroll { justify-content: flex-start; }
-            #navUserName { display: none; } /* Hide name on mobile to save space */
+            .nav-search-box { max-width: 80%; } /* Leave space for icons */
+            .nav-action-icons { gap: 5px; }
+            #navUserName { display: none; } /* Hide name on small mobile */
         }
 
         /* --- PRODUCT GRID --- */
@@ -252,30 +246,32 @@
 <body>
 
 <nav class="navbar">
-        <div class="brand">Nusantara<span>Trade</span></div>
-        
+    <div class="brand">Nusantara<span>Trade</span></div>
+    
+    <div class="nav-center-group">
         <div class="nav-search-box">
             <i class="fas fa-search search-icon"></i>
-            <input type="text" id="searchInput" placeholder="Search for products, brands and more...">
+            <input type="text" id="searchInput" placeholder="Search products...">
         </div>
 
-        <div class="user-info">
-            <span id="navUserName" style="font-size:14px; font-weight:600; color: #003366;"></span>
-            
+        <div class="nav-action-icons">
             <a href="cart.html" class="nav-icon-btn" title="My Cart">
                 <i class="fas fa-shopping-cart"></i>
                 <span class="cart-count" id="navCartCount" style="display: none;">0</span>
             </a>
-
             <a href="favorites.html" class="nav-icon-btn" title="My Wishlist">
                 <i class="fas fa-heart"></i>
             </a>
-
-            <a href="profile.html" class="nav-icon-btn" title="My Profile">
-                <i class="fas fa-user"></i>
-            </a>
         </div>
-    </nav>
+    </div>
+
+    <div class="user-info">
+        <span id="navUserName"></span>
+        <a href="profile.html" class="nav-icon-btn" title="My Profile" style="background:transparent; border:1px solid #eee;">
+            <i class="fas fa-user"></i>
+        </a>
+    </div>
+</nav>
 
     <section class="controls-section">
         <div class="category-scroll" id="catFilters">

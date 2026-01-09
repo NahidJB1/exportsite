@@ -83,46 +83,79 @@
         <a href="products.html" class="btn-back">Cancel & Go Back</a>
     </div>
 
+    <div id="orderItemsContainer">
+            </div>
+        
+        <div style="text-align: right; margin-bottom: 25px; border-top: 2px solid #eee; padding-top: 15px;">
+             <span style="font-size: 14px; color: #666;">Total to Pay:</span>
+             <div id="grandTotalDisplay" style="font-size: 24px; font-weight: 700; color: #003366;">...</div>
+        </div>
+
     <script type="module">
         import { db, auth } from './firebase-config.js'; 
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { collection, addDoc, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // 1. Get URL Params
-        const urlParams = new URLSearchParams(window.location.search);
-        const pName = urlParams.get('name');
-        const pPrice = urlParams.get('price'); // Unit Price (e.g. "BDT 20")
-        const pImg = urlParams.get('img');
-        const pId = urlParams.get('id');
-        const pQty = parseInt(urlParams.get('qty')) || 1;
-
-        // --- MATH HELPERS ---
+        // 1. Math Helpers
         function parsePrice(str) { return parseFloat(str.replace(/[^0-9.]/g, '')) || 0; }
         function getCurrency(str) { return str.replace(/[0-9.,]/g, '').trim(); }
 
         let currentUser = null;
-        let finalTotalString = pPrice; // Default if math fails
+        let orderItems = []; // Array to hold all items to be ordered
+        let finalGrandTotal = 0;
+        let currencySym = '';
 
-        // 2. Load Product Summary & Calculate Total
-        if(pName) {
-            document.getElementById('summName').innerText = pName;
-            document.getElementById('summImg').src = pImg;
-
-            // Calculate Total
-            const unitPriceNum = parsePrice(pPrice);
-            const totalNum = unitPriceNum * pQty;
-            const currency = getCurrency(pPrice);
-            
-            // Format: "BDT 60"
-            finalTotalString = currency + " " + totalNum.toLocaleString();
-
-            document.getElementById('summTotal').innerText = finalTotalString;
-            document.getElementById('summBreakdown').innerText = `${pPrice} x ${pQty} items`;
+        // 2. DETERMINE SOURCE (Buy Now vs Cart)
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        if(urlParams.get('id')) {
+            // MODE A: BUY NOW (Single Item)
+            orderItems.push({
+                id: urlParams.get('id'),
+                name: urlParams.get('name'),
+                price: urlParams.get('price'),
+                image: urlParams.get('img'),
+                qty: parseInt(urlParams.get('qty')) || 1
+            });
         } else {
-            window.location.href = "products.html";
+            // MODE B: CART (Multiple Items)
+            const cartData = JSON.parse(localStorage.getItem('myCart')) || [];
+            if(cartData.length > 0) {
+                orderItems = cartData;
+            } else {
+                window.location.href = "products.html"; // Empty cart, go back
+            }
         }
 
-        // 3. Auth Check & Auto-Fill
+        // 3. Render Items & Calculate Total
+        const container = document.getElementById('orderItemsContainer');
+        container.innerHTML = '';
+        
+        orderItems.forEach(item => {
+            const unitVal = parsePrice(item.price);
+            const lineTotal = unitVal * item.qty;
+            finalGrandTotal += lineTotal;
+            if(!currencySym) currencySym = getCurrency(item.price);
+
+            container.innerHTML += `
+                <div class="product-summary" style="background: #e6fffa; padding: 15px; border-radius: 8px; border-left: 5px solid #00A86B; margin-bottom: 10px; display: flex; gap: 15px; align-items: center;">
+                    <img src="${item.image}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px; background: #ddd;">
+                    <div class="summary-details">
+                        <h4 style="margin: 0; color: #003366; font-size: 16px;">${item.name}</h4>
+                        <div style="margin: 5px 0 0; color: #00A86B; font-weight: 700; font-size: 16px;">
+                            ${currencySym} ${lineTotal.toLocaleString()}
+                        </div>
+                        <div style="font-size: 12px; color: #666; margin-top: 2px;">
+                            Qty: ${item.qty}
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        document.getElementById('grandTotalDisplay').innerText = currencySym + ' ' + finalGrandTotal.toLocaleString();
+
+        // 4. Auto-Fill User Data
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
@@ -134,11 +167,11 @@
                         if(data.phone) document.getElementById('cPhone').value = data.phone;
                         if(data.address) document.getElementById('cAddress').value = data.address;
                     }
-                } catch (err) { console.log("No saved profile found."); }
+                } catch (err) { console.log("Guest checkout"); }
             }
         });
 
-        // 4. Handle Order
+        // 5. Submit Order (Updated for Multiple Items)
         document.getElementById('orderForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
@@ -150,30 +183,19 @@
             btn.innerText = "Processing...";
 
             try {
-                // Save Order
                 await addDoc(collection(db, "orders"), {
-                    product: { 
-                        id: pId, 
-                        name: pName, 
-                        unitPrice: pPrice, 
-                        totalPrice: finalTotalString, // Saving the calculated total
-                        image: pImg, 
-                        quantity: pQty 
-                    },
+                    items: orderItems, // Saving the ARRAY of items
+                    totalAmount: finalGrandTotal, // Numeric Total
+                    displayTotal: document.getElementById('grandTotalDisplay').innerText,
                     customer: { name: nameVal, phone: phoneVal, address: addressVal },
                     status: "Pending",
                     userId: currentUser ? currentUser.uid : "guest",
                     createdAt: serverTimestamp()
                 });
 
-                // Update User Profile
-                if(currentUser) {
-                    await setDoc(doc(db, "users", currentUser.uid), {
-                        fullName: nameVal,
-                        phone: phoneVal,
-                        address: addressVal,
-                        updatedAt: serverTimestamp()
-                    }, { merge: true });
+                // Clear Cart if this was a cart checkout
+                if(!urlParams.get('id')) {
+                    localStorage.removeItem('myCart');
                 }
 
                 document.getElementById('successScreen').style.display = 'flex';

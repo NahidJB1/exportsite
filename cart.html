@@ -6,50 +6,66 @@
     <title>My Cart | Nusantara Trade</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        :root { --primary: #003366; --secondary: #00A86B; --bg: #F4F7F6; }
-        body { font-family: 'Poppins', sans-serif; background: var(--bg); margin: 0; }
+<style>
+        :root { --primary: #003366; --secondary: #00A86B; --bg: #F8F9FA; --white: #fff; }
+        body { font-family: 'Poppins', sans-serif; background: var(--bg); margin: 0; padding-bottom: 80px; }
         
         .navbar { background: white; padding: 15px 5%; box-shadow: 0 2px 10px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between; }
         .brand { font-size: 20px; font-weight: 700; color: var(--primary); text-decoration: none; }
-        .brand span { color: var(--secondary); }
 
         .container { max-width: 800px; margin: 30px auto; padding: 0 20px; }
-        h1 { color: var(--primary); margin-bottom: 20px; }
 
+        /* Card Style */
         .cart-item {
-            background: white; border-radius: 10px; padding: 15px;
+            background: white; border-radius: 16px; padding: 15px;
             display: flex; align-items: center; gap: 15px;
-            margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            position: relative;
+            margin-bottom: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.03);
+            border: 1px solid rgba(0,0,0,0.04);
         }
-        .cart-img { width: 80px; height: 80px; border-radius: 8px; object-fit: cover; background: #eee; }
+        .cart-img { width: 80px; height: 80px; border-radius: 10px; object-fit: cover; background: #eee; }
         .item-details { flex: 1; }
         .item-title { font-weight: 600; color: #333; margin-bottom: 5px; display: block; }
-        .item-price { color: var(--secondary); font-weight: 700; font-size: 14px; }
+        .item-price { color: var(--secondary); font-weight: 700; font-size: 15px; }
         
-        .qty-control { display: flex; align-items: center; gap: 10px; margin-top: 5px; }
-        .qty-btn { background: #eee; border: none; width: 25px; height: 25px; border-radius: 5px; cursor: pointer; }
-        .qty-val { font-weight: 600; font-size: 14px; }
+        .qty-control { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
+        .qty-btn { background: #f0f0f0; border: none; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-weight:bold;}
+        .qty-btn:hover { background: #e0e0e0; }
+        .qty-val { font-weight: 600; font-size: 14px; min-width: 20px; text-align: center;}
 
         .remove-btn {
-            color: #ff4444; background: none; border: none;
-            cursor: pointer; font-size: 18px; padding: 5px;
+            color: #999; background: none; border: none;
+            cursor: pointer; font-size: 16px; padding: 8px;
+            transition: 0.2s;
         }
+        .remove-btn:hover { color: #ff4444; }
 
+        /* Summary Bar */
         .summary-box {
-            background: white; padding: 20px; border-radius: 10px;
+            background: white; padding: 20px; 
             box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
-            position: sticky; bottom: 0;
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            display: flex; justify-content: space-between; align-items: center;
+            box-sizing: border-box; z-index: 100;
         }
-        .total-row { display: flex; justify-content: space-between; font-size: 18px; font-weight: 700; color: var(--primary); margin-bottom: 15px; }
-        .checkout-btn {
-            background: var(--primary); color: white; border: none; width: 100%;
-            padding: 15px; border-radius: 10px; font-size: 16px; font-weight: 600;
-            cursor: pointer; display: block; text-align: center; text-decoration: none;
-        }
+        .total-col span { display: block; font-size: 12px; color: #666; }
+        .total-col strong { font-size: 20px; color: var(--primary); }
         
-        .empty-state { text-align: center; padding: 50px 20px; color: #666; }
+        .checkout-btn {
+            background: var(--primary); color: white; border: none;
+            padding: 12px 30px; border-radius: 30px; font-size: 16px; font-weight: 600;
+            cursor: pointer; text-decoration: none;
+            transition: 0.3s;
+        }
+        .checkout-btn:hover { background: #002244; transform: translateY(-2px); }
+        
+        /* Empty State (Matches Favorites) */
+        .empty-state { text-align: center; padding: 80px 20px; grid-column: 1/-1;}
+        .empty-icon { font-size: 4rem; color: #e0e0e0; margin-bottom: 1.5rem; }
+        .btn-shop { 
+            display: inline-block; background: var(--secondary); color: white; 
+            padding: 12px 30px; border-radius: 30px; text-decoration: none; 
+            font-weight: 600; margin-top: 20px; transition: 0.2s;
+        }
     </style>
 </head>
 <body>
@@ -63,11 +79,11 @@
         </div>
 
     <div class="summary-box" id="summaryBox" style="display:none;">
-        <div class="total-row">
-            <span>Total:</span>
-            <span id="cartTotal">0</span>
+        <div class="total-col">
+            <span>Total Amount</span>
+            <strong id="cartTotal">0</strong>
         </div>
-        <a href="#" onclick="processCheckout()" class="checkout-btn">Checkout via WhatsApp</a>
+        <button onclick="goToCheckout()" class="checkout-btn">Checkout <i class="fas fa-arrow-right"></i></button>
     </div>
 
     <script>
@@ -84,9 +100,10 @@
             if(cart.length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
-                        <i class="fas fa-shopping-cart" style="font-size: 40px; color: #ccc; margin-bottom: 15px;"></i>
-                        <p>Your cart is empty.</p>
-                        <a href="products.html" style="color:#00A86B; text-decoration:none; font-weight:600;">Start Shopping</a>
+                        <div class="empty-icon"><i class="fas fa-shopping-cart"></i></div>
+                        <h3>Your cart is empty</h3>
+                        <p style="color:#666; margin-bottom:20px;">Looks like you haven't added anything yet.</p>
+                        <a href="products.html" class="btn-shop">Start Shopping</a>
                     </div>`;
                 summary.style.display = 'none';
                 return;
@@ -160,6 +177,11 @@
 
         // Initialize
         loadCart();
+
+        window.goToCheckout = () => {
+            // No need to pass params, checkout.html will read localStorage
+            window.location.href = "checkout.html";
+        };
     </script>
 </body>
 </html>

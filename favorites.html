@@ -4,67 +4,160 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Wishlist | Nusantara Trade</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        :root { --primary: #003366; --secondary: #00A86B; --bg-light: #F4F7F6; --white: #ffffff; }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Poppins', sans-serif; background-color: var(--bg-light); }
-
-        /* Minimal Nav for Back Navigation */
-        .navbar {
-            background: var(--white); padding: 15px 5%; display: flex; align-items: center;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        :root { 
+            --primary: #003366; 
+            --primary-dark: #002244;
+            --secondary: #00A86B; 
+            --accent: #FF6B6B;
+            --bg-light: #F8F9FA; 
+            --white: #ffffff; 
+            --text-dark: #2c3e50;
+            --text-gray: #6c757d;
+            --shadow: 0 10px 30px rgba(0,0,0,0.08);
         }
-        .back-btn { text-decoration: none; color: var(--primary); font-weight: 600; display: flex; align-items: center; gap: 8px; }
-        .page-title { margin-left: auto; font-size: 18px; font-weight: 700; color: var(--primary); }
-
-        /* Grid Reuse */
-        .shop-container { padding: 30px 5%; max-width: 1200px; margin: 0 auto; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 25px; }
-
-        .card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
-        .card-img-box { width: 100%; height: 200px; overflow: hidden; position: relative; }
-        .card-img { width: 100%; height: 100%; object-fit: cover; }
-        .card-body { padding: 15px; }
-        .card-title { font-size: 16px; font-weight: 600; color: var(--primary); margin-bottom: 5px; }
-        .card-price { font-size: 18px; font-weight: 700; color: var(--secondary); }
         
-        /* Remove Button */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg-light); color: var(--text-dark); }
+
+        /* --- Navbar --- */
+        .navbar {
+            background: var(--white); padding: 1rem 5%; display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+        }
+        .nav-left a { 
+            text-decoration: none; color: var(--primary); font-weight: 600; font-size: 0.95rem; 
+            display: flex; align-items: center; gap: 8px; transition: 0.3s;
+        }
+        .nav-left a:hover { transform: translateX(-5px); }
+        .page-title { font-size: 1.2rem; font-weight: 700; color: var(--primary); }
+
+        /* --- Layout --- */
+        .container { max-width: 1200px; margin: 2rem auto; padding: 0 5%; }
+        
+        .header-section { margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #eee; padding-bottom: 1rem; }
+        .header-section h1 { font-size: 2rem; color: var(--primary); }
+        .item-count { color: var(--text-gray); font-size: 0.9rem; font-weight: 500; }
+
+        /* --- Grid --- */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px; }
+
+        /* --- Modern Card --- */
+        .card { 
+            background: var(--white); border-radius: 16px; overflow: hidden; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.03); transition: all 0.3s ease;
+            position: relative; border: 1px solid rgba(0,0,0,0.04);
+            display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-8px); box-shadow: var(--shadow); }
+
+        .card-img-box { 
+            width: 100%; height: 220px; overflow: hidden; position: relative; background: #f0f0f0;
+        }
+        .card-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }
+        .card:hover .card-img { transform: scale(1.05); }
+
+        /* Badges */
+        .badge {
+            position: absolute; top: 12px; left: 12px;
+            background: rgba(255, 255, 255, 0.95); padding: 4px 10px;
+            border-radius: 20px; font-size: 0.75rem; font-weight: 600;
+            color: var(--secondary); box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* Action Buttons on Image */
         .remove-btn {
             position: absolute; top: 10px; right: 10px;
-            background: rgba(255, 255, 255, 0.9); color: #ff4444;
-            width: 35px; height: 35px; border-radius: 50%;
+            background: var(--white); color: var(--text-gray);
+            width: 36px; height: 36px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            border: none; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border: none; cursor: pointer; transition: 0.2s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1); font-size: 1rem;
         }
-        .remove-btn:hover { background: #ff4444; color: white; }
+        .remove-btn:hover { background: #ff4757; color: white; transform: rotate(90deg); }
 
-        .empty-state {
-            text-align: center; grid-column: 1/-1; padding: 50px 0;
+        .card-body { padding: 1.2rem; flex-grow: 1; display: flex; flex-direction: column; }
+        .card-title { font-size: 1.1rem; font-weight: 600; color: var(--text-dark); margin-bottom: 0.5rem; line-height: 1.4; }
+        .card-price { font-size: 1.2rem; font-weight: 700; color: var(--primary); margin-bottom: 1rem; }
+        
+        /* Buttons */
+        .action-row { margin-top: auto; display: grid; gap: 10px; }
+        
+        .btn-cart {
+            background: var(--primary); color: white; border: none; padding: 12px;
+            border-radius: 8px; font-weight: 600; cursor: pointer; width: 100%;
+            transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;
+            text-decoration: none;
         }
-        .empty-state i { font-size: 50px; color: #ddd; margin-bottom: 20px; }
+        .btn-cart:hover { background: var(--primary-dark); }
+        
+        /* --- States --- */
+        .empty-state { grid-column: 1/-1; text-align: center; padding: 80px 20px; }
+        .empty-icon { font-size: 4rem; color: #e0e0e0; margin-bottom: 1.5rem; }
+        .btn-shop { 
+            display: inline-block; background: var(--secondary); color: white; 
+            padding: 12px 30px; border-radius: 30px; text-decoration: none; 
+            font-weight: 600; margin-top: 20px; transition: 0.2s;
+        }
+        .btn-shop:hover { background: #008f5a; transform: translateY(-2px); }
+
+        .loading-spinner {
+            grid-column: 1/-1; text-align: center; padding: 50px; color: var(--primary);
+        }
+
+        /* --- Toast Notification --- */
+        .toast {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px);
+            background: #333; color: white; padding: 12px 24px; border-radius: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2); opacity: 0; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000; font-size: 0.9rem; display: flex; align-items: center; gap: 10px;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        .toast i { color: var(--secondary); }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .header-section { flex-direction: column; align-items: flex-start; gap: 5px; }
+            .grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
 
     <nav class="navbar">
-        <a href="products.html" class="back-btn"><i class="fas fa-arrow-left"></i> Continue Shopping</a>
+        <div class="nav-left">
+            <a href="products.html"><i class="fas fa-arrow-left"></i> Continue Shopping</a>
+        </div>
         <div class="page-title">My Wishlist</div>
     </nav>
 
-    <section class="shop-container">
-        <div class="grid" id="favGrid">
-            <p style="grid-column: 1/-1; text-align: center;">Loading favorites...</p>
+    <div class="container">
+        <div class="header-section">
+            <h1>Saved Items</h1>
+            <span class="item-count" id="itemCount">0 Items</span>
         </div>
-    </section>
+
+        <section class="grid" id="favGrid">
+            <div class="loading-spinner">
+                <i class="fas fa-circle-notch fa-spin fa-2x"></i>
+                <p style="margin-top:10px;">Loading your favorites...</p>
+            </div>
+        </section>
+    </div>
+
+    <div id="toast" class="toast">
+        <i class="fas fa-check-circle"></i> <span id="toastMsg">Action Successful</span>
+    </div>
 
     <script type="module">
         import { db } from './firebase-config.js';
         import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const favGrid = document.getElementById('favGrid');
+        const itemCount = document.getElementById('itemCount');
 
         // 1. Get IDs from LocalStorage
         function getFavorites() {
@@ -72,19 +165,19 @@
             return stored ? JSON.parse(stored) : [];
         }
 
-        // 2. Fetch details for each ID
+        // 2. Load Data
         async function loadFavorites() {
             const favIds = getFavorites();
+            updateCount(favIds.length);
 
             if (favIds.length === 0) {
                 renderEmpty();
                 return;
             }
 
-            favGrid.innerHTML = ''; // Clear loading text
+            // Clear loading spinner
+            favGrid.innerHTML = '';
 
-            // We fetch each product individually by ID
-            // (Efficient enough for a wishlist)
             for (const id of favIds) {
                 try {
                     const docRef = doc(db, "products", id);
@@ -92,6 +185,9 @@
 
                     if (docSnap.exists()) {
                         renderCard(id, docSnap.data());
+                    } else {
+                        // Cleanup: If product doesn't exist in DB anymore, remove from local storage
+                        window.removeFromFav(id, false); 
                     }
                 } catch (error) {
                     console.error("Error loading item:", id, error);
@@ -99,56 +195,90 @@
             }
         }
 
-        // 3. Render Card
+        // 3. Render Modern Card
         function renderCard(id, data) {
-            const displayImg = (data.images && data.images.length > 0) ? data.images[0] : data.image;
+            const displayImg = (data.images && data.images.length > 0) ? data.images[0] : (data.image || 'https://via.placeholder.com/300');
             
+            // Format price if it's a number
+            const price = data.price; 
+
             const html = `
                 <div class="card" id="card-${id}">
                     <div class="card-img-box">
+                        <span class="badge">In Stock</span>
                         <img src="${displayImg}" class="card-img" alt="${data.name}">
-                        <button class="remove-btn" onclick="removeFromFav('${id}')" title="Remove">
-                            <i class="fas fa-trash"></i>
+                        <button class="remove-btn" onclick="removeFromFav('${id}', true)" title="Remove from Wishlist">
+                            <i class="fas fa-times"></i>
                         </button>
                     </div>
                     <div class="card-body">
                         <h3 class="card-title">${data.name}</h3>
-                        <div class="card-price">${data.price}</div>
-                        <a href="product-details.html?id=${id}" style="display:block; margin-top:10px; text-align:center; color:#003366; text-decoration:none; font-size:14px; font-weight:600;">View Product</a>
+                        <div class="card-price">${price}</div>
+                        
+                        <div class="action-row">
+                            <a href="product-details.html?id=${id}" class="btn-cart">
+                                <i class="fas fa-shopping-bag"></i> View Details
+                            </a>
+                        </div>
                     </div>
                 </div>
             `;
-            favGrid.innerHTML += html;
+            // Insert adjacent HTML instead of overwriting innerHTML to preserve order better
+            favGrid.insertAdjacentHTML('beforeend', html);
         }
 
-        // 4. Remove Function
-        window.removeFromFav = (id) => {
+        // 4. Remove Function with Animation & Toast
+        window.removeFromFav = (id, showToast = true) => {
             let favs = getFavorites();
             const index = favs.indexOf(id);
+            
             if (index > -1) {
                 favs.splice(index, 1);
                 localStorage.setItem('myFavorites', JSON.stringify(favs));
-                
-                // Remove element from DOM immediately
-                const card = document.getElementById(`card-${id}`);
-                if(card) card.remove();
+                updateCount(favs.length);
 
-                // Check if empty
-                if(favs.length === 0) renderEmpty();
+                const card = document.getElementById(`card-${id}`);
+                if (card) {
+                    // Fade out animation
+                    card.style.transform = 'scale(0.9) opacity(0)';
+                    setTimeout(() => {
+                        card.remove();
+                        if (favs.length === 0) renderEmpty();
+                    }, 300);
+                }
+
+                if(showToast) showNotification("Item removed from wishlist");
             }
         };
 
+        // 5. Utilities
         function renderEmpty() {
             favGrid.innerHTML = `
                 <div class="empty-state">
-                    <i class="far fa-heart"></i>
+                    <div class="empty-icon"><i class="far fa-heart"></i></div>
                     <h3>Your wishlist is empty</h3>
-                    <p style="color:#666; margin-top:10px;">Save items you love to view them here.</p>
+                    <p style="color:#666; margin-bottom:20px;">Seems like you haven't saved any items yet.</p>
+                    <a href="products.html" class="btn-shop">Start Shopping</a>
                 </div>
             `;
+            updateCount(0);
         }
 
-        // Run
+        function updateCount(num) {
+            itemCount.textContent = `${num} Item${num !== 1 ? 's' : ''}`;
+        }
+
+        function showNotification(msg) {
+            const toast = document.getElementById('toast');
+            const msgSpan = document.getElementById('toastMsg');
+            msgSpan.innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Init
         loadFavorites();
     </script>
 </body>

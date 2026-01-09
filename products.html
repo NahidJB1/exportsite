@@ -274,6 +274,11 @@
             <div class="cat-pill" onclick="filterData('Books')">Books</div>
         </div>
     </section>
+
+    <section class="shop-container">
+        <div class="grid" id="shopGrid">
+            </div>
+    </section>
     <script type="module">
         import { auth, db } from './firebase-config.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -309,14 +314,15 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 
-        // 2. Fetch Products
+
+// 2. Fetch Products (FIXED)
         async function fetchProducts() {
-            // NEW: Show skeletons instead of text spinner
             renderSkeletons(); 
-            // loader.style.display = 'block'; // (We don't need the old loader text anymore)
             
             try {
-                const q = query(collection(db, "products"));
+                // Fixed the syntax error on this line:
+                const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
+                
                 const snapshot = await getDocs(q);
                 
                 allProducts = [];
@@ -327,10 +333,12 @@ onAuthStateChanged(auth, async (user) => {
                 renderProducts(allProducts);
             } catch (error) {
                 console.error(error);
-                shopGrid.innerHTML = '<p style="text-align:center; width:100%">Error loading data.</p>';
+                const grid = document.getElementById('shopGrid');
+                if(grid) grid.innerHTML = '<p style="text-align:center; width:100%">Error loading data.</p>';
             } 
-            // Note: We don't need 'finally' to hide loader, because renderProducts overwrites the skeletons.
         }
+
+        
 
         // 3. Render HTML
         function renderProducts(products) {

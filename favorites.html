@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Wishlist | Nusantara Trade</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root { --primary: #003366; --secondary: #00A86B; --bg-light: #F4F7F6; --white: #ffffff; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg-light); }
+
+        /* Minimal Nav for Back Navigation */
+        .navbar {
+            background: var(--white); padding: 15px 5%; display: flex; align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .back-btn { text-decoration: none; color: var(--primary); font-weight: 600; display: flex; align-items: center; gap: 8px; }
+        .page-title { margin-left: auto; font-size: 18px; font-weight: 700; color: var(--primary); }
+
+        /* Grid Reuse */
+        .shop-container { padding: 30px 5%; max-width: 1200px; margin: 0 auto; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 25px; }
+
+        .card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .card-img-box { width: 100%; height: 200px; overflow: hidden; position: relative; }
+        .card-img { width: 100%; height: 100%; object-fit: cover; }
+        .card-body { padding: 15px; }
+        .card-title { font-size: 16px; font-weight: 600; color: var(--primary); margin-bottom: 5px; }
+        .card-price { font-size: 18px; font-weight: 700; color: var(--secondary); }
+        
+        /* Remove Button */
+        .remove-btn {
+            position: absolute; top: 10px; right: 10px;
+            background: rgba(255, 255, 255, 0.9); color: #ff4444;
+            width: 35px; height: 35px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            border: none; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .remove-btn:hover { background: #ff4444; color: white; }
+
+        .empty-state {
+            text-align: center; grid-column: 1/-1; padding: 50px 0;
+        }
+        .empty-state i { font-size: 50px; color: #ddd; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="products.html" class="back-btn"><i class="fas fa-arrow-left"></i> Continue Shopping</a>
+        <div class="page-title">My Wishlist</div>
+    </nav>
+
+    <section class="shop-container">
+        <div class="grid" id="favGrid">
+            <p style="grid-column: 1/-1; text-align: center;">Loading favorites...</p>
+        </div>
+    </section>
+
+    <script type="module">
+        import { db } from './firebase-config.js';
+        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const favGrid = document.getElementById('favGrid');
+
+        // 1. Get IDs from LocalStorage
+        function getFavorites() {
+            const stored = localStorage.getItem('myFavorites');
+            return stored ? JSON.parse(stored) : [];
+        }
+
+        // 2. Fetch details for each ID
+        async function loadFavorites() {
+            const favIds = getFavorites();
+
+            if (favIds.length === 0) {
+                renderEmpty();
+                return;
+            }
+
+            favGrid.innerHTML = ''; // Clear loading text
+
+            // We fetch each product individually by ID
+            // (Efficient enough for a wishlist)
+            for (const id of favIds) {
+                try {
+                    const docRef = doc(db, "products", id);
+                    const docSnap = await getDoc(docRef);
+
+                    if (docSnap.exists()) {
+                        renderCard(id, docSnap.data());
+                    }
+                } catch (error) {
+                    console.error("Error loading item:", id, error);
+                }
+            }
+        }
+
+        // 3. Render Card
+        function renderCard(id, data) {
+            const displayImg = (data.images && data.images.length > 0) ? data.images[0] : data.image;
+            
+            const html = `
+                <div class="card" id="card-${id}">
+                    <div class="card-img-box">
+                        <img src="${displayImg}" class="card-img" alt="${data.name}">
+                        <button class="remove-btn" onclick="removeFromFav('${id}')" title="Remove">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <h3 class="card-title">${data.name}</h3>
+                        <div class="card-price">${data.price}</div>
+                        <a href="product-details.html?id=${id}" style="display:block; margin-top:10px; text-align:center; color:#003366; text-decoration:none; font-size:14px; font-weight:600;">View Product</a>
+                    </div>
+                </div>
+            `;
+            favGrid.innerHTML += html;
+        }
+
+        // 4. Remove Function
+        window.removeFromFav = (id) => {
+            let favs = getFavorites();
+            const index = favs.indexOf(id);
+            if (index > -1) {
+                favs.splice(index, 1);
+                localStorage.setItem('myFavorites', JSON.stringify(favs));
+                
+                // Remove element from DOM immediately
+                const card = document.getElementById(`card-${id}`);
+                if(card) card.remove();
+
+                // Check if empty
+                if(favs.length === 0) renderEmpty();
+            }
+        };
+
+        function renderEmpty() {
+            favGrid.innerHTML = `
+                <div class="empty-state">
+                    <i class="far fa-heart"></i>
+                    <h3>Your wishlist is empty</h3>
+                    <p style="color:#666; margin-top:10px;">Save items you love to view them here.</p>
+                </div>
+            `;
+        }
+
+        // Run
+        loadFavorites();
+    </script>
+</body>
+</html>

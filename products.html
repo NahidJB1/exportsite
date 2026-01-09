@@ -316,7 +316,7 @@ onAuthStateChanged(auth, async (user) => {
             // loader.style.display = 'block'; // (We don't need the old loader text anymore)
             
             try {
-                const q = query(const q = query(collection(db, "products"));collection(db, "products"), orderBy("createdAt", "desc"));
+                const q = query(collection(db, "products"));
                 const snapshot = await getDocs(q);
                 
                 allProducts = [];

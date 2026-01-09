@@ -399,17 +399,20 @@ onAuthStateChanged(auth, async (user) => {
             });
         }
 
-        // 4. Filter Functions
+        
+        // 4. Filter Functions (Updated)
         window.filterData = (category) => {
             // UI Active State
             pills.forEach(p => p.classList.remove('active'));
             event.target.classList.add('active');
 
-            // Logic
+            // Logic: Case-insensitive comparison
             if(category === 'All') {
                 renderProducts(allProducts);
             } else {
-                const filtered = allProducts.filter(p => p.category === category);
+                const filtered = allProducts.filter(p => 
+                    p.category && p.category.toLowerCase().trim() === category.toLowerCase().trim()
+                );
                 renderProducts(filtered);
             }
         };

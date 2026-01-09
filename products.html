@@ -236,6 +236,17 @@
             .card-price { font-size: 14px; }
             .whatsapp-btn { font-size: 12px; padding: 8px; }
         }
+        /* --- CART BADGE STYLE --- */
+        .cart-count {
+            position: absolute;
+            top: -5px; right: -5px;
+            background: #ff4444; color: white;
+            font-size: 10px; font-weight: bold;
+            width: 18px; height: 18px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            border: 2px solid white;
+        }
     </style>
 </head>
 <body>
@@ -251,6 +262,11 @@
         <div class="user-info">
             <span id="navUserName" style="font-size:14px; font-weight:600; color: #003366;"></span>
             
+            <a href="cart.html" class="nav-icon-btn" title="My Cart">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="cart-count" id="navCartCount" style="display: none;">0</span>
+            </a>
+
             <a href="favorites.html" class="nav-icon-btn" title="My Wishlist">
                 <i class="fas fa-heart"></i>
             </a>
@@ -457,6 +473,20 @@ onAuthStateChanged(auth, async (user) => {
 
             localStorage.setItem('myFavorites', JSON.stringify(favs));
         };
+
+        // --- 6. UPDATE CART COUNT ON LOAD ---
+        function updateCartBadge() {
+            const cart = JSON.parse(localStorage.getItem('myCart')) || [];
+            const badge = document.getElementById('navCartCount');
+            if (cart.length > 0) {
+                badge.style.display = 'flex';
+                badge.innerText = cart.length;
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+        // Run immediately
+        updateCartBadge();
     </script>
 </body>
 </html>

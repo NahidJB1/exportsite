@@ -38,6 +38,20 @@
         .btn-buy { background: #003366; color: white; border: none; width: 100%; padding: 15px; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; }
         .btn-buy:hover { background: #002244; transform: translateY(-2px); }
         .back-link { display: inline-block; margin-bottom: 20px; color: #666; text-decoration: none; }
+
+        /* ACTION BUTTONS GRID */
+        .action-buttons {
+            display: flex; gap: 10px; margin-bottom: 15px;
+        }
+        .btn-outline {
+            flex: 1; padding: 12px; border-radius: 10px;
+            border: 2px solid #003366; background: white;
+            color: #003366; font-weight: 600; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            transition: 0.2s;
+        }
+        .btn-outline:hover { background: #f0f9ff; }
+        .btn-outline.active-fav { background: #fee2e2; border-color: #ef4444; color: #ef4444; }
     </style>
 </head>
 <body>
@@ -133,6 +147,15 @@
                         <span id="totalPrice" style="font-size:22px; font-weight:700; color:#059669;">${product.price}</span>
                     </div>
 
+                <div class="action-buttons">
+                        <button class="btn-outline" onclick="addToCart()">
+                            <i class="fas fa-shopping-cart"></i> Add to Cart
+                        </button>
+                        <button class="btn-outline" id="favBtn" onclick="toggleDetailsFav()">
+                            <i class="far fa-heart"></i> Favorite
+                        </button>
+                    </div>
+
                     <button class="btn-buy" onclick="goToCheckout()">
                         Proceed to Checkout <i class="fas fa-arrow-right"></i>
                     </button>
@@ -177,6 +200,66 @@
         };
 
         loadProduct();
+
+        // --- CART LOGIC ---
+        window.addToCart = () => {
+            let cart = JSON.parse(localStorage.getItem('myCart')) || [];
+            
+            // Check if item already exists
+            const existingItem = cart.find(item => item.id === productId);
+            
+            if (existingItem) {
+                existingItem.qty += qty; // Just increase quantity
+                alert("Quantity updated in Cart!");
+            } else {
+                // Add new item
+                cart.push({
+                    id: productId,
+                    name: currentProduct.name,
+                    price: currentProduct.price,
+                    image: currentProduct.images ? currentProduct.images[0] : currentProduct.image,
+                    qty: qty
+                });
+                alert("Added to Cart!");
+            }
+            
+            localStorage.setItem('myCart', JSON.stringify(cart));
+        };
+
+        // --- FAVORITE LOGIC (Details Page) ---
+        window.toggleDetailsFav = () => {
+            let favs = JSON.parse(localStorage.getItem('myFavorites')) || [];
+            const index = favs.indexOf(productId);
+            const btn = document.getElementById('favBtn');
+            const icon = btn.querySelector('i');
+
+            if (index === -1) {
+                favs.push(productId);
+                btn.classList.add('active-fav');
+                icon.classList.remove('far');
+                icon.classList.add('fas');
+            } else {
+                favs.splice(index, 1);
+                btn.classList.remove('active-fav');
+                icon.classList.add('far');
+                icon.classList.remove('fas');
+            }
+            localStorage.setItem('myFavorites', JSON.stringify(favs));
+        };
+        
+        // Check initial Fav state when page loads
+        function checkFavState() {
+            const favs = JSON.parse(localStorage.getItem('myFavorites')) || [];
+            if(favs.includes(productId)) {
+                const btn = document.getElementById('favBtn');
+                if(btn) {
+                    btn.classList.add('active-fav');
+                    btn.querySelector('i').classList.replace('far', 'fas');
+                }
+            }
+        }
+        // Add this line inside your loadProduct() function, right after renderPage(currentProduct):
+        // checkFavState();
     </script>
 </body>
 </html>

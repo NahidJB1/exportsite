@@ -21,75 +21,99 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Poppins', sans-serif; background-color: var(--bg-light); color: var(--text-dark); }
 
-        /* --- NAVBAR --- */
+/* --- NAVBAR --- */
         .navbar {
             background: var(--white);
-            padding: 15px 5%;
-            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 5%;
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            gap: 20px; /* Space between logo, search, profile */
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             position: sticky; top: 0; z-index: 1000;
+            flex-wrap: wrap; /* Allows wrapping on mobile */
         }
-        .brand { font-size: 22px; font-weight: 700; color: var(--primary); }
+        .brand { font-size: 22px; font-weight: 700; color: var(--primary); white-space: nowrap; }
         .brand span { color: var(--secondary); }
         
-        /* NEW: Profile Icon Style */
-        .user-info { display: flex; align-items: center; gap: 15px; }
+        /* MOVED: Search Bar inside Navbar */
+        .nav-search-box {
+            position: relative; 
+            flex: 1; /* Takes available middle space */
+            max-width: 600px; 
+            margin: 0 15px;
+        }
+        .nav-search-box input {
+            width: 100%; 
+            padding: 10px 15px 10px 45px;
+            border: 1px solid #eee; 
+            border-radius: 30px;
+            background: var(--bg-light); 
+            font-size: 14px; outline: none; transition: 0.3s;
+        }
+        .nav-search-box input:focus { 
+            background: #fff; 
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 3px rgba(0, 168, 107, 0.1); 
+        }
+        .search-icon { 
+            position: absolute; left: 15px; top: 50%; 
+            transform: translateY(-50%); color: #999; font-size: 14px;
+        }
+
+        /* User Controls */
+        .user-info { display: flex; align-items: center; gap: 10px; }
         
-        .profile-icon-btn {
-            width: 40px; height: 40px;
-            background: var(--bg-light);
+        /* New: Favorites Icon in Nav */
+        .nav-icon-btn {
+            width: 35px; height: 35px;
             border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             color: var(--primary);
-            font-size: 18px;
+            font-size: 16px;
             text-decoration: none;
-            border: 1px solid #ddd;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
+            position: relative;
         }
+        .nav-icon-btn:hover { background: #f0f0f0; color: var(--secondary); }
+        .nav-icon-btn.active-link { color: #ff4444; } /* For favorites page active state */
 
-        .profile-icon-btn:hover {
-            background: var(--primary);
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-
-        /* --- CONTROLS SECTION (Search + Filter) --- */
+        /* --- CONTROLS SECTION (Just Filters now) --- */
         .controls-section {
-            padding: 30px 5% 10px;
+            padding: 20px 5% 10px;
             max-width: 1200px; margin: 0 auto;
         }
         
-        /* Search Bar */
-        .search-box {
-            position: relative; width: 100%; max-width: 500px; margin: 0 auto 20px;
-        }
-        .search-box input {
-            width: 100%; padding: 15px 20px 15px 50px;
-            border: none; border-radius: 30px;
-            background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            font-size: 16px; outline: none; transition: 0.3s;
-        }
-        .search-box input:focus { box-shadow: 0 4px 20px rgba(0, 168, 107, 0.2); }
-        .search-icon { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: #aaa; }
-
         /* Category Pills */
         .category-scroll {
-            display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px;
-            scrollbar-width: none; /* Hide scrollbar Firefox */
-            justify-content: center;
+            display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px;
+            scrollbar-width: none; justify-content: center;
         }
-        .category-scroll::-webkit-scrollbar { display: none; } /* Hide scrollbar Chrome */
+        .category-scroll::-webkit-scrollbar { display: none; }
         
         .cat-pill {
             background: white; border: 1px solid #ddd;
-            padding: 8px 20px; border-radius: 20px;
-            font-size: 14px; cursor: pointer; white-space: nowrap; transition: 0.3s;
+            padding: 6px 16px; border-radius: 20px;
+            font-size: 13px; cursor: pointer; white-space: nowrap; transition: 0.3s;
             color: #666;
         }
         .cat-pill:hover, .cat-pill.active {
             background: var(--primary); color: white; border-color: var(--primary);
-            box-shadow: 0 4px 10px rgba(0, 51, 102, 0.3);
+        }
+
+        /* Mobile Responsive Updates */
+        @media (max-width: 768px) {
+            .navbar { padding: 10px 5%; gap: 10px; }
+            .brand { font-size: 18px; }
+            
+            /* On mobile, Search drops to second row */
+            .nav-search-box {
+                order: 3; /* Force to bottom */
+                min-width: 100%;
+                margin: 5px 0 0;
+            }
+            .category-scroll { justify-content: flex-start; }
+            #navUserName { display: none; } /* Hide name on mobile to save space */
         }
 
         /* --- PRODUCT GRID --- */
@@ -216,37 +240,40 @@
 </head>
 <body>
 
-    <nav class="navbar">
+<nav class="navbar">
         <div class="brand">Nusantara<span>Trade</span></div>
+        
+        <div class="nav-search-box">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="searchInput" placeholder="Search for products, brands and more...">
+        </div>
+
         <div class="user-info">
-    <span id="navUserName" style="font-size:14px; font-weight:600; color: #003366; margin-right:5px;"></span>
-    
-    <a href="profile.html" class="profile-icon-btn" title="My Profile">
-        <i class="fas fa-user"></i>
-    </a>
-</div>
+            <span id="navUserName" style="font-size:14px; font-weight:600; color: #003366;"></span>
+            
+            <a href="favorites.html" class="nav-icon-btn" title="My Wishlist">
+                <i class="fas fa-heart"></i>
+            </a>
+
+            <a href="profile.html" class="nav-icon-btn" title="My Profile">
+                <i class="fas fa-user"></i>
+            </a>
+        </div>
     </nav>
 
     <section class="controls-section">
-        <div class="search-box">
-            <i class="fas fa-search search-icon"></i>
-            <input type="text" id="searchInput" placeholder="Search products...">
-        </div>
-        
         <div class="category-scroll" id="catFilters">
             <div class="cat-pill active" onclick="filterData('All')">All</div>
             <div class="cat-pill" onclick="filterData('Electronics')">Electronics</div>
-            <div class="cat-pill" onclick="filterData('Cosmetics')">Cosmetics</div>
             <div class="cat-pill" onclick="filterData('Fashion')">Fashion</div>
-            <div class="cat-pill" onclick="filterData('Gadgets')">Gadgets</div>
+            <div class="cat-pill" onclick="filterData('Home & Living')">Home & Living</div>
+            <div class="cat-pill" onclick="filterData('Beauty')">Beauty</div>
+            <div class="cat-pill" onclick="filterData('Sports')">Sports</div>
+            <div class="cat-pill" onclick="filterData('Automotive')">Automotive</div>
+            <div class="cat-pill" onclick="filterData('Toys')">Toys</div>
+            <div class="cat-pill" onclick="filterData('Books')">Books</div>
         </div>
     </section>
-
-    <section class="shop-container">
-        <div id="loader" class="loader"><i class="fas fa-spinner fa-spin"></i> Loading Inventory...</div>
-        <div class="grid" id="shopGrid"></div>
-    </section>
-
     <script type="module">
         import { auth, db } from './firebase-config.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";

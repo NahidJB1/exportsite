@@ -201,18 +201,14 @@
 
         loadProduct();
 
-        // --- CART LOGIC ---
+// --- CART LOGIC (No Alert) ---
         window.addToCart = () => {
             let cart = JSON.parse(localStorage.getItem('myCart')) || [];
-            
-            // Check if item already exists
             const existingItem = cart.find(item => item.id === productId);
             
             if (existingItem) {
-                existingItem.qty += qty; // Just increase quantity
-                alert("Quantity updated in Cart!");
+                existingItem.qty += qty;
             } else {
-                // Add new item
                 cart.push({
                     id: productId,
                     name: currentProduct.name,
@@ -220,10 +216,23 @@
                     image: currentProduct.images ? currentProduct.images[0] : currentProduct.image,
                     qty: qty
                 });
-                alert("Added to Cart!");
             }
-            
             localStorage.setItem('myCart', JSON.stringify(cart));
+
+            // Visual Feedback (Instead of Alert)
+            const btn = document.querySelector('.btn-outline');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = `<i class="fas fa-check"></i> Added!`;
+            btn.style.background = "#dcfce7"; 
+            btn.style.borderColor = "#22c55e";
+            btn.style.color = "#15803d";
+            
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.style.background = "white";
+                btn.style.borderColor = "#003366";
+                btn.style.color = "#003366";
+            }, 2000);
         };
 
         // --- FAVORITE LOGIC (Details Page) ---

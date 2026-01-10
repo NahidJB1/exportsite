@@ -241,24 +241,25 @@
                     <div class="form-grid">
     <input type="text" id="pName" placeholder="Product Name" required>
     <input type="text" id="pPrice" placeholder="Price (e.g. BDT 45,000)" required>
-   <select id="pCategory">
-    <option value="Electronic Accessories">Electronic Accessories</option>
-    <option value="Electronic Devices">Electronic Devices</option>
-    <option value="TV & Home Appliances">TV & Home Appliances</option>
-    <option value="Health & Beauty">Health & Beauty</option>
-    <option value="Babies & Toys">Babies & Toys</option>
-    <option value="Groceries & Pets">Groceries & Pets</option>
-    <option value="Home & Lifestyle">Home & Lifestyle</option>
-    <option value="Women's Fashion & Accessories">Women's Fashion & Accessories</option>
-    <option value="Men's Fashion & Accessories">Men's Fashion & Accessories</option>
-    <option value="Kid's Fashion & Accessories">Kid's Fashion & Accessories</option>
-    <option value="Sports & Lifestyle">Sports & Lifestyle</option>
-    <option value="Automotive & Motorcycles">Automotive & Motorcycles</option>
-</select>
+    <select id="pCategory">
+        <option value="Electronic Accessories">Electronic Accessories</option>
+        <option value="Electronic Devices">Electronic Devices</option>
+        <option value="TV & Home Appliances">TV & Home Appliances</option>
+        <option value="Health & Beauty">Health & Beauty</option>
+        <option value="Babies & Toys">Babies & Toys</option>
+        <option value="Groceries & Pets">Groceries & Pets</option>
+        <option value="Home & Lifestyle">Home & Lifestyle</option>
+        <option value="Women's Fashion & Accessories">Women's Fashion & Accessories</option>
+        <option value="Men's Fashion & Accessories">Men's Fashion & Accessories</option>
+        <option value="Kid's Fashion & Accessories">Kid's Fashion & Accessories</option>
+        <option value="Sports & Lifestyle">Sports & Lifestyle</option>
+        <option value="Automotive & Motorcycles">Automotive & Motorcycles</option>
+    </select>
     <select id="pStatus">
         <option value="Available">Available</option>
         <option value="Sold Out">Sold Out</option>
     </select>
+    <input type="text" id="pGuarantee" placeholder="Shopping Guarantee (e.g. 7 Days Warranty)">
 </div>
 
 <textarea id="pDesc" placeholder="Product Description..." rows="4" 
@@ -330,6 +331,9 @@
 
         <label style="font-size:12px; font-weight:600; color:#64748b; display:block; margin:10px 0 5px;">Price</label>
         <input type="text" id="editPrice">
+
+        <label style="font-size:12px; font-weight:600; color:#64748b; display:block; margin:10px 0 5px;">Shopping Guarantee</label>
+        <input type="text" id="editGuarantee">
 
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
             <div>
@@ -493,16 +497,18 @@
 
                 const imageUrls = await Promise.all(uploadPromises);
 
-                await addDoc(collection(db, "products"), {
-                    name: document.getElementById('pName').value,
-                    price: document.getElementById('pPrice').value,
-                    category: document.getElementById('pCategory').value,
-                    status: document.getElementById('pStatus').value,
-                    description: document.getElementById('pDesc').value,
-                    images: imageUrls,
-                    image: imageUrls[0], 
-                    createdAt: serverTimestamp()
-                });
+                /* FIND this block inside the addProductForm listener and UPDATE the object: */
+await addDoc(collection(db, "products"), {
+    name: document.getElementById('pName').value,
+    price: document.getElementById('pPrice').value,
+    category: document.getElementById('pCategory').value,
+    status: document.getElementById('pStatus').value,
+    guarantee: document.getElementById('pGuarantee').value, // <--- NEW LINE
+    description: document.getElementById('pDesc').value,
+    images: imageUrls,
+    image: imageUrls[0], 
+    createdAt: serverTimestamp()
+});
 
                 showToast("Product added successfully!");
                 document.getElementById('addProductForm').reset();
@@ -534,6 +540,7 @@
                     const item = doc.data();
                     const safeName = item.name.replace(/'/g, "\\'"); 
                     const safeDesc = (item.description || '').replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, '\\n');
+                    const safeGuarantee = (item.guarantee || '').replace(/'/g, "\\'").replace(/"/g, '&quot;'); // <--- NEW LINE
                     const displayImg = (item.images && item.images.length > 0) ? item.images[0] : item.image;
 
                     tbody.innerHTML += `
@@ -550,6 +557,10 @@
                                 <button onclick="triggerDelete('${doc.id}')" 
                                     style="color:var(--danger); border:1px solid #fee2e2; background:white; width:35px; height:35px; border-radius:50%; cursor:pointer;">
                                     <i class="fas fa-trash"></i>
+                        <td data-label="Action" style="display:flex; gap:8px; justify-content:flex-end;">
+            <button onclick="openEditModal('${doc.id}', '${safeName}', '${item.price}', '${item.category}', '${item.status}', '${safeDesc}', '${safeGuarantee}')" 
+                style="color:var(--accent); border:1px solid #e0f2fe; background:white; width:35px; height:35px; border-radius:50%; cursor:pointer;">
+                <i class="fas fa-pen"></i>
                                 </button>
                             </td>
                         </tr>`;
@@ -658,6 +669,7 @@
             document.getElementById('editCategory').value = category;
             document.getElementById('editStatus').value = status;
             document.getElementById('editDesc').value = desc || ''; 
+            document.getElementById('editGuarantee').value = guarantee || ''; // <--- NEW LINE
             document.getElementById('editModal').style.display = 'flex';
         };
 
@@ -679,6 +691,7 @@
                     price: document.getElementById('editPrice').value,
                     category: document.getElementById('editCategory').value,
                     status: document.getElementById('editStatus').value,
+                    guarantee: document.getElementById('editGuarantee').value, // <--- NEW LINE
                     description: document.getElementById('editDesc').value
                 });
 

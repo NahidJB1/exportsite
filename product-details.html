@@ -180,18 +180,19 @@
         }
 
         async function loadProduct() {
-            const docRef = doc(db, "products", productId);
-            const docSnap = await getDoc(docRef);
+    const docRef = doc(db, "products", productId);
+    const docSnap = await getDoc(docRef);
 
-            if (docSnap.exists()) {
-                currentProduct = docSnap.data();
-                renderPage(currentProduct);
-                checkReviewEligibility();
-            loadReviews();
-            } else {
-                document.getElementById('productContainer').innerHTML = "<p>Product not found.</p>";
-            }
-        }
+    if (docSnap.exists()) {
+        currentProduct = docSnap.data();
+        renderPage(currentProduct);
+        checkFavState(); // <--- This line was commented out in your file
+        checkReviewEligibility();
+        loadReviews();
+    } else {
+        document.getElementById('productContainer').innerHTML = "<p>Product not found.</p>";
+    }
+}
 
         function renderPage(product) {
     const images = product.images || [product.image];

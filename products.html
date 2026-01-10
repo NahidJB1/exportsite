@@ -264,12 +264,15 @@
             display: flex; 
             gap: 12px; 
             overflow-x: auto; 
-            padding: 5px 5%; 
+            padding: 5px 5% 12px; /* Extra bottom padding for scrollbar */
             scroll-behavior: smooth;
-            -ms-overflow-style: none;
-            scrollbar-width: none;
         }
-        .category-scroll::-webkit-scrollbar { display: none; }
+        
+        /* Modern Thin Scrollbar for PC */
+        .category-scroll::-webkit-scrollbar { height: 6px; }
+        .category-scroll::-webkit-scrollbar-track { background: transparent; }
+        .category-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .category-scroll::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         
         .cat-pill {
             white-space: nowrap; 
@@ -383,6 +386,17 @@ import { collection, getDocs, query, orderBy, doc, getDoc } from "https://www.gs
         const loader = document.getElementById('loader');
         const searchInput = document.getElementById('searchInput');
         const pills = document.querySelectorAll('.cat-pill');
+
+        // --- ADD MOUSE WHEEL SCROLL FOR PC ---
+        const catContainer = document.getElementById('catFilters');
+        if (catContainer) {
+            catContainer.addEventListener('wheel', (e) => {
+                if (e.deltaY !== 0) {
+                    e.preventDefault();
+                    catContainer.scrollLeft += e.deltaY;
+                }
+            });
+        }
         
         let allProducts = []; // Store data locally for fast filtering
 

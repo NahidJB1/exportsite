@@ -10,12 +10,19 @@
         :root { --primary: #003366; --secondary: #00A86B; --bg: #F8F9FA; --white: #fff; }
         body { font-family: 'Poppins', sans-serif; background: var(--bg); margin: 0; padding-bottom: 80px; }
         
-        /* Updated Navbar: Back (Left), Title (Right) */
-        .navbar { 
-            background: white; padding: 15px 5%; 
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
-            display: flex; align-items: center; justify-content: space-between; 
+        /* --- NAVBAR (Matches Favorites) --- */
+        .navbar {
+            background: var(--white); padding: 1rem 5%; 
+            display: flex; align-items: center; justify-content: space-between;
+            position: sticky; top: 0; z-index: 100; 
+            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
         }
+        .nav-left a { 
+            text-decoration: none; color: var(--primary); font-weight: 600; font-size: 0.95rem; 
+            display: flex; align-items: center; gap: 8px; transition: 0.3s;
+        }
+        .nav-left a:hover { transform: translateX(-5px); }
+        .page-title { font-size: 1.2rem; font-weight: 700; color: var(--primary); }
 
         .container { max-width: 800px; margin: 30px auto; padding: 0 20px; }
 
@@ -36,11 +43,7 @@
         .qty-btn:hover { background: #e0e0e0; }
         .qty-val { font-weight: 600; font-size: 14px; min-width: 20px; text-align: center;}
 
-        .remove-btn {
-            color: #999; background: none; border: none;
-            cursor: pointer; font-size: 16px; padding: 8px;
-            transition: 0.2s;
-        }
+        .remove-btn { color: #999; background: none; border: none; cursor: pointer; font-size: 16px; padding: 8px; transition: 0.2s; }
         .remove-btn:hover { color: #ff4444; }
 
         /* Summary Bar */
@@ -48,11 +51,8 @@
             background: white; padding: 20px; 
             box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
             position: fixed; bottom: 0; left: 0; width: 100%;
-            display: flex; 
-            justify-content: flex-start; /* Aligns content to the LEFT */
-            align-items: center;
-            gap: 30px; /* Space between Total and Button */
-            box-sizing: border-box; z-index: 100;
+            display: flex; justify-content: flex-start; align-items: center;
+            gap: 30px; box-sizing: border-box; z-index: 100;
         }
         .total-col span { display: block; font-size: 12px; color: #666; }
         .total-col strong { font-size: 20px; color: var(--primary); }
@@ -60,13 +60,12 @@
         .checkout-btn {
             background: var(--primary); color: white; border: none;
             padding: 12px 30px; border-radius: 30px; font-size: 16px; font-weight: 600;
-            cursor: pointer; text-decoration: none;
-            transition: 0.3s;
+            cursor: pointer; text-decoration: none; transition: 0.3s;
         }
         .checkout-btn:hover { background: #002244; transform: translateY(-2px); }
         
-        /* Empty State (Matches Favorites) */
-        .empty-state { text-align: center; padding: 80px 20px; grid-column: 1/-1;}
+        /* Empty State */
+        .empty-state { text-align: center; padding: 80px 20px; }
         .empty-icon { font-size: 4rem; color: #e0e0e0; margin-bottom: 1.5rem; }
         .btn-shop { 
             display: inline-block; background: var(--secondary); color: white; 
@@ -78,9 +77,10 @@
 <body>
 
    <nav class="navbar">
-        <a href="products.html" class="brand"><i class="fas fa-arrow-left"></i> Back</a>
-        <div></div> 
-        <div class="brand">My Cart</div>
+        <div class="nav-left">
+            <a href="products.html"><i class="fas fa-arrow-left"></i> Continue Shopping</a>
+        </div>
+        <div class="page-title">My Cart</div>
     </nav>
 
     <div class="container" id="cartContainer">

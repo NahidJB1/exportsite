@@ -210,14 +210,14 @@
                         <h3 class="review-title">Customer Reviews</h3>
                         <div id="reviewBtnContainer"></div> </div>
 
-                    <div id="reviewForm" class="review-form-box">
+                <div id="reviewForm" class="review-form-box">
                         <h4 style="margin:0 0 10px; color:#003366;">Write a Review</h4>
                         <div class="star-rating-input" id="starInput">
-                            <i class="fas fa-star" data-val="1"></i>
-                            <i class="fas fa-star" data-val="2"></i>
-                            <i class="fas fa-star" data-val="3"></i>
-                            <i class="fas fa-star" data-val="4"></i>
-                            <i class="fas fa-star" data-val="5"></i>
+                            <i class="fas fa-star" onclick="setRating(1)" data-val="1"></i>
+                            <i class="fas fa-star" onclick="setRating(2)" data-val="2"></i>
+                            <i class="fas fa-star" onclick="setRating(3)" data-val="3"></i>
+                            <i class="fas fa-star" onclick="setRating(4)" data-val="4"></i>
+                            <i class="fas fa-star" onclick="setRating(5)" data-val="5"></i>
                         </div>
                         <input type="text" id="reviewName" placeholder="Your Name (Optional)" class="review-input" style="margin-bottom:10px;">
                         <textarea id="reviewText" rows="3" placeholder="How was the product?" class="review-input"></textarea>
@@ -420,20 +420,24 @@
             }
         }
 
-        // D. Star Selection Logic
-        document.getElementById('starInput').addEventListener('click', (e) => {
-            if(e.target.tagName === 'I') {
-                selectedRating = parseInt(e.target.getAttribute('data-val'));
-                updateStarInputUI();
-            }
-        });
+        // D. Star Selection Logic (UPDATED)
+        window.setRating = (val) => {
+            selectedRating = val;
+            updateStarInputUI();
+        };
 
         function updateStarInputUI() {
+            // Select stars using the ID ensures we get the right specific elements
             const stars = document.querySelectorAll('#starInput i');
             stars.forEach(star => {
-                const val = parseInt(star.getAttribute('data-val'));
-                if(val <= selectedRating) star.classList.add('active');
-                else star.classList.remove('active');
+                const starVal = parseInt(star.getAttribute('data-val'));
+                if(starVal <= selectedRating) {
+                    star.classList.add('active');
+                    star.style.color = "#f59e0b"; // Force color update
+                } else {
+                    star.classList.remove('active');
+                    star.style.color = "#ddd"; // Force inactive color
+                }
             });
         }
 

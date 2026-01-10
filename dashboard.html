@@ -288,15 +288,23 @@
                         </div>
                     </div>
 
-                       <div class="form-group">
+                    <div class="form-group">
+                        <label>Shopping Guarantee</label>
+                        <input type="text" id="pGuarantee" placeholder="e.g. 7 Days Return / 1 Year Warranty">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="pDesc" rows="4" placeholder="Detailed product description..."></textarea>
+                    </div>
+
+                    <div class="form-group">
                         <label>Product Image</label>
                         <div class="file-upload-wrapper" style="position: relative;">
-                            
                             <div class="file-upload-text" id="uploadText">
                                 <i class="fas fa-cloud-upload-alt"></i>
                                 <span>Click to upload image (Max 6)</span>
                             </div>
-
                             <input type="file" id="pFile" accept="image/*" multiple required 
                                    onchange="window.updateFileCount(this)"
                                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; z-index: 10;">
@@ -360,6 +368,7 @@
     </div>
 
     <div class="modal-overlay" id="editModal">
+        
         <div class="modal-box">
             <h3 style="margin-top:0; border-bottom:1px solid #e2e8f0; padding-bottom:15px;">Edit Product</h3>
             <input type="hidden" id="editId">
@@ -387,7 +396,7 @@
             </div>
 
             <div class="form-row">
-                <div><label>Guarantee</label><input type="text" id="editGuarantee"></div>
+                <div><label>Shopping Guarantee</label><input type="text" id="editGuarantee"></div>
                 <div><label>Status</label>
                     <select id="editStatus">
                         <option value="Available">Available</option>

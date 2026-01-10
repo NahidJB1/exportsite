@@ -536,37 +536,36 @@ await addDoc(collection(db, "products"), {
                     return;
                 }
 
-                snapshot.forEach(doc => {
-                    const item = doc.data();
-                    const safeName = item.name.replace(/'/g, "\\'"); 
-                    const safeDesc = (item.description || '').replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, '\\n');
-                    const safeGuarantee = (item.guarantee || '').replace(/'/g, "\\'").replace(/"/g, '&quot;'); // <--- NEW LINE
-                    const displayImg = (item.images && item.images.length > 0) ? item.images[0] : item.image;
+                /* REPLACE THE INSIDE OF snapshot.forEach IN loadProducts WITH THIS: */
 
-                    tbody.innerHTML += `
-                        <tr>
-                            <td data-label="Image"><img src="${displayImg}" class="thumb"></td>
-                            <td data-label="Name"><b>${item.name}</b><br><small style="color:#64748b">${item.category}</small></td>
-                            <td data-label="Price" style="color:var(--accent); font-weight:600">${item.price}</td>
-                            <td data-label="Status"><span style="padding:4px 8px; border-radius:4px; background:${item.status === 'Available' ? '#dcfce7' : '#fee2e2'}; color:${item.status === 'Available' ? '#166534' : '#991b1b'}; font-size:12px; font-weight:bold">${item.status}</span></td>
-                            <td data-label="Action" style="display:flex; gap:8px; justify-content:flex-end;">
-                                <button onclick="openEditModal('${doc.id}', '${safeName}', '${item.price}', '${item.category}', '${item.status}', '${safeDesc}')" 
-                                    style="color:var(--accent); border:1px solid #e0f2fe; background:white; width:35px; height:35px; border-radius:50%; cursor:pointer;">
-                                    <i class="fas fa-pen"></i>
-                                </button>
-                                <button onclick="triggerDelete('${doc.id}')" 
-                                    style="color:var(--danger); border:1px solid #fee2e2; background:white; width:35px; height:35px; border-radius:50%; cursor:pointer;">
-                                    <i class="fas fa-trash"></i>
-                        <td data-label="Action" style="display:flex; gap:8px; justify-content:flex-end;">
-            <button onclick="openEditModal('${doc.id}', '${safeName}', '${item.price}', '${item.category}', '${item.status}', '${safeDesc}', '${safeGuarantee}')" 
-                style="color:var(--accent); border:1px solid #e0f2fe; background:white; width:35px; height:35px; border-radius:50%; cursor:pointer;">
-                <i class="fas fa-pen"></i>
-                                </button>
-                            </td>
-                        </tr>`;
-                });
-            } catch (err) { console.error(err); }
-        }
+snapshot.forEach(doc => {
+    const item = doc.data();
+    const safeName = item.name.replace(/'/g, "\\'"); 
+    const safeDesc = (item.description || '').replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, '\\n');
+    
+    // This line was correct in your file:
+    const safeGuarantee = (item.guarantee || '').replace(/'/g, "\\'").replace(/"/g, '&quot;'); 
+
+    const displayImg = (item.images && item.images.length > 0) ? item.images[0] : item.image;
+
+    tbody.innerHTML += `
+        <tr>
+            <td data-label="Image"><img src="${displayImg}" class="thumb"></td>
+            <td data-label="Name"><b>${item.name}</b><br><small style="color:#64748b">${item.category}</small></td>
+            <td data-label="Price" style="color:var(--accent); font-weight:600">${item.price}</td>
+            <td data-label="Status"><span style="padding:4px 8px; border-radius:4px; background:${item.status === 'Available' ? '#dcfce7' : '#fee2e2'}; color:${item.status === 'Available' ? '#166534' : '#991b1b'}; font-size:12px; font-weight:bold">${item.status}</span></td>
+            <td data-label="Action" style="display:flex; gap:8px; justify-content:flex-end;">
+                <button onclick="openEditModal('${doc.id}', '${safeName}', '${item.price}', '${item.category}', '${item.status}', '${safeDesc}', '${safeGuarantee}')" 
+                    style="color:var(--accent); border:1px solid #e0f2fe; background:white; width:35px; height:35px; border-radius:50%; cursor:pointer;">
+                    <i class="fas fa-pen"></i>
+                </button>
+                <button onclick="triggerDelete('${doc.id}')" 
+                    style="color:var(--danger); border:1px solid #fee2e2; background:white; width:35px; height:35px; border-radius:50%; cursor:pointer;">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        </tr>`;
+});
 
         // --- 2. ORDER FUNCTIONS ---
         // --- 2. ORDER FUNCTIONS (UPDATED) ---
@@ -758,4 +757,4 @@ await addDoc(collection(db, "products"), {
 
 
 </body>
-</html>s
+</html>

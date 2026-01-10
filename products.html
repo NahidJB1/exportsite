@@ -565,6 +565,19 @@ onAuthStateChanged(auth, async (user) => {
         }
         // Run immediately
         updateCartBadge();
+
+        // ... (Existing code)
+
+        // --- 7. TOGGLE FILTER BAR VISIBILITY ---
+        window.toggleFilters = (btn) => {
+            const section = document.getElementById('filterSection');
+            
+            // Toggle the CSS class
+            section.classList.toggle('open');
+            btn.classList.toggle('active'); // Rotates the arrow
+        };
+
+
     </script>
 </body>
 </html>

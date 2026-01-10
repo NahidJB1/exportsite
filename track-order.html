@@ -177,10 +177,14 @@
                     return dateB - dateA; // Newest first
                 });
 
+                // (Inside findOrder function...)
                 sortedDocs.forEach(doc => {
                     const data = doc.data();
                     const status = data.status || 'Pending';
                     const date = data.createdAt ? data.createdAt.toDate().toLocaleDateString() : 'Just now';
+                    
+                    // FIX: Get first item from the array safely
+                    const firstItem = (data.items && data.items.length > 0) ? data.items[0] : { name: 'Unknown Item', price: '0', image: '' };
                     
                     const card = `
                         <div class="order-card ${status}">
@@ -192,10 +196,11 @@
                                 <span class="status-badge bg-${status}">${status}</span>
                             </div>
                             <div class="product-info">
-                                <img src="${data.product.image}" class="p-thumb">
+                                <img src="${firstItem.image}" class="p-thumb">
                                 <div class="p-details">
-                                    <h4>${data.product.name}</h4>
-                                    <p>${data.product.price}</p>
+                                    <h4>${firstItem.name}</h4>
+                                    <p>${data.displayTotal || firstItem.price}</p>
+                                    ${data.items.length > 1 ? `<small style="color:#888">+${data.items.length - 1} other items</small>` : ''}
                                 </div>
                             </div>
                         </div>

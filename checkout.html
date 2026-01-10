@@ -58,20 +58,20 @@
 
         <h2>Checkout</h2>
         
-        <div class="product-summary">
-            <img id="summImg" class="summary-img">
-            <div class="summary-details">
-                <h4 id="summName">Loading...</h4>
-                <div id="summTotal" class="total-price">...</div>
-                <div id="summBreakdown" class="unit-info">Quantity: 1</div>
-            </div>
+        <div id="orderItemsContainer" style="max-height: 250px; overflow-y: auto; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-right: 5px;">
+            <div style="text-align:center; color:#999; padding:20px;">Loading items...</div>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
+             <span style="font-weight:600; color:#555;">Total Amount:</span>
+             <span id="grandTotalDisplay" style="font-size: 22px; font-weight: 700; color: #003366;">...</span>
         </div>
 
         <form id="orderForm">
             <label>Full Name</label>
             <input type="text" id="cName" placeholder="e.g. Rahim Uddin" required>
 
-            <label>Phone Number (Important for tracking)</label>
+            <label>Phone Number (Important)</label>
             <input type="tel" id="cPhone" placeholder="e.g. 01712345678" required>
 
             <label>Shipping Address</label>
@@ -83,14 +83,6 @@
         <a href="products.html" class="btn-back">Cancel & Go Back</a>
     </div>
 
-    <div id="orderItemsContainer">
-            </div>
-        
-        <div style="text-align: right; margin-bottom: 25px; border-top: 2px solid #eee; padding-top: 15px;">
-             <span style="font-size: 14px; color: #666;">Total to Pay:</span>
-             <div id="grandTotalDisplay" style="font-size: 24px; font-weight: 700; color: #003366;">...</div>
-        </div>
-
     <script type="module">
         import { db, auth } from './firebase-config.js'; 
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -101,7 +93,7 @@
         function getCurrency(str) { return str.replace(/[0-9.,]/g, '').trim(); }
 
         let currentUser = null;
-        let orderItems = []; // Array to hold all items to be ordered
+        let orderItems = []; 
         let finalGrandTotal = 0;
         let currencySym = '';
 
@@ -123,7 +115,7 @@
             if(cartData.length > 0) {
                 orderItems = cartData;
             } else {
-                window.location.href = "products.html"; // Empty cart, go back
+                window.location.href = "products.html"; 
             }
         }
 
@@ -138,15 +130,13 @@
             if(!currencySym) currencySym = getCurrency(item.price);
 
             container.innerHTML += `
-                <div class="product-summary" style="background: #e6fffa; padding: 15px; border-radius: 8px; border-left: 5px solid #00A86B; margin-bottom: 10px; display: flex; gap: 15px; align-items: center;">
-                    <img src="${item.image}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px; background: #ddd;">
-                    <div class="summary-details">
-                        <h4 style="margin: 0; color: #003366; font-size: 16px;">${item.name}</h4>
-                        <div style="margin: 5px 0 0; color: #00A86B; font-weight: 700; font-size: 16px;">
-                            ${currencySym} ${lineTotal.toLocaleString()}
-                        </div>
-                        <div style="font-size: 12px; color: #666; margin-top: 2px;">
-                            Qty: ${item.qty}
+                <div class="product-summary" style="background: #e6fffa; padding: 12px; border-radius: 8px; border-left: 4px solid #00A86B; margin-bottom: 10px; display: flex; gap: 15px; align-items: center;">
+                    <img src="${item.image}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px; background: #ddd;">
+                    <div class="summary-details" style="flex:1;">
+                        <h4 style="margin: 0; color: #003366; font-size: 14px;">${item.name}</h4>
+                        <div style="display:flex; justify-content:space-between; margin-top:4px;">
+                            <span style="font-size: 12px; color: #666;">Qty: ${item.qty}</span>
+                            <span style="color: #00A86B; font-weight: 700; font-size: 14px;">${item.price}</span>
                         </div>
                     </div>
                 </div>
@@ -171,7 +161,7 @@
             }
         });
 
-        // 5. Submit Order (Updated for Multiple Items)
+        // 5. Submit Order
         document.getElementById('orderForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
@@ -184,8 +174,8 @@
 
             try {
                 await addDoc(collection(db, "orders"), {
-                    items: orderItems, // Saving the ARRAY of items
-                    totalAmount: finalGrandTotal, // Numeric Total
+                    items: orderItems, 
+                    totalAmount: finalGrandTotal,
                     displayTotal: document.getElementById('grandTotalDisplay').innerText,
                     customer: { name: nameVal, phone: phoneVal, address: addressVal },
                     status: "Pending",
@@ -193,7 +183,6 @@
                     createdAt: serverTimestamp()
                 });
 
-                // Clear Cart if this was a cart checkout
                 if(!urlParams.get('id')) {
                     localStorage.removeItem('myCart');
                 }

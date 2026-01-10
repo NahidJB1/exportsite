@@ -162,6 +162,7 @@
         });
 
         // 5. Submit Order
+        // 5. Submit Order
         document.getElementById('orderForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const btn = document.getElementById('submitBtn');
@@ -173,6 +174,17 @@
             btn.innerText = "Processing...";
 
             try {
+                // --- NEW CODE: Update User Profile for future auto-fill ---
+                if (currentUser) {
+                    await setDoc(doc(db, "users", currentUser.uid), {
+                        fullName: nameVal,  // Matches variable name in profile.html
+                        phone: phoneVal,
+                        address: addressVal,
+                        updatedAt: serverTimestamp()
+                    }, { merge: true }); // Merge ensures we don't delete other user data (like email)
+                }
+                // ---------------------------------------------------------
+
                 await addDoc(collection(db, "orders"), {
                     items: orderItems, 
                     totalAmount: finalGrandTotal,

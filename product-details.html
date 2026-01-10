@@ -84,6 +84,53 @@
         @media (max-width: 600px) {
             .review-header { flex-direction: column; align-items: flex-start; gap: 10px; }
         }
+
+        /* --- NEW STYLES FOR UPDATES --- */
+.guarantee-box {
+    background: #fffbeb; 
+    border: 1px solid #fcd34d; 
+    color: #92400e; 
+    padding: 12px 15px; 
+    border-radius: 8px; 
+    font-size: 14px; 
+    display: flex; 
+    align-items: center; 
+    gap: 10px; 
+    margin-bottom: 25px; /* Takes the place of description */
+}
+
+/* Description Toggle Styles */
+.desc-container {
+    margin-top: 25px; 
+    border-top: 1px solid #eee; 
+    padding-top: 20px;
+}
+.desc-content {
+    font-size: 14px; 
+    color: #555; 
+    line-height: 1.6;
+    max-height: 80px; /* Short limit initially */
+    overflow: hidden;
+    position: relative;
+    transition: max-height 0.5s ease;
+}
+.desc-content.expanded {
+    max-height: 1000px; /* Large enough to show full text */
+}
+.desc-content::after {
+    content: "";
+    position: absolute; bottom: 0; left: 0; width: 100%; height: 40px;
+    background: linear-gradient(transparent, white);
+    pointer-events: none;
+}
+.desc-content.expanded::after { display: none; }
+
+.read-more-btn {
+    background: none; border: none; color: #003366; 
+    font-weight: 600; font-size: 13px; cursor: pointer; 
+    padding: 5px 0; margin-top: 5px;
+}
+.read-more-btn:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
@@ -147,91 +194,105 @@
         }
 
         function renderPage(product) {
-            const images = product.images || [product.image];
-            const thumbsHtml = images.map((img, index) => 
-                `<img src="${img}" class="thumb ${index===0?'active':''}" onclick="changeImage('${img}', this)">`
-            ).join('');
+    const images = product.images || [product.image];
+    const thumbsHtml = images.map((img, index) => 
+        `<img src="${img}" class="thumb ${index===0?'active':''}" onclick="changeImage('${img}', this)">`
+    ).join('');
 
-            const descriptionText = product.description 
-                ? product.description.replace(/\n/g, '<br>') 
-                : "No description available for this product.";
+    const descriptionText = product.description 
+        ? product.description.replace(/\n/g, '<br>') 
+        : "No description available.";
 
-            const mainImgSrc = images[0];
+    // Default guarantee text if none provided in dashboard
+    const guaranteeText = product.guarantee || "100% Authentic Product | 7 Days Return Policy";
 
-            document.getElementById('productContainer').innerHTML = `
-                <div class="gallery-section">
-                    <div class="main-img-box">
-                        <img src="${mainImgSrc}" class="main-img" id="mainImage">
-                    </div>
-                    <div class="thumb-grid">
-                        ${thumbsHtml} </div>
+    const mainImgSrc = images[0];
+
+    document.getElementById('productContainer').innerHTML = `
+        <div class="gallery-section">
+            <div class="main-img-box">
+                <img src="${mainImgSrc}" class="main-img" id="mainImage">
+            </div>
+            <div class="thumb-grid">
+                ${thumbsHtml} 
+            </div>
+        </div>
+        
+        <div class="details-section">
+            <span class="cat-badge">${product.category}</span>
+            <h1>${product.name}</h1>
+            <div class="price">Unit Price: ${product.price}</div>
+            
+            <div class="guarantee-box">
+                <i class="fas fa-shield-alt" style="font-size:18px;"></i>
+                <div>
+                    <strong style="display:block; margin-bottom:2px;">Shopping Guarantee</strong>
+                    <span>${guaranteeText}</span>
                 </div>
-                
-                <div class="details-section">
-                    <span class="cat-badge">${product.category}</span>
-                    <h1>${product.name}</h1>
-                    <div class="price">Unit Price: ${product.price}</div>
-                    
-                    <div style="margin-bottom: 25px; color: #555; line-height: 1.6; border-top: 1px solid #eee; padding-top: 20px;">
-                        <h3 style="margin:0 0 10px; color:#333; font-size:16px;">Description</h3>
-                        <p style="margin:0; font-size:14px;">${descriptionText}</p>
-                    </div>
+            </div>
 
-                    <div class="qty-wrapper">
-                        <span style="font-weight:600; margin-right:10px;">Quantity:</span>
-                        <div class="qty-box">
-                            <button class="qty-btn" onclick="updateQty(-1)">-</button>
-                            <input type="text" id="qtyInput" value="1" readonly>
-                            <button class="qty-btn" onclick="updateQty(1)">+</button>
-                        </div>
-                    </div>
-
-                    <div class="total-box">
-                        <span style="color:#065f46; font-weight:600;">Total Amount:</span>
-                        <span id="totalPrice" style="font-size:22px; font-weight:700; color:#059669;">${product.price}</span>
-                    </div>
-
-                <div class="action-buttons">
-                        <button class="btn-outline" onclick="addToCart()">
-                            <i class="fas fa-shopping-cart"></i> Add to Cart
-                        </button>
-                        <button class="btn-outline" id="favBtn" onclick="toggleDetailsFav()">
-                            <i class="far fa-heart"></i> Favorite
-                        </button>
-                    </div>
-
-                    <button class="btn-buy" onclick="goToCheckout()">
-                        Proceed to Checkout <i class="fas fa-arrow-right"></i>
-                    </button>
+            <div class="qty-wrapper">
+                <span style="font-weight:600; margin-right:10px;">Quantity:</span>
+                <div class="qty-box">
+                    <button class="qty-btn" onclick="updateQty(-1)">-</button>
+                    <input type="text" id="qtyInput" value="1" readonly>
+                    <button class="qty-btn" onclick="updateQty(1)">+</button>
                 </div>
+            </div>
 
-                <div class="reviews-container">
-                    <div class="review-header">
-                        <h3 class="review-title">Customer Reviews</h3>
-                        <div id="reviewBtnContainer"></div> </div>
+            <div class="total-box">
+                <span style="color:#065f46; font-weight:600;">Total Amount:</span>
+                <span id="totalPrice" style="font-size:22px; font-weight:700; color:#059669;">${product.price}</span>
+            </div>
 
-                <div id="reviewForm" class="review-form-box">
-                        <h4 style="margin:0 0 10px; color:#003366;">Write a Review</h4>
-                        <div class="star-rating-input" id="starInput">
-                            <i class="fas fa-star" onclick="setRating(1)" data-val="1"></i>
-                            <i class="fas fa-star" onclick="setRating(2)" data-val="2"></i>
-                            <i class="fas fa-star" onclick="setRating(3)" data-val="3"></i>
-                            <i class="fas fa-star" onclick="setRating(4)" data-val="4"></i>
-                            <i class="fas fa-star" onclick="setRating(5)" data-val="5"></i>
-                        </div>
-                        <input type="text" id="reviewName" placeholder="Your Name (Optional)" class="review-input" style="margin-bottom:10px;">
-                        <textarea id="reviewText" rows="3" placeholder="How was the product?" class="review-input"></textarea>
-                        <button class="btn-submit-review" onclick="submitReview()">Post Review</button>
-                    </div>
+            <div class="action-buttons">
+                <button class="btn-outline" onclick="addToCart()">
+                    <i class="fas fa-shopping-cart"></i> Add to Cart
+                </button>
+                <button class="btn-outline" id="favBtn" onclick="toggleDetailsFav()">
+                    <i class="far fa-heart"></i> Favorite
+                </button>
+            </div>
 
-                    <div id="reviewsList">
-                        <p class="no-reviews"><i class="fas fa-spinner fa-spin"></i> Loading reviews...</p>
-                    </div>
+            <button class="btn-buy" onclick="goToCheckout()">
+                Proceed to Checkout <i class="fas fa-arrow-right"></i>
+            </button>
+
+            <div class="desc-container">
+                <h3 style="margin:0 0 10px; color:#333; font-size:16px;">Product Description</h3>
+                <div class="desc-content" id="descContent">
+                    <p style="margin:0;">${descriptionText}</p>
                 </div>
+                <button class="read-more-btn" onclick="toggleDescription()" id="readMoreBtn">Read More <i class="fas fa-chevron-down"></i></button>
+            </div>
+        </div>
 
+        <div class="reviews-container">
+            <div class="review-header">
+                <h3 class="review-title">Customer Reviews</h3>
+                <div id="reviewBtnContainer"></div> 
+            </div>
 
-            `;
-        }
+            <div id="reviewForm" class="review-form-box">
+                <h4 style="margin:0 0 10px; color:#003366;">Write a Review</h4>
+                <div class="star-rating-input" id="starInput">
+                    <i class="fas fa-star" onclick="setRating(1)" data-val="1"></i>
+                    <i class="fas fa-star" onclick="setRating(2)" data-val="2"></i>
+                    <i class="fas fa-star" onclick="setRating(3)" data-val="3"></i>
+                    <i class="fas fa-star" onclick="setRating(4)" data-val="4"></i>
+                    <i class="fas fa-star" onclick="setRating(5)" data-val="5"></i>
+                </div>
+                <input type="text" id="reviewName" placeholder="Your Name (Optional)" class="review-input" style="margin-bottom:10px;">
+                <textarea id="reviewText" rows="3" placeholder="How was the product?" class="review-input"></textarea>
+                <button class="btn-submit-review" onclick="submitReview()">Post Review</button>
+            </div>
+
+            <div id="reviewsList">
+                <p class="no-reviews"><i class="fas fa-spinner fa-spin"></i> Loading reviews...</p>
+            </div>
+        </div>
+    `;
+}
 
         window.changeImage = (src, el) => {
             document.getElementById('mainImage').src = src;
@@ -482,6 +543,19 @@
                 btn.disabled = false;
             }
         };
+
+        window.toggleDescription = () => {
+    const content = document.getElementById('descContent');
+    const btn = document.getElementById('readMoreBtn');
+    
+    if (content.classList.contains('expanded')) {
+        content.classList.remove('expanded');
+        btn.innerHTML = 'Read More <i class="fas fa-chevron-down"></i>';
+    } else {
+        content.classList.add('expanded');
+        btn.innerHTML = 'Show Less <i class="fas fa-chevron-up"></i>';
+    }
+};
 
         // Trigger loading
         // Add this check after renderPage finishes in loadProduct()

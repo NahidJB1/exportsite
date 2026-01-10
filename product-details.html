@@ -52,6 +52,38 @@
         }
         .btn-outline:hover { background: #f0f9ff; }
         .btn-outline.active-fav { background: #fee2e2; border-color: #ef4444; color: #ef4444; }
+
+        /* REVIEW SECTION STYLES */
+        .reviews-container {
+            width: 100%; margin-top: 40px; border-top: 2px solid #eee; padding-top: 30px;
+        }
+        .review-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+        .review-title { font-size: 22px; font-weight: 700; color: #003366; margin: 0; }
+        
+        /* Write Review Form */
+        .review-form-box {
+            background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 30px;
+            display: none; /* Hidden by default, shown if eligible */
+        }
+        .star-rating-input { display: flex; gap: 10px; margin-bottom: 15px; }
+        .star-rating-input i { font-size: 24px; color: #ddd; cursor: pointer; transition: 0.2s; }
+        .star-rating-input i.active { color: #f59e0b; }
+        
+        .review-input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-family: inherit; margin-bottom: 15px; resize: vertical; }
+        .btn-submit-review { background: #003366; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+        .btn-submit-review:hover { background: #002244; }
+
+        /* Review List */
+        .review-card { background: white; border: 1px solid #eee; border-radius: 10px; padding: 15px; margin-bottom: 15px; }
+        .review-user { font-weight: 700; color: #333; display: flex; justify-content: space-between; }
+        .review-date { font-size: 12px; color: #888; font-weight: 400; }
+        .review-stars { color: #f59e0b; font-size: 14px; margin: 5px 0 8px; }
+        .review-text { font-size: 14px; color: #555; line-height: 1.5; }
+        .no-reviews { color: #666; font-style: italic; }
+
+        @media (max-width: 600px) {
+            .review-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+        }
     </style>
 </head>
 <body>
@@ -66,7 +98,17 @@
 
     <script type="module">
         import { db } from './firebase-config.js';
-        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { 
+        doc, 
+        getDoc, 
+        collection, 
+        addDoc, 
+        query, 
+        where, 
+        getDocs, 
+        orderBy, 
+        serverTimestamp 
+    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const urlParams = new URLSearchParams(window.location.search);
         const productId = urlParams.get('id');
@@ -97,6 +139,8 @@
             if (docSnap.exists()) {
                 currentProduct = docSnap.data();
                 renderPage(currentProduct);
+                checkReviewEligibility();
+            loadReviews();
             } else {
                 document.getElementById('productContainer').innerHTML = "<p>Product not found.</p>";
             }
@@ -160,6 +204,32 @@
                         Proceed to Checkout <i class="fas fa-arrow-right"></i>
                     </button>
                 </div>
+
+                <div class="reviews-container">
+                    <div class="review-header">
+                        <h3 class="review-title">Customer Reviews</h3>
+                        <div id="reviewBtnContainer"></div> </div>
+
+                    <div id="reviewForm" class="review-form-box">
+                        <h4 style="margin:0 0 10px; color:#003366;">Write a Review</h4>
+                        <div class="star-rating-input" id="starInput">
+                            <i class="fas fa-star" data-val="1"></i>
+                            <i class="fas fa-star" data-val="2"></i>
+                            <i class="fas fa-star" data-val="3"></i>
+                            <i class="fas fa-star" data-val="4"></i>
+                            <i class="fas fa-star" data-val="5"></i>
+                        </div>
+                        <input type="text" id="reviewName" placeholder="Your Name (Optional)" class="review-input" style="margin-bottom:10px;">
+                        <textarea id="reviewText" rows="3" placeholder="How was the product?" class="review-input"></textarea>
+                        <button class="btn-submit-review" onclick="submitReview()">Post Review</button>
+                    </div>
+
+                    <div id="reviewsList">
+                        <p class="no-reviews"><i class="fas fa-spinner fa-spin"></i> Loading reviews...</p>
+                    </div>
+                </div>
+
+
             `;
         }
 
@@ -269,6 +339,150 @@
         }
         // Add this line inside your loadProduct() function, right after renderPage(currentProduct):
         // checkFavState();
+
+        // --- 4. REVIEW SYSTEM LOGIC ---
+        
+        let selectedRating = 0;
+
+        // A. Load Reviews from Firestore
+        async function loadReviews() {
+            const list = document.getElementById('reviewsList');
+            const reviewsRef = collection(db, "reviews");
+            // Query reviews for THIS product, ordered by newest first
+            const q = query(
+                reviewsRef, 
+                where("productId", "==", productId),
+                orderBy("createdAt", "desc") 
+            );
+
+            try {
+                const querySnapshot = await getDocs(q);
+                
+                if (querySnapshot.empty) {
+                    list.innerHTML = `<p class="no-reviews">No reviews yet. Be the first to review!</p>`;
+                    return;
+                }
+
+                let html = '';
+                querySnapshot.forEach((doc) => {
+                    const r = doc.data();
+                    // Convert Timestamp to readable date
+                    const date = r.createdAt ? r.createdAt.toDate().toLocaleDateString() : 'Just now';
+                    
+                    html += `
+                        <div class="review-card">
+                            <div class="review-user">
+                                <span>${r.userName}</span>
+                                <span class="review-date">${date}</span>
+                            </div>
+                            <div class="review-stars">
+                                ${getStarHtml(r.rating)}
+                            </div>
+                            <div class="review-text">${r.comment}</div>
+                        </div>
+                    `;
+                });
+                list.innerHTML = html;
+
+            } catch (error) {
+                console.error("Error loading reviews:", error);
+                // If index error occurs (common in Firestore for composite queries), 
+                // fallback to simple text or check console for link to create index.
+                list.innerHTML = `<p class="no-reviews">Could not load reviews at this time.</p>`;
+            }
+        }
+
+        // B. Helper to generate Star Icons
+        function getStarHtml(rating) {
+            let stars = '';
+            for(let i=1; i<=5; i++) {
+                if(i <= rating) stars += '<i class="fas fa-star"></i>';
+                else stars += '<i class="far fa-star"></i>';
+            }
+            return stars;
+        }
+
+        // C. Check Eligibility & Handle Form
+        function checkReviewEligibility() {
+            // LOGIC: Check localStorage for "delivered_orders"
+            // You must save delivered order IDs here when order status updates to "Delivered"
+            const deliveredOrders = JSON.parse(localStorage.getItem('delivered_orders')) || [];
+            
+            // FOR TESTING: We assume TRUE so you can see the form. 
+            // Change "true" to "deliveredOrders.includes(productId)" for production.
+            const isEligible = true; 
+
+            if(isEligible) {
+                document.getElementById('reviewBtnContainer').innerHTML = 
+                    `<button class="btn-outline" style="padding:5px 15px; font-size:14px;" onclick="document.getElementById('reviewForm').style.display='block'">
+                        Write a Review
+                    </button>`;
+            }
+        }
+
+        // D. Star Selection Logic
+        document.getElementById('starInput').addEventListener('click', (e) => {
+            if(e.target.tagName === 'I') {
+                selectedRating = parseInt(e.target.getAttribute('data-val'));
+                updateStarInputUI();
+            }
+        });
+
+        function updateStarInputUI() {
+            const stars = document.querySelectorAll('#starInput i');
+            stars.forEach(star => {
+                const val = parseInt(star.getAttribute('data-val'));
+                if(val <= selectedRating) star.classList.add('active');
+                else star.classList.remove('active');
+            });
+        }
+
+        // E. Submit Review to Firestore
+        window.submitReview = async () => {
+            const comment = document.getElementById('reviewText').value;
+            const name = document.getElementById('reviewName').value || "Anonymous Customer";
+
+            if(selectedRating === 0) {
+                alert("Please select a star rating.");
+                return;
+            }
+
+            const btn = document.querySelector('.btn-submit-review');
+            btn.innerHTML = "Posting...";
+            btn.disabled = true;
+
+            try {
+                await addDoc(collection(db, "reviews"), {
+                    productId: productId,
+                    rating: selectedRating,
+                    comment: comment,
+                    userName: name,
+                    createdAt: serverTimestamp()
+                });
+
+                // Reset Form
+                document.getElementById('reviewForm').style.display = 'none';
+                document.getElementById('reviewText').value = '';
+                selectedRating = 0;
+                updateStarInputUI();
+                
+                // Reload Reviews
+                loadReviews();
+                alert("Thank you for your review!");
+
+            } catch (e) {
+                console.error("Error adding review: ", e);
+                alert("Error submitting review.");
+            } finally {
+                btn.innerHTML = "Post Review";
+                btn.disabled = false;
+            }
+        };
+
+        // Trigger loading
+        // Add this check after renderPage finishes in loadProduct()
+        // But for now, we can just call it safely here:
+        // (Wait for renderPage to inject HTML before calling these)
     </script>
 </body>
 </html>

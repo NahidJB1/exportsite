@@ -115,11 +115,12 @@
                         <p style="color:#666; margin-bottom:20px;">Looks like you haven't added anything yet.</p>
                         <a href="products.html" class="btn-shop">Start Shopping</a>
                     </div>`;
-                summary.style.display = 'flex';
+                summary.style.display = 'none';
                 return;
             }
 
-            summary.style.display = 'block';
+            summary.style.display = 'flex'; 
+            
             container.innerHTML = '';
             
             let grandTotal = 0;

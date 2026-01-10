@@ -542,6 +542,7 @@
         }
 
         // --- 2. ORDER FUNCTIONS ---
+        // --- 2. ORDER FUNCTIONS (UPDATED) ---
         async function loadOrders() {
             const tbody = document.getElementById('orderTableBody');
             try {
@@ -560,6 +561,11 @@
                     const order = doc.data();
                     if(order.status === 'Pending') pendingCount++;
 
+                    // FIX: Handle 'items' array instead of single 'product'
+                    // We take the first item to display in the main table row
+                    const firstItem = (order.items && order.items.length > 0) ? order.items[0] : {name: 'Unknown', price: '0', quantity: 0};
+                    const extraItemsCount = (order.items && order.items.length > 1) ? order.items.length - 1 : 0;
+                    
                     // Prepare data for the Modal (safely encode quotes)
                     const safeOrder = encodeURIComponent(JSON.stringify(order));
                     const date = order.createdAt ? order.createdAt.toDate().toLocaleDateString() : 'N/A';
@@ -578,8 +584,9 @@
                                 <small>${order.customer.phone}</small>
                             </td>
                             <td data-label="Product">
-                                ${order.product.name} 
-                                <span style="background:#0f172a; color:white; padding:2px 6px; border-radius:4px; font-size:10px;">x${order.product.quantity || 1}</span>
+                                ${firstItem.name} 
+                                <span style="background:#0f172a; color:white; padding:2px 6px; border-radius:4px; font-size:10px;">x${firstItem.qty || 1}</span>
+                                ${extraItemsCount > 0 ? `<span style="color:var(--accent); font-size:11px; font-weight:600;">+${extraItemsCount} more</span>` : ''}
                             </td>
                             <td data-label="Address"><small>${order.customer.address}</small></td>
                             <td data-label="Status" style="display:flex; gap:10px; align-items:center;">
@@ -673,26 +680,24 @@
 
 
         // --- ORDER DETAILS MODAL ---
-        // --- ORDER DETAILS MODAL ---
+        // --- ORDER DETAILS MODAL (UPDATED) ---
         window.openOrderModal = (orderJson, orderId, date) => {
             const order = JSON.parse(decodeURIComponent(orderJson));
+            const items = order.items || [];
             
-            // 1. Get the currency symbol (e.g., 'RM', 'BDT', '$') by removing numbers/dots/commas
-            const currency = order.product.price.replace(/[0-9.,]/g, '').trim() || 'RM';
-            
-            // 2. Clean the price string to get the number (remove currency & commas, keep dots)
-            // Example: "RM 1,200.50" -> "1200.50"
-            const rawPrice = order.product.price.replace(/[^0-9.]/g, '');
-            const priceVal = parseFloat(rawPrice) || 0;
-            
-            // 3. Calculate Total
-            const qty = order.product.quantity || 1;
-            const totalVal = priceVal * qty;
+            // Build the list of items HTML
+            let itemsHtml = '';
+            items.forEach(item => {
+                itemsHtml += `
+                    <div class="invoice-row">
+                        <span>${item.name} <small>(x${item.qty || 1})</small></span>
+                        <b>${item.price}</b>
+                    </div>`;
+            });
 
-            // 4. Format Output (2 decimal places) -> "RM 58.98"
-            // toLocaleString helps with thousands separators (e.g. 1,000.00)
-            const totalDisplay = `${currency} ${totalVal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-            
+            // Use the total calculated during checkout
+            const totalDisplay = order.displayTotal || order.totalAmount || "0.00";
+
             const html = `
                 <div class="invoice-box">
                     <div class="invoice-row"><span>Order ID:</span> <b>#${orderId.slice(-6).toUpperCase()}</b></div>
@@ -706,12 +711,9 @@
                 
                 <h4 style="margin:15px 0 10px; border-bottom:1px solid #eee;">Items</h4>
                 <div class="invoice-box" style="background:white; border:1px solid #e2e8f0;">
-                    <div class="invoice-row">
-                        <span>${order.product.name} (x${qty})</span>
-                        <b>${order.product.price}</b>
-                    </div>
+                    ${itemsHtml}
                     <div class="invoice-row" style="margin-top:10px; border-top:1px solid #eee; padding-top:10px;">
-                        <span style="font-weight:700">TOTAL ESTIMATE</span>
+                        <span style="font-weight:700">TOTAL</span>
                         <span style="font-weight:700; color:var(--accent)">${totalDisplay}</span>
                     </div>
                 </div>

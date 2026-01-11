@@ -586,24 +586,30 @@ header {
     }
 
     // --- NEW: FETCH REAL PRODUCTS FROM FIREBASE ---
+    // --- NEW: FETCH REAL PRODUCTS WITH DYNAMIC LIMIT ---
     async function loadRealProducts() {
         const grid = document.getElementById('productGrid');
-        grid.innerHTML = ""; // Clear the fake placeholder items
+        grid.innerHTML = ""; // Clear placeholders
 
         try {
-            // Get top 8 newest products
-            const q = query(collection(db, "products"), orderBy("createdAt", "desc"), limit(8));
+            // 1. DECIDE THE LIMIT BASED ON SCREEN SIZE
+            // If screen width is greater than 768px (Desktop/Tablet), fetch 14.
+            // Otherwise (Mobile), fetch only 6.
+            const isDesktop = window.innerWidth > 768;
+            const limitNum = isDesktop ? 14 : 6; 
+
+            // 2. Use the 'limitNum' variable in the query
+            const q = query(collection(db, "products"), orderBy("createdAt", "desc"), limit(limitNum));
             const snapshot = await getDocs(q);
 
             if (snapshot.empty) {
-                grid.innerHTML = "<p style='text-align:center; width:100%; color:#666;'>No products found. Please add some via Dashboard.</p>";
+                grid.innerHTML = "<p style='text-align:center; width:100%; color:#666;'>No products found.</p>";
                 return;
             }
 
             snapshot.forEach((doc) => {
                 const item = doc.data();
                 
-                // Create HTML Card
                 const cardHTML = `
                     <div class="product-card">
                         <img src="${item.image}" class="prod-img" alt="${item.name}">
@@ -619,7 +625,7 @@ header {
 
         } catch (error) {
             console.error("Error loading products:", error);
-            grid.innerHTML = "<p>Error loading products. Check console.</p>";
+            grid.innerHTML = "<p>Error loading products.</p>";
         }
     }
 

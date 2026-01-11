@@ -285,6 +285,57 @@
         }
         .pulse-active { animation: receiptPulse 1s ease-out; }
 
+        /* Ensure the header can contain absolute elements */
+header {
+  position: relative;
+  overflow: hidden; /* Keeps images contained */
+}
+
+/* Slider Container */
+.header-slider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0; /* Sends images to the back */
+}
+
+/* Individual Slide Styles */
+.slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Ensures images look good on mobile and desktop */
+  opacity: 0; /* Hidden by default */
+  transition: opacity 1.5s ease-in-out; /* The smooth fade effect */
+}
+
+/* The Visible Slide */
+.slide.active {
+  opacity: 1;
+}
+
+/* Dark Overlay (Optional: makes text easier to read) */
+.header-slider::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4); /* 40% darkness */
+  z-index: 1;
+}
+
+/* Ensure your text/logos stay on top of the images */
+.text-overlay, .header-logo, .nav-menu {
+  position: relative;
+  z-index: 2; 
+}
+
     </style>
 </head>
 <body>
@@ -300,9 +351,15 @@
     </nav>
 
     <header class="hero-section">
-        <img src="https://via.placeholder.com/1200x600/003366/ffffff?text=Electronics+Sourcing" class="slide active">
-        <img src="https://via.placeholder.com/1200x600/00A86B/ffffff?text=Cosmetics+Export" class="slide">
-        <img src="https://via.placeholder.com/1200x600/FF9900/ffffff?text=Gadgets+KL+to+Dhaka" class="slide">
+        <div class="header-slider">
+  <img src="image1.jpg" class="slide active" alt="Slide 1">
+  <img src="image2.jpg" class="slide" alt="Slide 2">
+  <img src="image3.jpg" class="slide" alt="Slide 3">
+  <img src="image4.jpg" class="slide" alt="Slide 4">
+  <img src="image5.jpg" class="slide" alt="Slide 5">
+  <img src="image6.jpg" class="slide" alt="Slide 6">
+  <img src="image7.jpg" class="slide" alt="Slide 7">
+</div>
         
         <div class="hero-overlay">
             <h1>Sourcing Global Quality for Bangladesh</h1>
@@ -579,7 +636,5 @@
     }
     reveal();
 </script>
-
-    </script>
 </body>
 </html>

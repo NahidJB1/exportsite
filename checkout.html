@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Secure Checkout | Nusantara Trade</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
+        /* --- GENERAL STYLES --- */
         body { font-family: 'Poppins', sans-serif; background: #f4f7f6; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
         
         .checkout-card {
@@ -15,17 +17,17 @@
         
         h2 { color: #003366; margin-bottom: 20px; text-align: center; }
         
+        /* --- PRODUCT SUMMARY --- */
         .product-summary {
             background: #e6fffa; padding: 15px; border-radius: 8px;
-            border-left: 5px solid #00A86B; margin-bottom: 25px; display: flex; gap: 15px; align-items: center;
+            border-left: 5px solid #00A86B; margin-bottom: 10px; display: flex; gap: 15px; align-items: center;
         }
-        .summary-img { width: 60px; height: 60px; object-fit: cover; border-radius: 5px; background: #ddd; }
-        .summary-details h4 { margin: 0; color: #003366; font-size: 16px; }
-        
-        /* Updated Price Style */
-        .summary-details .total-price { margin: 5px 0 0; color: #00A86B; font-weight: 700; font-size: 18px; }
-        .summary-details .unit-info { font-size: 12px; color: #666; margin-top: 2px; }
+        .summary-img { width: 50px; height: 50px; object-fit: cover; border-radius: 5px; background: #ddd; }
+        .summary-details h4 { margin: 0; color: #003366; font-size: 14px; }
+        .summary-details .unit-info { font-size: 12px; color: #666; }
+        .summary-details .price-tag { color: #00A86B; font-weight: 700; font-size: 14px; }
 
+        /* --- FORM ELEMENTS --- */
         label { display: block; margin-bottom: 5px; font-weight: 600; color: #333; font-size: 14px; }
         input, textarea {
             width: 100%; padding: 12px; margin-bottom: 15px;
@@ -39,39 +41,122 @@
         .btn-confirm:hover { background: #002244; }
         .btn-back { display: block; text-align: center; margin-top: 15px; color: #666; text-decoration: none; font-size: 13px; }
 
+        /* --- SUCCESS OVERLAY --- */
         .success-overlay {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255,255,255,0.95); border-radius: 10px;
-            display: none; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+            background: rgba(255,255,255,0.98); border-radius: 10px;
+            display: none; flex-direction: column; justify-content: center; align-items: center; text-align: center; z-index: 10;
         }
         .success-icon { font-size: 50px; color: #00A86B; margin-bottom: 20px; }
+
+        /* --- NEW: PAYMENT METHOD STYLES --- */
+        .payment-section { margin-bottom: 25px; border-top: 1px solid #eee; padding-top: 20px; }
+        .payment-title { font-size: 16px; font-weight: 600; color: #333; margin-bottom: 10px; }
+        
+        .payment-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        
+        .pay-option {
+            border: 2px solid #eee; border-radius: 8px; padding: 15px; cursor: pointer;
+            text-align: center; transition: 0.2s; background: #fff; position: relative;
+        }
+        
+        .pay-option:hover { border-color: #cbd5e1; }
+        
+        .pay-option.active {
+            border-color: #003366; background: #f0f9ff; color: #003366;
+        }
+        /* Checkmark icon for active state */
+        .pay-option.active::after {
+            content: '\f00c'; font-family: "Font Awesome 6 Free"; font-weight: 900;
+            position: absolute; top: 5px; right: 5px; font-size: 12px; color: #003366;
+        }
+
+        .pay-icon { font-size: 24px; margin-bottom: 5px; display: block; color: #666; }
+        .pay-option.active .pay-icon { color: #003366; }
+        .pay-label { font-size: 12px; font-weight: 600; }
+
+        /* Bank Details Box */
+        .bank-details-box {
+            display: none; /* Hidden by default */
+            background: #f8fafc; border: 1px solid #e2e8f0; 
+            border-radius: 8px; padding: 15px; font-size: 13px; color: #475569;
+            margin-bottom: 15px;
+        }
+        .bank-details-box.show { display: block; animation: fadeIn 0.3s; }
+        
+        .bank-group { margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dashed #cbd5e1; }
+        .bank-group:last-child { margin-bottom: 0; border-bottom: none; padding-bottom: 0; }
+        .bank-name { font-weight: 700; color: #003366; margin-bottom: 4px; display: flex; align-items: center; gap: 5px; }
+        .bank-row { display: flex; justify-content: space-between; margin-bottom: 2px; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
     </style>
 </head>
 <body>
 
     <div class="checkout-card">
         <div id="successScreen" class="success-overlay">
-            <div class="success-icon">✓</div>
+            <div class="success-icon"><i class="fas fa-check-circle"></i></div>
             <h3 style="color:#003366;">Order Confirmed!</h3>
             <p style="color:#666;">Redirecting to order tracking...</p>
         </div>
 
-        <h2>Checkout</h2>
+        <h2>Secure Checkout</h2>
         
-        <div id="orderItemsContainer" style="max-height: 250px; overflow-y: auto; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-right: 5px;">
+        <div id="orderItemsContainer" style="max-height: 250px; overflow-y: auto; margin-bottom: 20px; padding-right: 5px;">
             <div style="text-align:center; color:#999; padding:20px;">Loading items...</div>
         </div>
 
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:25px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
              <span style="font-weight:600; color:#555;">Total Amount:</span>
              <span id="grandTotalDisplay" style="font-size: 22px; font-weight: 700; color: #003366;">...</span>
         </div>
 
         <form id="orderForm">
+            
+            <div class="payment-section">
+                <div class="payment-title">Select Payment Method</div>
+                
+                <div class="payment-grid">
+                    <div class="pay-option active" onclick="selectPayment('COD', this)">
+                        <i class="fas fa-truck pay-icon"></i>
+                        <span class="pay-label">Cash on Delivery</span>
+                    </div>
+                    
+                    <div class="pay-option" onclick="selectPayment('BANK', this)">
+                        <i class="fas fa-university pay-icon"></i>
+                        <span class="pay-label">Bank Transfer</span>
+                    </div>
+                </div>
+
+                <div id="bankDetailsContainer" class="bank-details-box">
+                    <p style="margin: 0 0 10px; font-weight: 600; color: #d97706;">
+                        <i class="fas fa-info-circle"></i> Please transfer the total amount to:
+                    </p>
+
+                    <div class="bank-group">
+                        <div class="bank-name"><i class="fas fa-flag"></i> NRBC BANK (Bangladesh)</div>
+                        <div class="bank-row"><span>Branch:</span> <span>MYMENSINGH BRANCH</span></div>
+                        <div class="bank-row"><span>Name:</span> <span>MD.FUAD HASAN SAKIR</span></div>
+                        <div class="bank-row"><span>AC No:</span> <span style="font-weight:700; color:#333;">0152 3110 000 8216</span></div>
+                    </div>
+
+                    <div class="bank-group">
+                        <div class="bank-name"><i class="fas fa-flag"></i> Touch 'n Go (Malaysia)</div>
+                        <div class="bank-row"><span>Name:</span> <span>SAKIR MD.FUAD HASAN</span></div>
+                        <div class="bank-row"><span>Account:</span> <span style="font-weight:700; color:#333;">1700 6073 2648</span></div>
+                    </div>
+
+                    <label style="margin-top:15px; color:#003366;">Transaction ID (Required)</label>
+                    <input type="text" id="trxID" placeholder="Enter TrxID / Ref No.">
+                </div>
+            </div>
+
             <label>Full Name</label>
             <input type="text" id="cName" placeholder="e.g. Rahim Uddin" required>
 
-            <label>Phone Number (Important)</label>
+            <label>Phone Number</label>
             <input type="tel" id="cPhone" placeholder="e.g. 01712345678" required>
 
             <label>Shipping Address</label>
@@ -88,7 +173,7 @@
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { collection, addDoc, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // 1. Math Helpers
+        // --- 1. GLOBALS & HELPERS ---
         function parsePrice(str) { return parseFloat(str.replace(/[^0-9.]/g, '')) || 0; }
         function getCurrency(str) { return str.replace(/[0-9.,]/g, '').trim(); }
 
@@ -96,12 +181,37 @@
         let orderItems = []; 
         let finalGrandTotal = 0;
         let currencySym = '';
+        
+        // Default Payment Method
+        let selectedPaymentMethod = 'COD'; 
 
-        // 2. DETERMINE SOURCE (Buy Now vs Cart)
+        // --- 2. PAYMENT SELECTION LOGIC (Attached to Window) ---
+        window.selectPayment = (method, el) => {
+            selectedPaymentMethod = method;
+
+            // Update UI (Active Class)
+            document.querySelectorAll('.pay-option').forEach(opt => opt.classList.remove('active'));
+            el.classList.add('active');
+
+            // Show/Hide Bank Details
+            const bankBox = document.getElementById('bankDetailsContainer');
+            const trxInput = document.getElementById('trxID');
+            
+            if (method === 'BANK') {
+                bankBox.classList.add('show');
+                trxInput.setAttribute('required', 'true'); // Make Trx ID mandatory
+            } else {
+                bankBox.classList.remove('show');
+                trxInput.removeAttribute('required'); // Remove mandatory requirement
+                trxInput.value = ''; // Clear input if switching back
+            }
+        };
+
+        // --- 3. LOAD CART DATA ---
         const urlParams = new URLSearchParams(window.location.search);
         
         if(urlParams.get('id')) {
-            // MODE A: BUY NOW (Single Item)
+            // MODE A: BUY NOW
             orderItems.push({
                 id: urlParams.get('id'),
                 name: urlParams.get('name'),
@@ -110,7 +220,7 @@
                 qty: parseInt(urlParams.get('qty')) || 1
             });
         } else {
-            // MODE B: CART (Multiple Items)
+            // MODE B: CART
             const cartData = JSON.parse(localStorage.getItem('myCart')) || [];
             if(cartData.length > 0) {
                 orderItems = cartData;
@@ -119,7 +229,7 @@
             }
         }
 
-        // 3. Render Items & Calculate Total
+        // --- 4. RENDER ITEMS ---
         const container = document.getElementById('orderItemsContainer');
         container.innerHTML = '';
         
@@ -130,13 +240,13 @@
             if(!currencySym) currencySym = getCurrency(item.price);
 
             container.innerHTML += `
-                <div class="product-summary" style="background: #e6fffa; padding: 12px; border-radius: 8px; border-left: 4px solid #00A86B; margin-bottom: 10px; display: flex; gap: 15px; align-items: center;">
-                    <img src="${item.image}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px; background: #ddd;">
+                <div class="product-summary">
+                    <img src="${item.image}" class="summary-img">
                     <div class="summary-details" style="flex:1;">
-                        <h4 style="margin: 0; color: #003366; font-size: 14px;">${item.name}</h4>
+                        <h4>${item.name}</h4>
                         <div style="display:flex; justify-content:space-between; margin-top:4px;">
-                            <span style="font-size: 12px; color: #666;">Qty: ${item.qty}</span>
-                            <span style="color: #00A86B; font-weight: 700; font-size: 14px;">${item.price}</span>
+                            <span class="unit-info">Qty: ${item.qty}</span>
+                            <span class="price-tag">${item.price}</span>
                         </div>
                     </div>
                 </div>
@@ -145,7 +255,7 @@
 
         document.getElementById('grandTotalDisplay').innerText = currencySym + ' ' + finalGrandTotal.toLocaleString();
 
-        // 4. Auto-Fill User Data
+        // --- 5. AUTO-FILL USER DATA ---
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
@@ -161,44 +271,61 @@
             }
         });
 
-        // 5. Submit Order
-        // 5. Submit Order
+        // --- 6. SUBMIT ORDER ---
         document.getElementById('orderForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            
             const btn = document.getElementById('submitBtn');
             const nameVal = document.getElementById('cName').value;
             const phoneVal = document.getElementById('cPhone').value;
             const addressVal = document.getElementById('cAddress').value;
-            
+            const trxVal = document.getElementById('trxID').value;
+
+            // Extra Validation for Manual Payment
+            if (selectedPaymentMethod === 'BANK' && !trxVal.trim()) {
+                alert("Please enter the Transaction ID for your payment.");
+                return;
+            }
+
             btn.disabled = true;
             btn.innerText = "Processing...";
 
             try {
-                // --- NEW CODE: Update User Profile for future auto-fill ---
+                // Update User Profile
                 if (currentUser) {
                     await setDoc(doc(db, "users", currentUser.uid), {
-                        fullName: nameVal,  // Matches variable name in profile.html
+                        fullName: nameVal,
                         phone: phoneVal,
                         address: addressVal,
                         updatedAt: serverTimestamp()
-                    }, { merge: true }); // Merge ensures we don't delete other user data (like email)
+                    }, { merge: true });
                 }
-                // ---------------------------------------------------------
 
-                await addDoc(collection(db, "orders"), {
+                // Create Order Object
+                const orderData = {
                     items: orderItems, 
                     totalAmount: finalGrandTotal,
                     displayTotal: document.getElementById('grandTotalDisplay').innerText,
                     customer: { name: nameVal, phone: phoneVal, address: addressVal },
+                    
+                    // NEW: Payment Info
+                    paymentMethod: selectedPaymentMethod === 'COD' ? 'Cash on Delivery' : 'Bank Transfer',
+                    paymentStatus: "Pending", // Admin will verify bank transfers
+                    transactionId: selectedPaymentMethod === 'BANK' ? trxVal : null,
+                    
                     status: "Pending",
                     userId: currentUser ? currentUser.uid : "guest",
                     createdAt: serverTimestamp()
-                });
+                };
 
+                await addDoc(collection(db, "orders"), orderData);
+
+                // Clear Cart
                 if(!urlParams.get('id')) {
                     localStorage.removeItem('myCart');
                 }
 
+                // Show Success
                 document.getElementById('successScreen').style.display = 'flex';
                 setTimeout(() => {
                     window.location.href = `track-order.html?phone=${phoneVal}`;

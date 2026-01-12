@@ -268,6 +268,33 @@
         </div>
     </div>
 
+    <div class="card">
+        <h3>
+            <span><i class="fas fa-chart-bar"></i> Order Volume</span>
+            <div style="font-size:12px; display:flex; gap:5px;">
+                <button class="action-btn" onclick="window.updateChart(7, this, 'volume')" style="width:auto; padding:0 10px;">7D</button>
+                <button class="action-btn" onclick="window.updateChart(30, this, 'volume')" style="width:auto; padding:0 10px;">30D</button>
+            </div>
+        </h3>
+        <div style="height: 300px; width: 100%;">
+            <canvas id="salesChart"></canvas>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>
+            <span><i class="fas fa-coins"></i> Sales & Profit Analysis</span>
+            <div style="font-size:12px; display:flex; gap:5px;">
+                <button class="action-btn" onclick="window.updateChart(7, this, 'profit')" style="width:auto; padding:0 10px;">7D</button>
+                <button class="action-btn" onclick="window.updateChart(30, this, 'profit')" style="width:auto; padding:0 10px;">1M</button>
+            </div>
+        </h3>
+        <div style="height: 300px; width: 100%;">
+            <canvas id="profitChart"></canvas>
+        </div>
+    </div>
+</div>
+
     <div class="chart-card">
         <div class="chart-header">
             <h3 style="margin:0; font-size:18px; color:var(--primary)">Order Volume</h3>
@@ -500,518 +527,437 @@
     </div>
 
     <script type="module">
-        import { db, auth } from './firebase-config.js';
-        import { collection, addDoc, getDocs, getDoc, deleteDoc, updateDoc, doc, orderBy, query, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { db, auth } from './firebase-config.js';
+    import { collection, addDoc, getDocs, deleteDoc, updateDoc, doc, orderBy, query, serverTimestamp, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // Cloudinary Config (Same as before)
-        const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dounsisel/image/upload";
-        const CLOUDINARY_PRESET = "nusantara_upload";
+    // Cloudinary Config
+    const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dounsisel/image/upload";
+    const CLOUDINARY_PRESET = "nusantara_upload";
 
-        // Global State
-        let targetId = null, targetAction = null, targetValue = null;
-        let allOrdersData = []; // Cache for charts
-        let chartInstance = null;
+    // --- GLOBAL VARIABLES ---
+    let targetId = null;
+    let targetAction = null;
+    let targetValue = null;
+    let allOrdersData = []; // Cache for charts
+    let productCostMap = {}; // Cache for buying costs { productId: cost }
+    let chartInstanceVolume = null;
+    let chartInstanceProfit = null;
 
-        // --- GLOBAL HELPERS ---
-        window.showToast = (msg, type = 'success') => {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> <span>${msg}</span>`;
-            container.appendChild(toast);
-            setTimeout(() => toast.remove(), 3000);
-        };
+    // --- HELPERS ---
+    window.showToast = (msg, type = 'success') => {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.innerHTML = `<i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i> <span>${msg}</span>`;
+        container.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    };
 
-        window.toggleSidebar = () => document.getElementById('sidebar').classList.toggle('active');
+    window.toggleSidebar = () => document.getElementById('sidebar').classList.toggle('active');
 
-        window.switchTab = (tabName) => {
-            document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
-            document.getElementById(`section-${tabName}`).classList.add('active');
-            document.getElementById(`menu-${tabName}`).classList.add('active');
-            
-            const titles = { home: 'Dashboard', products: 'Inventory', orders: 'Orders' };
-            document.getElementById('pageTitle').innerText = titles[tabName];
-            if(window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('active');
-        };
-
-        window.switchProductView = (view) => {
-            document.querySelectorAll('.product-view').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.sub-tab-btn').forEach(el => el.classList.remove('active'));
-            document.getElementById(`view-${view}`).classList.add('active');
-            document.getElementById(`btn-view-${view}`).classList.add('active');
-        };
-
-        window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
-
-        // --- AUTH & INIT ---
-        onAuthStateChanged(auth, (user) => {
-            if (!user) window.location.href = "login.html"; 
-            else {
-                loadProducts();
-                loadOrders(); // Loads orders + updates chart
-            }
-        });
-
-    
+    window.switchTab = (tabName) => {
+        document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
         
-
+        const section = document.getElementById(`section-${tabName}`);
+        const menu = document.getElementById(`menu-${tabName}`);
         
+        if(section) section.classList.add('active');
+        if(menu) menu.classList.add('active');
+        
+        if(window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('active');
+    };
 
-        window.updateFileCount = (input) => {
-            const label = document.getElementById('uploadText');
-            if (input.files && input.files.length > 0) label.innerHTML = `<i class="fas fa-check-circle" style="color:var(--success)"></i> ${input.files.length} Selected`;
-            else label.innerHTML = `<i class="fas fa-cloud-upload-alt"></i> Click to upload`;
-        };
+    window.logout = () => signOut(auth).then(() => window.location.href = "login.html");
 
-        // --- 2. ORDER LOGIC (Accordion + Filtering) ---
-        async function loadOrders() {
-            try {
-                const q = query(collection(db, "orders"), orderBy("createdAt", "desc"));
-                const snapshot = await getDocs(q);
-                allOrdersData = []; // Clear Cache
-                
-                const lists = { pending: [], confirmed: [], shipped: [], delivered: [], all: [] };
-                
-                snapshot.forEach(doc => {
-                    const d = doc.data();
-                    d.id = doc.id; // Attach ID
-                    d.dateObj = d.createdAt ? d.createdAt.toDate() : new Date();
-                    d.dateStr = d.dateObj.toLocaleDateString();
-                    allOrdersData.push(d);
-
-                    const firstItem = (d.items && d.items[0]) ? d.items[0] : {name:'?', qty:1};
-                    const safeOrder = encodeURIComponent(JSON.stringify(d));
-
-                    // Status Dropdown Generator
-                    const makeSelect = (currentStatus) => `
-                        <select onchange="window.askStatusUpdate('${d.id}', '${currentStatus}', this.value)" style="padding:5px; font-size:12px;">
-                            <option value="Pending" ${currentStatus=='Pending'?'selected':''}>Pending</option>
-                            <option value="Confirmed" ${currentStatus=='Confirmed'?'selected':''}>Confirm</option>
-                            <option value="Shipped" ${currentStatus=='Shipped'?'selected':''}>Shipped</option>
-                            <option value="Delivered" ${currentStatus=='Delivered'?'selected':''}>Delivered</option>
-                            <option value="Cancelled" ${currentStatus=='Cancelled'?'selected':''}>Cancelled</option>
-                        </select>
-                    `;
-
-                    const row = `
-                        <tr>
-                            <td data-label="Date">${d.dateStr}</td>
-                            <td data-label="Customer"><b>${d.customer.name}</b><br><small>${d.customer.phone}</small></td>
-                            <td data-label="Items">${firstItem.name} <span style="background:#f1f5f9; padding:2px;">x${firstItem.qty||1}</span></td>
-                            <td data-label="Action">
-                                <div style="display:flex; gap:5px; align-items:center;">
-                                    ${makeSelect(d.status)}
-                                    <button class="action-btn" onclick="window.viewOrder('${safeOrder}')"><i class="fas fa-eye"></i></button>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-
-                    // Categorize
-                    if(d.status === 'Pending') lists.pending.push(row);
-                    if(d.status === 'Confirmed') lists.confirmed.push(row);
-                    if(d.status === 'Shipped') lists.shipped.push(row);
-                    if(d.status === 'Delivered') lists.delivered.push(row);
-                    
-                    // All Orders Row (Simplified)
-                    lists.all.push(`
-                        <tr>
-                            <td data-label="Date">${d.dateStr}</td>
-                            <td data-label="Status"><span class="status-badge" style="background:#f1f5f9;">${d.status}</span></td>
-                            <td data-label="Customer">${d.customer.name}</td>
-                            <td data-label="Total">${d.displayTotal || d.totalAmount}</td>
-                        </tr>
-                    `);
-                });
-
-                // Update UI
-                document.getElementById('tbody-pending').innerHTML = lists.pending.length ? lists.pending.join('') : '<tr><td colspan="4" style="text-align:center; padding:15px;">No pending orders</td></tr>';
-                document.getElementById('tbody-confirmed').innerHTML = lists.confirmed.length ? lists.confirmed.join('') : '<tr><td colspan="4" style="text-align:center; padding:15px;">No confirmed orders</td></tr>';
-                document.getElementById('tbody-shipped').innerHTML = lists.shipped.join('');
-                document.getElementById('tbody-delivered').innerHTML = lists.delivered.join('');
-                document.getElementById('tbody-all').innerHTML = lists.all.join('');
-
-                // Update Counts
-                document.getElementById('count-pending').innerText = lists.pending.length;
-                document.getElementById('stat-pending').innerText = lists.pending.length;
-                document.getElementById('stat-total').innerText = snapshot.size;
-
-                window.renderChart(); // Draw Chart
-
-            } catch (err) { console.error("Order Load Error", err); }
+    // --- AUTH & INIT ---
+    onAuthStateChanged(auth, (user) => {
+        if (!user) window.location.href = "login.html"; 
+        else {
+            loadProducts(); // Loads products AND builds cost map
+            loadOrders();   // Loads orders AND renders charts
         }
+    });
 
-        window.toggleAccordion = (id) => {
-            const item = document.getElementById(`acc-${id}`);
-            const isOpen = item.classList.contains('open');
-            // Close all first (optional, kept for cleaner UI)
-            document.querySelectorAll('.accordion-item').forEach(el => el.classList.remove('open'));
-            if(!isOpen) item.classList.add('open');
-        };
-        
-        // Helper to open specific accordion from Home
-        window.openAccordion = (id) => setTimeout(() => window.toggleAccordion(id), 100);
-
-        // --- 3. INVENTORY & STATUS LOGIC (Crucial Update) ---
-        window.askStatusUpdate = (orderId, oldStatus, newStatus) => {
-            targetId = orderId; 
-            targetAction = 'status_change';
-            // Store context for logic
-            window.statusContext = { old: oldStatus, new: newStatus };
+    // --- 1. PRODUCT LOGIC (With Buying Cost) ---
+    async function loadProducts() {
+        const tbody = document.getElementById('productTableBody');
+        try {
+            const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
+            const snapshot = await getDocs(q);
             
-            document.getElementById('modalTitle').innerText = "Update Status";
-            document.getElementById('modalDesc').innerText = `Change from ${oldStatus} to ${newStatus}? Stock will be adjusted automatically.`;
-            document.getElementById('confirmModal').style.display = 'flex';
-        };
+            document.getElementById('stat-inventory').innerText = snapshot.size;
+            productCostMap = {}; // Reset Cost Map
 
-        async function handleStatusChange() {
-            const { old: oldStatus, new: newStatus } = window.statusContext;
-            
-            // Fetch Order to get Items
-            const orderRef = doc(db, "orders", targetId);
-            const orderSnap = await getDoc(orderRef);
-            if(!orderSnap.exists()) return;
-            const orderData = orderSnap.data();
-            const items = orderData.items || [];
-
-            // 1. Determine Inventory Action
-            // Action: 'decrease' (Pending -> Confirmed)
-            // Action: 'increase' (Confirmed -> Cancelled or Pending)
-            let inventoryAction = null;
-
-            const isStockHolding = (s) => ['Confirmed', 'Shipped', 'Delivered'].includes(s);
-            const isNonStock = (s) => ['Pending', 'Cancelled'].includes(s);
-
-            if (isNonStock(oldStatus) && isStockHolding(newStatus)) {
-                inventoryAction = 'decrease';
-            } else if (isStockHolding(oldStatus) && isNonStock(newStatus)) {
-                inventoryAction = 'increase';
+            if(snapshot.empty) {
+                tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>No products found.</td></tr>";
+                return;
             }
 
-            // 2. Update Inventory per Item
-            if (inventoryAction) {
-                for (const item of items) {
-                    if (!item.productId) continue;
-                    const prodRef = doc(db, "products", item.productId);
-                    const prodSnap = await getDoc(prodRef);
-                    
-                    if (prodSnap.exists()) {
-                        let currentQty = prodSnap.data().quantity || 0;
-                        let change = parseInt(item.qty || 1);
-                        
-                        let newQty = inventoryAction === 'decrease' 
-                            ? currentQty - change 
-                            : currentQty + change;
-                        
-                        // Prevent negative
-                        if (newQty < 0) newQty = 0;
+            tbody.innerHTML = "";
+            snapshot.forEach(doc => {
+                const item = doc.data();
+                
+                // Store Buying Cost for Profit Calculation
+                productCostMap[doc.id] = Number(item.buyingCost) || 0;
 
-                        // Auto Sold Out Status
-                        let prodStatus = newQty === 0 ? 'Sold Out' : 'Available';
+                const imgUrl = (item.images && item.images[0]) ? item.images[0] : (item.image || 'https://via.placeholder.com/50');
+                const badgeClass = item.status === 'Available' ? 'status-available' : 'status-soldout';
+                const safeName = item.name.replace(/'/g, "\\'");
 
-                        await updateDoc(prodRef, { quantity: newQty, status: prodStatus });
-                    }
-                }
+                tbody.innerHTML += `
+                    <tr>
+                        <td data-label="Image"><img src="${imgUrl}" class="thumb"></td>
+                        <td data-label="Name">
+                            <div style="font-weight:600;">${item.name}</div>
+                            <div style="font-size:12px; color:#64748b;">${item.category}</div>
+                        </td>
+                        <td data-label="Selling Price" style="font-weight:600; color:var(--accent);">${item.price}</td>
+                        <td data-label="Status"><span class="status-badge ${badgeClass}">${item.status}</span></td>
+                        <td data-label="Actions">
+                            <div style="display:flex; gap:10px;">
+                                <button class="action-btn btn-edit" onclick="window.prepareEdit('${doc.id}', '${safeName}', '${item.price}', '${item.buyingCost || ''}', '${item.category}', '${item.status}')">
+                                    <i class="fas fa-pen"></i>
+                                </button>
+                                <button class="action-btn btn-delete" onclick="window.askDelete('${doc.id}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            // If orders loaded before products, chart might be empty. Refresh it now that we have costs.
+            if(allOrdersData.length > 0) {
+                window.renderProfitChart(7);
             }
 
-            // 3. Update Order Status
-            await updateDoc(orderRef, { status: newStatus });
-        }
-
-        // --- 4. CONFIRMATION HANDLER ---
-        document.getElementById('modalConfirmBtn').addEventListener('click', async () => {
-            const btn = document.getElementById('modalConfirmBtn');
-            btn.disabled = true; btn.innerText = "Processing...";
-            
-            try {
-                if(targetAction === 'delete') {
-                    await deleteDoc(doc(db, "products", targetId));
-                    window.showToast("Product deleted");
-                    loadProducts();
-                }
-                if(targetAction === 'status_change') {
-                    await handleStatusChange();
-                    window.showToast("Status & Inventory Updated");
-                    loadOrders();
-                    loadProducts(); // Refresh stock numbers
-                }
-                if(targetAction === 'save_edit') {
-                     // Handled separately below, but could be merged
-                }
-            } catch(e) { window.showToast("Error: " + e.message, "error"); }
-            
-            window.closeModal();
-            btn.disabled = false; btn.innerText = "Proceed";
-        });
-
-        // --- GLOBAL VARS UPDATE ---
-let productCostMap = {}; // Stores { productId: buyingCost }
-let chartInstanceVolume = null;
-let chartInstanceProfit = null;
-
-// --- 1. UPDATE LOAD PRODUCTS (To build Cost Map) ---
-async function loadProducts() {
-    const tbody = document.getElementById('productTableBody');
-    tbody.innerHTML = "<tr><td colspan='6' style='text-align:center;'>Loading...</td></tr>";
-    
-    try {
-        const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
-        const snapshot = await getDocs(q);
-        document.getElementById('stat-inventory').innerText = snapshot.size;
-
-        tbody.innerHTML = "";
-        productCostMap = {}; // Reset map
-
-        snapshot.forEach(doc => {
-            const item = doc.data();
-            // Store cost for profit calculation
-            productCostMap[doc.id] = item.buyingCost || 0;
-
-            const qty = item.quantity || 0;
-            const statusClass = qty > 0 ? 'status-available' : 'status-soldout';
-            const imgUrl = (item.images && item.images[0]) ? item.images[0] : 'https://via.placeholder.com/50';
-            const safeName = item.name.replace(/'/g, "\\'");
-
-            tbody.innerHTML += `
-                <tr>
-                    <td data-label="Image"><img src="${imgUrl}" class="thumb"></td>
-                    <td data-label="Name" style="font-weight:600;">${item.name}</td>
-                    <td data-label="Price" style="color:var(--accent);">${item.price}</td>
-                    <td data-label="Stock"><span style="font-weight:700; color:${qty < 5 ? 'red' : 'inherit'}">${qty}</span></td>
-                    <td data-label="Status"><span class="status-badge ${statusClass}">${qty > 0 ? 'Available' : 'Sold Out'}</span></td>
-                    <td data-label="Actions">
-                        <div style="display:flex; gap:10px;">
-                            <button class="action-btn btn-edit" onclick="window.prepareEdit('${doc.id}', '${safeName}', '${item.price}', '${item.buyingCost || ''}', '${qty}')">
-                                <i class="fas fa-pen"></i>
-                            </button>
-                            <button class="action-btn btn-delete" onclick="window.askDelete('${doc.id}')">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            `;
-        });
-        
-        // Refresh charts now that we have costs
-        if(allOrdersData.length > 0) window.renderProfitChart(7);
-
-    } catch (err) { console.error(err); }
-}
-
-// --- 2. UPDATE ADD PRODUCT (Save Buying Cost) ---
-document.getElementById('addProductForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    // ... (Image upload code stays same) ...
-    // Inside the addDoc function:
-    await addDoc(collection(db, "products"), {
-        name: document.getElementById('pName').value,
-        price: document.getElementById('pPrice').value, // Selling Price
-        buyingCost: Number(document.getElementById('pBuyingCost').value), // NEW: Buying Cost
-        category: document.getElementById('pCategory').value,
-        quantity: parseInt(document.getElementById('pQty').value),
-        status: 'Available',
-        description: document.getElementById('pDesc').value,
-        images: imageUrls, // defined in your existing code
-        image: imageUrls[0], 
-        createdAt: serverTimestamp()
-    });
-    // ... (rest of success logic) ...
-});
-
-// --- 3. UPDATE EDIT PRODUCT ---
-window.prepareEdit = (id, name, price, cost, qty) => {
-    document.getElementById('editId').value = id;
-    document.getElementById('editName').value = name;
-    document.getElementById('editPrice').value = price;
-    document.getElementById('editBuyingCost').value = cost; // Set Buying Cost
-    document.getElementById('editQty').value = qty;
-    document.getElementById('editModal').style.display = 'flex';
-};
-
-document.getElementById('saveEditBtn').addEventListener('click', async () => {
-    const id = document.getElementById('editId').value;
-    const newQty = parseInt(document.getElementById('editQty').value);
-    
-    await updateDoc(doc(db, "products", id), {
-        name: document.getElementById('editName').value,
-        price: document.getElementById('editPrice').value,
-        buyingCost: Number(document.getElementById('editBuyingCost').value), // Update Cost
-        quantity: newQty,
-        status: newQty > 0 ? 'Available' : 'Sold Out'
-    });
-    // ... (rest of success logic) ...
-});
-
-// --- 4. UPDATE CHARTS (Volume & Profit) ---
-window.updateChart = (days, btn, type) => {
-    // Handle active button state for specific chart
-    const parent = btn.parentElement;
-    parent.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-
-    if (type === 'volume') window.renderVolumeChart(days);
-    if (type === 'profit') window.renderProfitChart(days);
-};
-
-// Function to calculate numeric price from string (e.g., "BDT 4,500" -> 4500)
-const parsePrice = (str) => {
-    if(!str) return 0;
-    return parseFloat(str.toString().replace(/[^0-9.]/g, '')) || 0;
-};
-
-// Render Volume Chart (Old SalesChart)
-window.renderVolumeChart = (days) => {
-    const ctx = document.getElementById('salesChart').getContext('2d');
-    const { labels, dataA, dataB } = window.getChartData(days, 'volume');
-
-    if(chartInstanceVolume) chartInstanceVolume.destroy();
-
-    chartInstanceVolume = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [
-                { label: 'Orders', data: dataA, borderColor: '#3b82f6', tension: 0.4 },
-                { label: 'Cancelled', data: dataB, borderColor: '#ef4444', tension: 0.4 }
-            ]
-        },
-        options: { responsive: true, maintainAspectRatio: false }
-    });
-};
-
-// Render Profit Chart (NEW)
-window.renderProfitChart = (days) => {
-    const ctx = document.getElementById('profitChart').getContext('2d');
-    const { labels, dataA, dataB } = window.getChartData(days, 'profit');
-
-    if(chartInstanceProfit) chartInstanceProfit.destroy();
-
-    chartInstanceProfit = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [
-                { label: 'Revenue', data: dataA, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.4 },
-                { label: 'Est. Profit', data: dataB, borderColor: '#0284c7', borderDash: [5, 5], tension: 0.4 }
-            ]
-        },
-        options: { responsive: true, maintainAspectRatio: false }
-    });
-};
-
-// Shared Helper to process data
-window.getChartData = (days, type) => {
-    const cutoff = new Date();
-    cutoff.setDate(cutoff.getDate() - days);
-    
-    const labels = [];
-    const setA = {}; // Orders or Revenue
-    const setB = {}; // Cancelled or Profit
-
-    // Initialize Dates
-    for(let i=0; i<days; i++) { // Note: For 365 days this might be slow, can group by Month if needed
-        const d = new Date();
-        d.setDate(d.getDate() - i);
-        // For 1 year, group by Month, else by Day
-        const key = days > 31 
-            ? d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }) 
-            : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            
-        if (!labels.includes(key)) labels.unshift(key);
-        if (!setA[key]) setA[key] = 0;
-        if (!setB[key]) setB[key] = 0;
+        } catch (err) { console.error("Product Load Error:", err); }
     }
 
-    // Process Orders
-    let totalRevenue = 0;
+    // --- 2. ORDER LOGIC & CHARTS ---
+    async function loadOrders() {
+        const tbody = document.getElementById('orderTableBody');
+        try {
+            const q = query(collection(db, "orders"), orderBy("createdAt", "desc"));
+            const snapshot = await getDocs(q);
+            
+            let pendingCount = 0;
+            allOrdersData = []; // Clear Cache
+            tbody.innerHTML = "";
 
-    allOrdersData.forEach(o => {
-        if(o.dateObj < cutoff) return;
-        if(o.status === 'Cancelled' && type === 'profit') return; // Don't count cancelled in profit
-
-        const key = days > 31 
-            ? o.dateObj.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }) 
-            : o.dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-
-        if (setA.hasOwnProperty(key)) {
-            if (type === 'volume') {
-                if(o.status === 'Cancelled') setB[key]++;
-                else setA[key]++;
-            } 
-            else if (type === 'profit') {
-                const revenue = parsePrice(o.displayTotal || o.totalAmount);
-                setA[key] += revenue;
-                totalRevenue += revenue;
-
-                // Calculate Profit: Revenue - (BuyingCost * Qty)
-                let cost = 0;
-                if(o.items) {
-                    o.items.forEach(i => {
-                        // Use productId to find buying cost from map
-                        const bCost = productCostMap[i.productId] || 0; 
-                        cost += (bCost * (i.qty || 1));
-                    });
-                }
-                setB[key] += (revenue - cost);
+            if(snapshot.empty) {
+                tbody.innerHTML = "<tr><td colspan='5' style='text-align:center;'>No orders yet.</td></tr>";
+                return;
             }
+
+            snapshot.forEach(doc => {
+                const order = doc.data();
+                order.id = doc.id;
+                order.dateObj = order.createdAt ? order.createdAt.toDate() : new Date();
+                
+                allOrdersData.push(order); // Save for charts
+
+                if(order.status === 'Pending') pendingCount++;
+
+                const firstItem = (order.items && order.items[0]) ? order.items[0] : {name:'?', qty:1};
+                const date = order.dateObj.toLocaleDateString();
+                const safeOrder = encodeURIComponent(JSON.stringify(order));
+                
+                // Status Select Color
+                const colors = { 'Pending':'#f59e0b', 'Shipped':'#3b82f6', 'Delivered':'#10b981', 'Cancelled':'#ef4444' };
+                const color = colors[order.status] || '#64748b';
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td data-label="Date">${date}</td>
+                        <td data-label="Customer"><b>${order.customer.name}</b><br><small>${order.customer.phone}</small></td>
+                        <td data-label="Item">${firstItem.name} x${firstItem.qty||1}</td>
+                        <td data-label="Status">
+                            <div style="display:flex; gap:10px;">
+                                <select style="color:${color}; border-color:${color}; font-weight:700;" 
+                                        onchange="window.askStatusUpdate('${doc.id}', this.value)">
+                                    <option value="Pending" ${order.status=='Pending'?'selected':''}>Pending</option>
+                                    <option value="Confirmed" ${order.status=='Confirmed'?'selected':''}>Confirm</option>
+                                    <option value="Shipped" ${order.status=='Shipped'?'selected':''}>Shipped</option>
+                                    <option value="Delivered" ${order.status=='Delivered'?'selected':''}>Delivered</option>
+                                    <option value="Cancelled" ${order.status=='Cancelled'?'selected':''}>Cancelled</option>
+                                </select>
+                                <button class="action-btn" onclick="window.viewOrder('${safeOrder}')"><i class="fas fa-eye"></i></button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('stat-pending').innerText = pendingCount;
+            document.getElementById('stat-total').innerText = snapshot.size;
+
+            // DRAW CHARTS (Fixes "renderChart is not a function" error)
+            window.renderVolumeChart(7);
+            window.renderProfitChart(7);
+
+        } catch (err) { console.error("Order Load Error:", err); }
+    }
+
+    // --- 3. CHART FUNCTIONS ---
+    const parsePrice = (str) => {
+        if(!str) return 0;
+        return parseFloat(str.toString().replace(/[^0-9.]/g, '')) || 0;
+    };
+
+    window.updateChart = (days, btn, type) => {
+        // Handle Button Active State
+        btn.parentElement.querySelectorAll('button').forEach(b => b.style.background = 'white'); // Basic reset
+        btn.parentElement.querySelectorAll('button').forEach(b => b.style.color = '#64748b'); 
+        btn.style.background = '#0f172a';
+        btn.style.color = 'white';
+
+        if(type === 'volume') window.renderVolumeChart(days);
+        if(type === 'profit') window.renderProfitChart(days);
+    };
+
+    window.getChartData = (days, type) => {
+        const cutoff = new Date();
+        cutoff.setDate(cutoff.getDate() - days);
+        
+        const labels = [];
+        const setA = {}; // Orders or Revenue
+        const setB = {}; // Cancelled or Profit
+
+        // Initialize Dates
+        for(let i=0; i<days; i++) {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            const key = days > 30 
+                ? d.toLocaleDateString('en-US', { month: 'short' }) 
+                : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            
+            if (!labels.includes(key)) labels.unshift(key);
+            if (!setA[key]) setA[key] = 0;
+            if (!setB[key]) setB[key] = 0;
         }
+
+        let totalRev = 0;
+
+        allOrdersData.forEach(o => {
+            if(o.dateObj < cutoff) return;
+            const key = days > 30 
+                ? o.dateObj.toLocaleDateString('en-US', { month: 'short' }) 
+                : o.dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+            if (setA.hasOwnProperty(key)) {
+                if (type === 'volume') {
+                    if(o.status === 'Cancelled') setB[key]++;
+                    else setA[key]++;
+                } 
+                else if (type === 'profit') {
+                    if(o.status === 'Cancelled') return;
+                    
+                    const revenue = parsePrice(o.displayTotal || o.totalAmount);
+                    setA[key] += revenue;
+                    totalRev += revenue;
+
+                    // Calculate Cost
+                    let cost = 0;
+                    if(o.items) {
+                        o.items.forEach(i => {
+                            // Use map to find buying cost
+                            const bCost = productCostMap[i.productId] || 0; 
+                            cost += (bCost * (i.qty || 1));
+                        });
+                    }
+                    // Profit = Revenue - Cost
+                    setB[key] += (revenue - cost);
+                }
+            }
+        });
+
+        if(type === 'profit') document.getElementById('stat-revenue').innerText = totalRev.toLocaleString();
+
+        return { labels, dataA: labels.map(l => setA[l]), dataB: labels.map(l => setB[l]) };
+    };
+
+    window.renderVolumeChart = (days) => {
+        const ctx = document.getElementById('salesChart');
+        if(!ctx) return; 
+
+        const { labels, dataA, dataB } = window.getChartData(days, 'volume');
+        
+        if(chartInstanceVolume) chartInstanceVolume.destroy();
+        chartInstanceVolume = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: 'Orders', data: dataA, borderColor: '#3b82f6', tension: 0.4 },
+                    { label: 'Cancelled', data: dataB, borderColor: '#ef4444', tension: 0.4 }
+                ]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+    };
+
+    window.renderProfitChart = (days) => {
+        const ctx = document.getElementById('profitChart');
+        if(!ctx) return;
+
+        const { labels, dataA, dataB } = window.getChartData(days, 'profit');
+
+        if(chartInstanceProfit) chartInstanceProfit.destroy();
+        chartInstanceProfit = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    { label: 'Revenue', data: dataA, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.4 },
+                    { label: 'Est. Profit', data: dataB, borderColor: '#0284c7', borderDash: [5, 5], tension: 0.4 }
+                ]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+    };
+
+    // --- 4. MODALS & FORMS ---
+    document.getElementById('addProductForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('submitBtn');
+        const files = document.getElementById('pFile').files;
+        
+        btn.disabled = true; btn.innerText = "Processing...";
+        try {
+            // Upload
+            const uploadPromises = Array.from(files).map(async (file) => {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', CLOUDINARY_PRESET);
+                const res = await fetch(CLOUDINARY_URL, { method: 'POST', body: formData });
+                return res.json();
+            });
+            const results = await Promise.all(uploadPromises);
+            const imageUrls = results.map(r => r.secure_url);
+
+            // Add Doc with Buying Cost
+            await addDoc(collection(db, "products"), {
+                name: document.getElementById('pName').value,
+                price: document.getElementById('pPrice').value,
+                category: document.getElementById('pCategory').value,
+                status: document.getElementById('pStatus').value,
+                // NEW: Buying Cost
+                buyingCost: Number(document.getElementById('pBuyingCost') ? document.getElementById('pBuyingCost').value : 0),
+                description: document.getElementById('pDesc').value,
+                images: imageUrls,
+                image: imageUrls[0],
+                createdAt: serverTimestamp()
+            });
+
+            window.showToast("Product Added");
+            document.getElementById('addProductForm').reset();
+            loadProducts();
+            window.switchTab('products');
+
+        } catch(e) { window.showToast("Error: "+e.message, "error"); }
+        btn.disabled = false; btn.innerText = "Upload & Save Product";
     });
 
-    if(type === 'profit') document.getElementById('stat-revenue').innerText = totalRevenue.toLocaleString();
-
-    return { 
-        labels: labels, 
-        dataA: labels.map(l => setA[l]), 
-        dataB: labels.map(l => setB[l]) 
+    // Confirmation Modal
+    window.askStatusUpdate = (id, val) => {
+        targetId = id; targetValue = val; targetAction = 'status';
+        document.getElementById('modalTitle').innerText = "Update Status";
+        document.getElementById('modalDesc').innerText = "Change order status?";
+        document.getElementById('confirmModal').style.display = 'flex';
     };
-};
 
-// Trigger initial render in loadOrders
-// Add "window.renderVolumeChart(7); window.renderProfitChart(7);" inside loadOrders success block
+    window.askDelete = (id) => {
+        targetId = id; targetAction = 'delete';
+        document.getElementById('modalTitle').innerText = "Delete Product";
+        document.getElementById('modalDesc').innerText = "This cannot be undone.";
+        document.getElementById('confirmModal').style.display = 'flex';
+    };
 
-        
+    document.getElementById('modalConfirmBtn').addEventListener('click', async () => {
+        const btn = document.getElementById('modalConfirmBtn');
+        btn.innerText = "Processing...";
+        try {
+            if(targetAction === 'delete') {
+                await deleteDoc(doc(db, "products", targetId));
+                window.showToast("Deleted");
+                loadProducts();
+            }
+            if(targetAction === 'status') {
+                await updateDoc(doc(db, "orders", targetId), { status: targetValue });
+                window.showToast("Status Updated");
+                loadOrders();
+            }
+        } catch(e) { window.showToast("Error", "error"); }
+        window.closeModal();
+        btn.innerText = "Yes, Proceed";
+    });
 
-        
-
-        // --- 7. MODAL UTILS ---
-        window.closeModal = () => document.getElementById('confirmModal').style.display = 'none';
-        window.askDelete = (id) => {
-            targetId = id; targetAction = 'delete';
-            document.getElementById('modalTitle').innerText = "Delete Product?";
-            document.getElementById('modalDesc').innerText = "Irreversible action.";
-            document.getElementById('confirmModal').style.display = 'flex';
+    // Edit Modal
+    window.prepareEdit = (id, name, price, cost, cat, status) => {
+        document.getElementById('editId').value = id;
+        document.getElementById('editName').value = name;
+        document.getElementById('editPrice').value = price;
+        // Check if BuyingCost input exists in modal
+        if(document.getElementById('editBuyingCost')) document.getElementById('editBuyingCost').value = cost;
+        document.getElementById('editCategory').value = cat;
+        document.getElementById('editStatus').value = status;
+        document.getElementById('editModal').style.display = 'flex';
+    };
+    
+    document.getElementById('saveEditBtn').addEventListener('click', async () => {
+        const id = document.getElementById('editId').value;
+        const updates = {
+            name: document.getElementById('editName').value,
+            price: document.getElementById('editPrice').value,
+            category: document.getElementById('editCategory').value,
+            status: document.getElementById('editStatus').value
         };
+        // Add buying cost if present
+        const costInput = document.getElementById('editBuyingCost');
+        if(costInput) updates.buyingCost = Number(costInput.value);
 
-        window.viewOrder = (json) => {
-            const d = JSON.parse(decodeURIComponent(json));
-            const itemsHtml = d.items.map(i => `
-                <div style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding:8px 0;">
-                    <span>${i.name} <small>x${i.qty||1}</small></span>
-                    <span>${i.price}</span>
-                </div>
-            `).join('');
+        await updateDoc(doc(db, "products", id), updates);
+        window.showToast("Updated");
+        window.closeEditModal();
+        loadProducts();
+    });
 
-            document.getElementById('orderModalContent').innerHTML = `
-                <div style="background:#f8fafc; padding:15px; border-radius:8px; font-size:14px; margin-bottom:15px;">
-                    <div><b>Order ID:</b> #${d.id.slice(-6).toUpperCase()}</div>
-                    <div><b>Date:</b> ${new Date(d.createdAt.seconds*1000).toLocaleString()}</div>
-                    <div><b>Status:</b> ${d.status}</div>
-                    <hr style="border:0; border-top:1px dashed #cbd5e1; margin:10px 0;">
-                    <b>${d.customer.name}</b><br>${d.customer.phone}<br>${d.customer.address}
-                </div>
-                <h4>Items</h4>
-                ${itemsHtml}
-                <div style="display:flex; justify-content:space-between; margin-top:15px; font-weight:700; font-size:16px;">
-                    <span>TOTAL</span><span>${d.displayTotal || d.totalAmount}</span>
-                </div>
-            `;
-            document.getElementById('orderModal').style.display = 'flex';
-        };
-        window.closeOrderModal = () => document.getElementById('orderModal').style.display = 'none';
+    // View Order
+    window.viewOrder = (json) => {
+        const d = JSON.parse(decodeURIComponent(json));
+        const itemsHtml = (d.items||[]).map(i => 
+            `<div style="display:flex; justify-content:space-between; margin:5px 0;">
+                <span>${i.name} x${i.qty||1}</span><span>${i.price}</span>
+            </div>`).join('');
+            
+        document.getElementById('orderModalContent').innerHTML = `
+            <div style="background:#f8fafc; padding:15px; border-radius:8px; font-size:14px;">
+                <b>Order ID:</b> ${d.id.slice(-6).toUpperCase()}<br>
+                <b>Customer:</b> ${d.customer.name} (${d.customer.phone})<br>
+                <b>Address:</b> ${d.customer.address}
+            </div>
+            <h4 style="margin:15px 0 5px;">Items</h4>
+            ${itemsHtml}
+            <div style="border-top:1px solid #ddd; margin-top:10px; padding-top:10px; font-weight:700; display:flex; justify-content:space-between;">
+                <span>TOTAL</span><span>${d.displayTotal || d.totalAmount}</span>
+            </div>
+        `;
+        document.getElementById('orderModal').style.display = 'flex';
+    };
 
-    </script>
+    window.closeModal = () => document.getElementById('confirmModal').style.display = 'none';
+    window.closeEditModal = () => document.getElementById('editModal').style.display = 'none';
+    window.closeOrderModal = () => document.getElementById('orderModal').style.display = 'none';
+    
+    window.updateFileCount = (input) => {
+        if(input.files.length > 0) document.getElementById('uploadText').innerHTML = `<span style="color:var(--success)">${input.files.length} Selected</span>`;
+    };
+</script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
 </html>

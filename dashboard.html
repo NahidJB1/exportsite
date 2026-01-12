@@ -237,44 +237,65 @@
         </div>
 
         <div id="section-home" class="section active">
-            <div class="stats-grid">
-                <div class="stat-card" onclick="window.switchTab('products')">
-                    <div class="stat-icon"><i class="fas fa-layer-group"></i></div>
-                    <div class="stat-info">
-                        <h4>Total Inventory</h4>
-                        <p id="stat-inventory">...</p>
-                    </div>
-                </div>
-                <div class="stat-card" onclick="window.switchTab('orders'); window.openAccordion('pending')">
-                    <div class="stat-icon" style="background:#fff7ed; color:#ea580c;"><i class="fas fa-clock"></i></div>
-                    <div class="stat-info">
-                        <h4>Pending Orders</h4>
-                        <p id="stat-pending">...</p>
-                    </div>
-                </div>
-                <div class="stat-card" onclick="window.switchTab('orders')">
-                    <div class="stat-icon" style="background:#ecfdf5; color:#059669;"><i class="fas fa-check-circle"></i></div>
-                    <div class="stat-info">
-                        <h4>All Orders</h4>
-                        <p id="stat-total">...</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="chart-card">
-                <div class="chart-header">
-                    <h3 style="margin:0; font-size:18px; color:var(--primary)">Sales Overview</h3>
-                    <div class="chart-filters">
-                        <button class="filter-btn active" onclick="window.updateChart(7, this)">7 Days</button>
-                        <button class="filter-btn" onclick="window.updateChart(15, this)">15 Days</button>
-                        <button class="filter-btn" onclick="window.updateChart(30, this)">30 Days</button>
-                    </div>
-                </div>
-                <div style="height: 300px; width: 100%;">
-                    <canvas id="salesChart"></canvas>
-                </div>
+    <div class="stats-grid">
+        <div class="stat-card" onclick="window.switchTab('products')">
+            <div class="stat-icon"><i class="fas fa-layer-group"></i></div>
+            <div class="stat-info">
+                <h4>Total Inventory</h4>
+                <p id="stat-inventory">...</p>
             </div>
         </div>
+        <div class="stat-card" onclick="window.switchTab('orders'); window.openAccordion('pending')">
+            <div class="stat-icon" style="background:#fff7ed; color:#ea580c;"><i class="fas fa-clock"></i></div>
+            <div class="stat-info">
+                <h4>Pending Orders</h4>
+                <p id="stat-pending">...</p>
+            </div>
+        </div>
+        <div class="stat-card" onclick="window.switchTab('orders')">
+            <div class="stat-icon" style="background:#ecfdf5; color:#059669;"><i class="fas fa-check-circle"></i></div>
+            <div class="stat-info">
+                <h4>All Orders</h4>
+                <p id="stat-total">...</p>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon" style="background:#f0f9ff; color:#0284c7;"><i class="fas fa-chart-line"></i></div>
+            <div class="stat-info">
+                <h4>Total Revenue</h4>
+                <p id="stat-revenue">...</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="chart-card">
+        <div class="chart-header">
+            <h3 style="margin:0; font-size:18px; color:var(--primary)">Order Volume</h3>
+            <div class="chart-filters">
+                <button class="filter-btn active" onclick="window.updateChart(7, this, 'volume')">7 Days</button>
+                <button class="filter-btn" onclick="window.updateChart(15, this, 'volume')">15 Days</button>
+                <button class="filter-btn" onclick="window.updateChart(30, this, 'volume')">30 Days</button>
+            </div>
+        </div>
+        <div style="height: 300px; width: 100%;">
+            <canvas id="salesChart"></canvas>
+        </div>
+    </div>
+
+    <div class="chart-card">
+        <div class="chart-header">
+            <h3 style="margin:0; font-size:18px; color:var(--primary)">Selling Stats (Revenue & Profit)</h3>
+            <div class="chart-filters">
+                <button class="filter-btn active" onclick="window.updateChart(7, this, 'profit')">7 Days</button>
+                <button class="filter-btn" onclick="window.updateChart(30, this, 'profit')">1 Month</button>
+                <button class="filter-btn" onclick="window.updateChart(365, this, 'profit')">1 Year</button>
+            </div>
+        </div>
+        <div style="height: 300px; width: 100%;">
+            <canvas id="profitChart"></canvas>
+        </div>
+    </div>
+</div>
 
         <div id="section-products" class="section">
             <div class="sub-tabs">
@@ -289,44 +310,54 @@
             <div id="view-add" class="product-view card">
                 <h3><i class="fas fa-plus"></i> Create New Product</h3>
                 <form id="addProductForm">
-                    <div class="form-row">
-                        <div><label>Product Name</label><input type="text" id="pName" placeholder="e.g. Wireless Headset" required></div>
-                        <div><label>Price</label><input type="text" id="pPrice" placeholder="e.g. BDT 4,500" required></div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div>
-                            <label>Category</label>
-                            <select id="pCategory">
-                                <option value="Electronic Accessories">Electronic Accessories</option>
-                                <option value="Electronic Devices">Electronic Devices</option>
-                                <option value="Home & Lifestyle">Home & Lifestyle</option>
-                                <option value="Fashion">Fashion</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label>Initial Quantity</label>
-                            <input type="number" id="pQty" placeholder="e.g. 50" min="1" required>
-                        </div>
-                    </div>
+    <div class="form-row">
+        <div><label>Product Name</label><input type="text" id="pName" placeholder="e.g. Wireless Headset" required></div>
+        <div>
+            <label>Category</label>
+            <select id="pCategory">
+                <option value="Electronic Accessories">Electronic Accessories</option>
+                <option value="Electronic Devices">Electronic Devices</option>
+                <option value="Home & Lifestyle">Home & Lifestyle</option>
+                <option value="Fashion">Fashion</option>
+            </select>
+        </div>
+    </div>
+    
+    <div class="form-row">
+        <div>
+            <label>Buying Cost (Not visible to user)</label>
+            <input type="number" id="pBuyingCost" placeholder="e.g. 3500" required>
+        </div>
+        <div>
+            <label>Selling Price (Visible to user)</label>
+            <input type="text" id="pPrice" placeholder="e.g. 4500" required>
+        </div>
+    </div>
 
-                    <div class="form-group">
-                        <label>Description</label>
-                        <textarea id="pDesc" rows="3"></textarea>
-                    </div>
+    <div class="form-row">
+        <div>
+            <label>Initial Quantity</label>
+            <input type="number" id="pQty" placeholder="e.g. 50" min="1" required>
+        </div>
+        </div>
 
-                    <div class="form-group">
-                        <div class="file-upload-wrapper" style="position: relative;">
-                            <div class="file-upload-text" id="uploadText">
-                                <i class="fas fa-cloud-upload-alt"></i><span>Click to upload image</span>
-                            </div>
-                            <input type="file" id="pFile" accept="image/*" multiple required onchange="window.updateFileCount(this)" 
-                                   style="position:absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor:pointer;">
-                        </div>
-                    </div>
+    <div class="form-group">
+        <label>Description</label>
+        <textarea id="pDesc" rows="3"></textarea>
+    </div>
 
-                    <button type="submit" id="submitBtn" class="btn-submit"><i class="fas fa-save"></i> Save Product</button>
-                </form>
+    <div class="form-group">
+        <div class="file-upload-wrapper" style="position: relative;">
+            <div class="file-upload-text" id="uploadText">
+                <i class="fas fa-cloud-upload-alt"></i><span>Click to upload image</span>
+            </div>
+            <input type="file" id="pFile" accept="image/*" multiple required onchange="window.updateFileCount(this)" 
+                   style="position:absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor:pointer;">
+        </div>
+    </div>
+
+    <button type="submit" id="submitBtn" class="btn-submit"><i class="fas fa-save"></i> Save Product</button>
+</form>
             </div>
 
             <div id="view-list" class="product-view active card">
@@ -426,27 +457,33 @@
     </div>
 
     <div class="modal-overlay" id="editModal">
-        <div class="modal-box">
-            <h3 style="margin-top:0; border-bottom:1px solid #e2e8f0; padding-bottom:15px;">Edit Product</h3>
-            <input type="hidden" id="editId">
-            <div class="form-row">
-                <div><label>Name</label><input type="text" id="editName"></div>
-                <div><label>Price</label><input type="text" id="editPrice"></div>
-            </div>
-            <div class="form-row">
-                <div><label>Stock Qty</label><input type="number" id="editQty"></div>
-                <div><label>Status</label>
-                    <select id="editStatus">
-                        <option value="Available">Available</option>
-                        <option value="Sold Out">Sold Out</option>
-                    </select>
-                </div>
-            </div>
-            <div class="modal-actions">
-                <button class="btn-modal btn-cancel" onclick="window.closeEditModal()">Cancel</button>
-                <button class="btn-modal btn-confirm" id="saveEditBtn">Save Changes</button>
-            </div>
+       <div class="modal-box">
+    <h3 style="margin-top:0; border-bottom:1px solid #e2e8f0; padding-bottom:15px;">Edit Product</h3>
+    <input type="hidden" id="editId">
+    
+    <div class="form-group">
+        <label>Name</label><input type="text" id="editName">
+    </div>
+
+    <div class="form-row">
+        <div><label>Buying Cost</label><input type="number" id="editBuyingCost"></div>
+        <div><label>Selling Price</label><input type="text" id="editPrice"></div>
+    </div>
+
+    <div class="form-row">
+        <div><label>Stock Qty</label><input type="number" id="editQty"></div>
+        <div><label>Status</label>
+            <select id="editStatus">
+                <option value="Available">Available</option>
+                <option value="Sold Out">Sold Out</option>
+            </select>
         </div>
+    </div>
+    <div class="modal-actions">
+        <button class="btn-modal btn-cancel" onclick="window.closeEditModal()">Cancel</button>
+        <button class="btn-modal btn-confirm" id="saveEditBtn">Save Changes</button>
+    </div>
+</div>
     </div>
 
     <div class="modal-overlay" id="orderModal">
@@ -517,96 +554,10 @@
             }
         });
 
-        // --- 1. PRODUCT LOGIC (With Quantity) ---
-        async function loadProducts() {
-            const tbody = document.getElementById('productTableBody');
-            tbody.innerHTML = "<tr><td colspan='6' style='text-align:center;'>Loading...</td></tr>";
-            
-            try {
-                const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
-                const snapshot = await getDocs(q);
-                document.getElementById('stat-inventory').innerText = snapshot.size;
+    
+        
 
-                if(snapshot.empty) { tbody.innerHTML = "<tr><td colspan='6' style='text-align:center;'>No products found.</td></tr>"; return; }
-
-                tbody.innerHTML = "";
-                snapshot.forEach(doc => {
-                    const item = doc.data();
-                    const qty = item.quantity || 0;
-                    const statusClass = qty > 0 ? 'status-available' : 'status-soldout';
-                    const statusText = qty > 0 ? 'Available' : 'Sold Out';
-                    const imgUrl = (item.images && item.images[0]) ? item.images[0] : (item.image || 'https://via.placeholder.com/50');
-                    
-                    // Safe encoding
-                    const safeName = item.name.replace(/'/g, "\\'");
-
-                    tbody.innerHTML += `
-                        <tr>
-                            <td data-label="Image"><img src="${imgUrl}" class="thumb"></td>
-                            <td data-label="Name" style="font-weight:600;">${item.name}</td>
-                            <td data-label="Price" style="color:var(--accent);">${item.price}</td>
-                            <td data-label="Stock">
-                                <span style="font-weight:700; color:${qty < 5 ? 'red' : 'inherit'}">${qty}</span>
-                            </td>
-                            <td data-label="Status"><span class="status-badge ${statusClass}">${statusText}</span></td>
-                            <td data-label="Actions">
-                                <div style="display:flex; gap:10px;">
-                                    <button class="action-btn btn-edit" onclick="window.prepareEdit('${doc.id}', '${safeName}', '${item.price}', '${qty}')">
-                                        <i class="fas fa-pen"></i>
-                                    </button>
-                                    <button class="action-btn btn-delete" onclick="window.askDelete('${doc.id}')">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-                });
-            } catch (err) { console.error(err); }
-        }
-
-        document.getElementById('addProductForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('submitBtn');
-            const files = document.getElementById('pFile').files;
-            
-            if(files.length === 0) return window.showToast("Image required", "error");
-            btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
-
-            try {
-                // Upload Images
-                const uploadPromises = Array.from(files).map(async (file) => {
-                    const formData = new FormData();
-                    formData.append('file', file);
-                    formData.append('upload_preset', CLOUDINARY_PRESET);
-                    const res = await fetch(CLOUDINARY_URL, { method: 'POST', body: formData });
-                    return res.json();
-                });
-                const results = await Promise.all(uploadPromises);
-                const imageUrls = results.map(r => r.secure_url);
-
-                // Add to DB with Quantity
-                await addDoc(collection(db, "products"), {
-                    name: document.getElementById('pName').value,
-                    price: document.getElementById('pPrice').value,
-                    category: document.getElementById('pCategory').value,
-                    quantity: parseInt(document.getElementById('pQty').value),
-                    status: 'Available', // Default
-                    description: document.getElementById('pDesc').value,
-                    images: imageUrls,
-                    image: imageUrls[0], 
-                    createdAt: serverTimestamp()
-                });
-
-                window.showToast("Product Created!");
-                document.getElementById('addProductForm').reset();
-                window.updateFileCount(document.getElementById('pFile'));
-                loadProducts();
-                window.switchProductView('list');
-
-            } catch(e) { window.showToast("Error: "+e.message, "error"); }
-            btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Save Product';
-        });
+        
 
         window.updateFileCount = (input) => {
             const label = document.getElementById('uploadText');
@@ -795,91 +746,235 @@
             btn.disabled = false; btn.innerText = "Proceed";
         });
 
-        // --- 5. EDIT PRODUCT ---
-        window.prepareEdit = (id, name, price, qty) => {
-            document.getElementById('editId').value = id;
-            document.getElementById('editName').value = name;
-            document.getElementById('editPrice').value = price;
-            document.getElementById('editQty').value = qty;
-            document.getElementById('editModal').style.display = 'flex';
-        };
-        
-        window.closeEditModal = () => document.getElementById('editModal').style.display = 'none';
+        // --- GLOBAL VARS UPDATE ---
+let productCostMap = {}; // Stores { productId: buyingCost }
+let chartInstanceVolume = null;
+let chartInstanceProfit = null;
 
-        document.getElementById('saveEditBtn').addEventListener('click', async () => {
-            const id = document.getElementById('editId').value;
-            const newQty = parseInt(document.getElementById('editQty').value);
-            
-            await updateDoc(doc(db, "products", id), {
-                name: document.getElementById('editName').value,
-                price: document.getElementById('editPrice').value,
-                quantity: newQty,
-                status: newQty > 0 ? 'Available' : 'Sold Out'
-            });
-            
-            window.showToast("Updated!");
-            window.closeEditModal();
-            loadProducts();
+// --- 1. UPDATE LOAD PRODUCTS (To build Cost Map) ---
+async function loadProducts() {
+    const tbody = document.getElementById('productTableBody');
+    tbody.innerHTML = "<tr><td colspan='6' style='text-align:center;'>Loading...</td></tr>";
+    
+    try {
+        const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
+        const snapshot = await getDocs(q);
+        document.getElementById('stat-inventory').innerText = snapshot.size;
+
+        tbody.innerHTML = "";
+        productCostMap = {}; // Reset map
+
+        snapshot.forEach(doc => {
+            const item = doc.data();
+            // Store cost for profit calculation
+            productCostMap[doc.id] = item.buyingCost || 0;
+
+            const qty = item.quantity || 0;
+            const statusClass = qty > 0 ? 'status-available' : 'status-soldout';
+            const imgUrl = (item.images && item.images[0]) ? item.images[0] : 'https://via.placeholder.com/50';
+            const safeName = item.name.replace(/'/g, "\\'");
+
+            tbody.innerHTML += `
+                <tr>
+                    <td data-label="Image"><img src="${imgUrl}" class="thumb"></td>
+                    <td data-label="Name" style="font-weight:600;">${item.name}</td>
+                    <td data-label="Price" style="color:var(--accent);">${item.price}</td>
+                    <td data-label="Stock"><span style="font-weight:700; color:${qty < 5 ? 'red' : 'inherit'}">${qty}</span></td>
+                    <td data-label="Status"><span class="status-badge ${statusClass}">${qty > 0 ? 'Available' : 'Sold Out'}</span></td>
+                    <td data-label="Actions">
+                        <div style="display:flex; gap:10px;">
+                            <button class="action-btn btn-edit" onclick="window.prepareEdit('${doc.id}', '${safeName}', '${item.price}', '${item.buyingCost || ''}', '${qty}')">
+                                <i class="fas fa-pen"></i>
+                            </button>
+                            <button class="action-btn btn-delete" onclick="window.askDelete('${doc.id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
         });
+        
+        // Refresh charts now that we have costs
+        if(allOrdersData.length > 0) window.renderProfitChart(7);
 
-        // --- 6. CHART LOGIC ---
-        window.updateChart = (days, btn) => {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            window.renderChart(days);
-        };
+    } catch (err) { console.error(err); }
+}
 
-        window.renderChart = (days = 7) => {
-            const ctx = document.getElementById('salesChart').getContext('2d');
-            
-            // Filter Data by Date
-            const cutoff = new Date();
-            cutoff.setDate(cutoff.getDate() - days);
-            
-            const filtered = allOrdersData.filter(o => o.dateObj >= cutoff);
-            
-            // Group by Date
-            const labels = [];
-            const dataOrders = {}; 
-            const dataCancel = {};
+// --- 2. UPDATE ADD PRODUCT (Save Buying Cost) ---
+document.getElementById('addProductForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    // ... (Image upload code stays same) ...
+    // Inside the addDoc function:
+    await addDoc(collection(db, "products"), {
+        name: document.getElementById('pName').value,
+        price: document.getElementById('pPrice').value, // Selling Price
+        buyingCost: Number(document.getElementById('pBuyingCost').value), // NEW: Buying Cost
+        category: document.getElementById('pCategory').value,
+        quantity: parseInt(document.getElementById('pQty').value),
+        status: 'Available',
+        description: document.getElementById('pDesc').value,
+        images: imageUrls, // defined in your existing code
+        image: imageUrls[0], 
+        createdAt: serverTimestamp()
+    });
+    // ... (rest of success logic) ...
+});
 
-            // Initialize map
-            for(let i=0; i<days; i++) {
-                const d = new Date();
-                d.setDate(d.getDate() - i);
-                const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                labels.unshift(dateStr); // Push to front to have chronological order
-                dataOrders[dateStr] = 0;
-                dataCancel[dateStr] = 0;
+// --- 3. UPDATE EDIT PRODUCT ---
+window.prepareEdit = (id, name, price, cost, qty) => {
+    document.getElementById('editId').value = id;
+    document.getElementById('editName').value = name;
+    document.getElementById('editPrice').value = price;
+    document.getElementById('editBuyingCost').value = cost; // Set Buying Cost
+    document.getElementById('editQty').value = qty;
+    document.getElementById('editModal').style.display = 'flex';
+};
+
+document.getElementById('saveEditBtn').addEventListener('click', async () => {
+    const id = document.getElementById('editId').value;
+    const newQty = parseInt(document.getElementById('editQty').value);
+    
+    await updateDoc(doc(db, "products", id), {
+        name: document.getElementById('editName').value,
+        price: document.getElementById('editPrice').value,
+        buyingCost: Number(document.getElementById('editBuyingCost').value), // Update Cost
+        quantity: newQty,
+        status: newQty > 0 ? 'Available' : 'Sold Out'
+    });
+    // ... (rest of success logic) ...
+});
+
+// --- 4. UPDATE CHARTS (Volume & Profit) ---
+window.updateChart = (days, btn, type) => {
+    // Handle active button state for specific chart
+    const parent = btn.parentElement;
+    parent.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    if (type === 'volume') window.renderVolumeChart(days);
+    if (type === 'profit') window.renderProfitChart(days);
+};
+
+// Function to calculate numeric price from string (e.g., "BDT 4,500" -> 4500)
+const parsePrice = (str) => {
+    if(!str) return 0;
+    return parseFloat(str.toString().replace(/[^0-9.]/g, '')) || 0;
+};
+
+// Render Volume Chart (Old SalesChart)
+window.renderVolumeChart = (days) => {
+    const ctx = document.getElementById('salesChart').getContext('2d');
+    const { labels, dataA, dataB } = window.getChartData(days, 'volume');
+
+    if(chartInstanceVolume) chartInstanceVolume.destroy();
+
+    chartInstanceVolume = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                { label: 'Orders', data: dataA, borderColor: '#3b82f6', tension: 0.4 },
+                { label: 'Cancelled', data: dataB, borderColor: '#ef4444', tension: 0.4 }
+            ]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+    });
+};
+
+// Render Profit Chart (NEW)
+window.renderProfitChart = (days) => {
+    const ctx = document.getElementById('profitChart').getContext('2d');
+    const { labels, dataA, dataB } = window.getChartData(days, 'profit');
+
+    if(chartInstanceProfit) chartInstanceProfit.destroy();
+
+    chartInstanceProfit = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                { label: 'Revenue', data: dataA, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.4 },
+                { label: 'Est. Profit', data: dataB, borderColor: '#0284c7', borderDash: [5, 5], tension: 0.4 }
+            ]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+    });
+};
+
+// Shared Helper to process data
+window.getChartData = (days, type) => {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - days);
+    
+    const labels = [];
+    const setA = {}; // Orders or Revenue
+    const setB = {}; // Cancelled or Profit
+
+    // Initialize Dates
+    for(let i=0; i<days; i++) { // Note: For 365 days this might be slow, can group by Month if needed
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        // For 1 year, group by Month, else by Day
+        const key = days > 31 
+            ? d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }) 
+            : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            
+        if (!labels.includes(key)) labels.unshift(key);
+        if (!setA[key]) setA[key] = 0;
+        if (!setB[key]) setB[key] = 0;
+    }
+
+    // Process Orders
+    let totalRevenue = 0;
+
+    allOrdersData.forEach(o => {
+        if(o.dateObj < cutoff) return;
+        if(o.status === 'Cancelled' && type === 'profit') return; // Don't count cancelled in profit
+
+        const key = days > 31 
+            ? o.dateObj.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }) 
+            : o.dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+        if (setA.hasOwnProperty(key)) {
+            if (type === 'volume') {
+                if(o.status === 'Cancelled') setB[key]++;
+                else setA[key]++;
+            } 
+            else if (type === 'profit') {
+                const revenue = parsePrice(o.displayTotal || o.totalAmount);
+                setA[key] += revenue;
+                totalRevenue += revenue;
+
+                // Calculate Profit: Revenue - (BuyingCost * Qty)
+                let cost = 0;
+                if(o.items) {
+                    o.items.forEach(i => {
+                        // Use productId to find buying cost from map
+                        const bCost = productCostMap[i.productId] || 0; 
+                        cost += (bCost * (i.qty || 1));
+                    });
+                }
+                setB[key] += (revenue - cost);
             }
+        }
+    });
 
-            filtered.forEach(o => {
-                const dStr = o.dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                if (dataOrders.hasOwnProperty(dStr)) {
-                    if(o.status === 'Cancelled') dataCancel[dStr]++;
-                    else dataOrders[dStr]++;
-                }
-            });
+    if(type === 'profit') document.getElementById('stat-revenue').innerText = totalRevenue.toLocaleString();
 
-            if(chartInstance) chartInstance.destroy();
+    return { 
+        labels: labels, 
+        dataA: labels.map(l => setA[l]), 
+        dataB: labels.map(l => setB[l]) 
+    };
+};
 
-            chartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        { label: 'Completed/Active Orders', data: Object.values(dataOrders), borderColor: '#3b82f6', tension: 0.4 },
-                        { label: 'Cancelled', data: Object.values(dataCancel), borderColor: '#ef4444', tension: 0.4 }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom' } },
-                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
-                }
-            });
-        };
+// Trigger initial render in loadOrders
+// Add "window.renderVolumeChart(7); window.renderProfitChart(7);" inside loadOrders success block
+
+        
+
+        
 
         // --- 7. MODAL UTILS ---
         window.closeModal = () => document.getElementById('confirmModal').style.display = 'none';

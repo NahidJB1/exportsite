@@ -236,45 +236,64 @@
             </button>
         </div>
 
-        <div id="section-home" class="section active">
-            <div class="stats-grid">
-                <div class="stat-card" onclick="window.switchTab('products')">
-                    <div class="stat-icon"><i class="fas fa-layer-group"></i></div>
-                    <div class="stat-info">
-                        <h4>Total Inventory</h4>
-                        <p id="stat-inventory">...</p>
-                    </div>
-                </div>
-                <div class="stat-card" onclick="window.switchTab('orders'); window.openAccordion('pending')">
-                    <div class="stat-icon" style="background:#fff7ed; color:#ea580c;"><i class="fas fa-clock"></i></div>
-                    <div class="stat-info">
-                        <h4>Pending Orders</h4>
-                        <p id="stat-pending">...</p>
-                    </div>
-                </div>
-                <div class="stat-card" onclick="window.switchTab('orders')">
-                    <div class="stat-icon" style="background:#ecfdf5; color:#059669;"><i class="fas fa-check-circle"></i></div>
-                    <div class="stat-info">
-                        <h4>All Orders</h4>
-                        <p id="stat-total">...</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="chart-card">
-                <div class="chart-header">
-                    <h3 style="margin:0; font-size:18px; color:var(--primary)">Sales Overview</h3>
-                    <div class="chart-filters">
-                        <button class="filter-btn active" onclick="window.updateChart(7, this)">7 Days</button>
-                        <button class="filter-btn" onclick="window.updateChart(15, this)">15 Days</button>
-                        <button class="filter-btn" onclick="window.updateChart(30, this)">30 Days</button>
-                    </div>
-                </div>
-                <div style="height: 300px; width: 100%;">
-                    <canvas id="salesChart"></canvas>
-                </div>
-            </div>
+<div class="stats-grid">
+    <div class="stat-card" onclick="window.switchTab('products')">
+        <div class="stat-icon"><i class="fas fa-layer-group"></i></div>
+        <div class="stat-info">
+            <h4>Total Inventory</h4>
+            <p id="stat-inventory">...</p>
         </div>
+    </div>
+    <div class="stat-card" onclick="window.switchTab('orders'); window.openAccordion('pending')">
+        <div class="stat-icon" style="background:#fff7ed; color:#ea580c;"><i class="fas fa-clock"></i></div>
+        <div class="stat-info">
+            <h4>Pending Orders</h4>
+            <p id="stat-pending">...</p>
+        </div>
+    </div>
+    <div class="stat-card" onclick="window.switchTab('orders')">
+        <div class="stat-icon" style="background:#ecfdf5; color:#059669;"><i class="fas fa-check-circle"></i></div>
+        <div class="stat-info">
+            <h4>All Orders</h4>
+            <p id="stat-total">...</p>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background:#f0fdf4; color:#16a34a;"><i class="fas fa-coins"></i></div>
+        <div class="stat-info">
+            <h4>Est. Total Profit</h4>
+            <p id="stat-profit" style="color:#16a34a;">...</p>
+        </div>
+    </div>
+</div>
+
+<div class="chart-card">
+    <div class="chart-header">
+        <h3 style="margin:0; font-size:18px; color:var(--primary)">Sales Overview</h3>
+        <div class="chart-filters">
+            <button class="filter-btn active" onclick="window.updateChart('sales', 7, this)">7 Days</button>
+            <button class="filter-btn" onclick="window.updateChart('sales', 15, this)">15 Days</button>
+            <button class="filter-btn" onclick="window.updateChart('sales', 30, this)">30 Days</button>
+        </div>
+    </div>
+    <div style="height: 300px; width: 100%;">
+        <canvas id="salesChart"></canvas>
+    </div>
+</div>
+
+<div class="chart-card">
+    <div class="chart-header">
+        <h3 style="margin:0; font-size:18px; color:var(--primary)">Profit Analytics</h3>
+        <div class="chart-filters">
+            <button class="filter-btn active" onclick="window.updateChart('profit', 7, this)">7 Days</button>
+            <button class="filter-btn" onclick="window.updateChart('profit', 30, this)">1 Month</button>
+            <button class="filter-btn" onclick="window.updateChart('profit', 365, this)">1 Year</button>
+        </div>
+    </div>
+    <div style="height: 300px; width: 100%;">
+        <canvas id="profitChart"></canvas>
+    </div>
+</div>
 
         <div id="section-products" class="section">
             <div class="sub-tabs">
@@ -290,26 +309,33 @@
                 <h3><i class="fas fa-plus"></i> Create New Product</h3>
                 <form id="addProductForm">
                     <div class="form-row">
-                        <div><label>Product Name</label><input type="text" id="pName" placeholder="e.g. Wireless Headset" required></div>
-                        <div><label>Price</label><input type="text" id="pPrice" placeholder="e.g. BDT 4,500" required></div>
-                    </div>
-                    
-                    <div class="form-row">
-                        <div>
-                            <label>Category</label>
-                            <select id="pCategory">
-                                <option value="Electronic Accessories">Electronic Accessories</option>
-                                <option value="Electronic Devices">Electronic Devices</option>
-                                <option value="Home & Lifestyle">Home & Lifestyle</option>
-                                <option value="Fashion">Fashion</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label>Initial Quantity</label>
-                            <input type="number" id="pQty" placeholder="e.g. 50" min="1" required>
-                        </div>
-                    </div>
+    <div><label>Product Name</label><input type="text" id="pName" placeholder="e.g. Wireless Headset" required></div>
+    <div>
+        <label>Category</label>
+        <select id="pCategory">
+            <option value="Electronic Accessories">Electronic Accessories</option>
+            <option value="Electronic Devices">Electronic Devices</option>
+            <option value="Home & Lifestyle">Home & Lifestyle</option>
+            <option value="Fashion">Fashion</option>
+        </select>
+    </div>
+</div>
 
+<div class="form-row">
+    <div>
+        <label>Buying Cost (Admin Only)</label>
+        <input type="number" id="pBuyCost" placeholder="e.g. 3500" required>
+    </div>
+    <div>
+        <label>Selling Price</label>
+        <input type="number" id="pSellPrice" placeholder="e.g. 4500" required>
+    </div>
+</div>
+
+<div class="form-group">
+    <label>Initial Quantity</label>
+    <input type="number" id="pQty" placeholder="e.g. 50" min="1" required>
+</div>
                     <div class="form-group">
                         <label>Description</label>
                         <textarea id="pDesc" rows="3"></textarea>
@@ -475,6 +501,8 @@
         let targetId = null, targetAction = null, targetValue = null;
         let allOrdersData = []; // Cache for charts
         let chartInstance = null;
+        let productCostMap = {}; // Maps ProductID -> BuyingCost
+        let profitChartInstance = null;
 
         // --- GLOBAL HELPERS ---
         window.showToast = (msg, type = 'success') => {
@@ -519,94 +547,102 @@
 
         // --- 1. PRODUCT LOGIC (With Quantity) ---
         async function loadProducts() {
-            const tbody = document.getElementById('productTableBody');
-            tbody.innerHTML = "<tr><td colspan='6' style='text-align:center;'>Loading...</td></tr>";
+    const tbody = document.getElementById('productTableBody');
+    tbody.innerHTML = "<tr><td colspan='6' style='text-align:center;'>Loading...</td></tr>";
+    
+    try {
+        const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
+        const snapshot = await getDocs(q);
+        document.getElementById('stat-inventory').innerText = snapshot.size;
+
+        if(snapshot.empty) { tbody.innerHTML = "<tr><td colspan='6' style='text-align:center;'>No products found.</td></tr>"; return; }
+
+        tbody.innerHTML = "";
+        productCostMap = {}; // Reset map
+
+        snapshot.forEach(doc => {
+            const item = doc.data();
+            const qty = item.quantity || 0;
+            const statusClass = qty > 0 ? 'status-available' : 'status-soldout';
+            const statusText = qty > 0 ? 'Available' : 'Sold Out';
+            const imgUrl = (item.images && item.images[0]) ? item.images[0] : (item.image || 'https://via.placeholder.com/50');
             
-            try {
-                const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
-                const snapshot = await getDocs(q);
-                document.getElementById('stat-inventory').innerText = snapshot.size;
+            // Store cost for profit calculation (Default to 0 if not set)
+            productCostMap[doc.id] = parseFloat(item.buyingCost || 0);
 
-                if(snapshot.empty) { tbody.innerHTML = "<tr><td colspan='6' style='text-align:center;'>No products found.</td></tr>"; return; }
+            const safeName = item.name.replace(/'/g, "\\'");
 
-                tbody.innerHTML = "";
-                snapshot.forEach(doc => {
-                    const item = doc.data();
-                    const qty = item.quantity || 0;
-                    const statusClass = qty > 0 ? 'status-available' : 'status-soldout';
-                    const statusText = qty > 0 ? 'Available' : 'Sold Out';
-                    const imgUrl = (item.images && item.images[0]) ? item.images[0] : (item.image || 'https://via.placeholder.com/50');
-                    
-                    // Safe encoding
-                    const safeName = item.name.replace(/'/g, "\\'");
+            tbody.innerHTML += `
+                <tr>
+                    <td data-label="Image"><img src="${imgUrl}" class="thumb"></td>
+                    <td data-label="Name" style="font-weight:600;">${item.name}</td>
+                    <td data-label="Price" style="color:var(--accent);">${item.sellingPrice || item.price}</td>
+                    <td data-label="Stock">
+                        <span style="font-weight:700; color:${qty < 5 ? 'red' : 'inherit'}">${qty}</span>
+                    </td>
+                    <td data-label="Status"><span class="status-badge ${statusClass}">${statusText}</span></td>
+                    <td data-label="Actions">
+                        <div style="display:flex; gap:10px;">
+                            <button class="action-btn btn-edit" onclick="window.prepareEdit('${doc.id}', '${safeName}', '${item.sellingPrice || item.price}', '${qty}')">
+                                <i class="fas fa-pen"></i>
+                            </button>
+                            <button class="action-btn btn-delete" onclick="window.askDelete('${doc.id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        });
+        
+        // After loading products, reload orders to update profit stats based on new costs
+        loadOrders(); 
 
-                    tbody.innerHTML += `
-                        <tr>
-                            <td data-label="Image"><img src="${imgUrl}" class="thumb"></td>
-                            <td data-label="Name" style="font-weight:600;">${item.name}</td>
-                            <td data-label="Price" style="color:var(--accent);">${item.price}</td>
-                            <td data-label="Stock">
-                                <span style="font-weight:700; color:${qty < 5 ? 'red' : 'inherit'}">${qty}</span>
-                            </td>
-                            <td data-label="Status"><span class="status-badge ${statusClass}">${statusText}</span></td>
-                            <td data-label="Actions">
-                                <div style="display:flex; gap:10px;">
-                                    <button class="action-btn btn-edit" onclick="window.prepareEdit('${doc.id}', '${safeName}', '${item.price}', '${qty}')">
-                                        <i class="fas fa-pen"></i>
-                                    </button>
-                                    <button class="action-btn btn-delete" onclick="window.askDelete('${doc.id}')">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-                });
-            } catch (err) { console.error(err); }
-        }
+    } catch (err) { console.error(err); }
+}
 
         document.getElementById('addProductForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('submitBtn');
-            const files = document.getElementById('pFile').files;
-            
-            if(files.length === 0) return window.showToast("Image required", "error");
-            btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
+    e.preventDefault();
+    const btn = document.getElementById('submitBtn');
+    const files = document.getElementById('pFile').files;
+    
+    if(files.length === 0) return window.showToast("Image required", "error");
+    btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Uploading...';
 
-            try {
-                // Upload Images
-                const uploadPromises = Array.from(files).map(async (file) => {
-                    const formData = new FormData();
-                    formData.append('file', file);
-                    formData.append('upload_preset', CLOUDINARY_PRESET);
-                    const res = await fetch(CLOUDINARY_URL, { method: 'POST', body: formData });
-                    return res.json();
-                });
-                const results = await Promise.all(uploadPromises);
-                const imageUrls = results.map(r => r.secure_url);
-
-                // Add to DB with Quantity
-                await addDoc(collection(db, "products"), {
-                    name: document.getElementById('pName').value,
-                    price: document.getElementById('pPrice').value,
-                    category: document.getElementById('pCategory').value,
-                    quantity: parseInt(document.getElementById('pQty').value),
-                    status: 'Available', // Default
-                    description: document.getElementById('pDesc').value,
-                    images: imageUrls,
-                    image: imageUrls[0], 
-                    createdAt: serverTimestamp()
-                });
-
-                window.showToast("Product Created!");
-                document.getElementById('addProductForm').reset();
-                window.updateFileCount(document.getElementById('pFile'));
-                loadProducts();
-                window.switchProductView('list');
-
-            } catch(e) { window.showToast("Error: "+e.message, "error"); }
-            btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Save Product';
+    try {
+        const uploadPromises = Array.from(files).map(async (file) => {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', CLOUDINARY_PRESET);
+            const res = await fetch(CLOUDINARY_URL, { method: 'POST', body: formData });
+            return res.json();
         });
+        const results = await Promise.all(uploadPromises);
+        const imageUrls = results.map(r => r.secure_url);
+
+        await addDoc(collection(db, "products"), {
+            name: document.getElementById('pName').value,
+            buyingCost: parseFloat(document.getElementById('pBuyCost').value), // NEW
+            sellingPrice: parseFloat(document.getElementById('pSellPrice').value), // NEW
+            price: document.getElementById('pSellPrice').value, // Keep 'price' for backward compatibility
+            category: document.getElementById('pCategory').value,
+            quantity: parseInt(document.getElementById('pQty').value),
+            status: 'Available',
+            description: document.getElementById('pDesc').value,
+            images: imageUrls,
+            image: imageUrls[0], 
+            createdAt: serverTimestamp()
+        });
+
+        window.showToast("Product Created!");
+        document.getElementById('addProductForm').reset();
+        window.updateFileCount(document.getElementById('pFile'));
+        loadProducts();
+        window.switchProductView('list');
+
+    } catch(e) { window.showToast("Error: "+e.message, "error"); }
+    btn.disabled = false; btn.innerHTML = '<i class="fas fa-save"></i> Save Product';
+});
 
         window.updateFileCount = (input) => {
             const label = document.getElementById('uploadText');
@@ -616,81 +652,91 @@
 
         // --- 2. ORDER LOGIC (Accordion + Filtering) ---
         async function loadOrders() {
-            try {
-                const q = query(collection(db, "orders"), orderBy("createdAt", "desc"));
-                const snapshot = await getDocs(q);
-                allOrdersData = []; // Clear Cache
-                
-                const lists = { pending: [], confirmed: [], shipped: [], delivered: [], all: [] };
-                
-                snapshot.forEach(doc => {
-                    const d = doc.data();
-                    d.id = doc.id; // Attach ID
-                    d.dateObj = d.createdAt ? d.createdAt.toDate() : new Date();
-                    d.dateStr = d.dateObj.toLocaleDateString();
-                    allOrdersData.push(d);
+    try {
+        const q = query(collection(db, "orders"), orderBy("createdAt", "desc"));
+        const snapshot = await getDocs(q);
+        allOrdersData = []; // Clear Cache
+        
+        const lists = { pending: [], confirmed: [], shipped: [], delivered: [], all: [] };
+        let totalProfit = 0;
+        
+        // Loop through orders ONCE to calculate data
+        snapshot.forEach(doc => {
+            const d = doc.data();
+            d.id = doc.id; // Attach ID
+            d.dateObj = d.createdAt ? d.createdAt.toDate() : new Date();
+            d.dateStr = d.dateObj.toLocaleDateString();
+            allOrdersData.push(d);
+            
+            // Calculate profit accumulation
+            totalProfit += calculateOrderProfit(d);
 
-                    const firstItem = (d.items && d.items[0]) ? d.items[0] : {name:'?', qty:1};
-                    const safeOrder = encodeURIComponent(JSON.stringify(d));
+            const firstItem = (d.items && d.items[0]) ? d.items[0] : {name:'?', qty:1};
+            const safeOrder = encodeURIComponent(JSON.stringify(d));
 
-                    // Status Dropdown Generator
-                    const makeSelect = (currentStatus) => `
-                        <select onchange="window.askStatusUpdate('${d.id}', '${currentStatus}', this.value)" style="padding:5px; font-size:12px;">
-                            <option value="Pending" ${currentStatus=='Pending'?'selected':''}>Pending</option>
-                            <option value="Confirmed" ${currentStatus=='Confirmed'?'selected':''}>Confirm</option>
-                            <option value="Shipped" ${currentStatus=='Shipped'?'selected':''}>Shipped</option>
-                            <option value="Delivered" ${currentStatus=='Delivered'?'selected':''}>Delivered</option>
-                            <option value="Cancelled" ${currentStatus=='Cancelled'?'selected':''}>Cancelled</option>
-                        </select>
-                    `;
+            // Status Dropdown Generator
+            const makeSelect = (currentStatus) => `
+                <select onchange="window.askStatusUpdate('${d.id}', '${currentStatus}', this.value)" style="padding:5px; font-size:12px;">
+                    <option value="Pending" ${currentStatus=='Pending'?'selected':''}>Pending</option>
+                    <option value="Confirmed" ${currentStatus=='Confirmed'?'selected':''}>Confirm</option>
+                    <option value="Shipped" ${currentStatus=='Shipped'?'selected':''}>Shipped</option>
+                    <option value="Delivered" ${currentStatus=='Delivered'?'selected':''}>Delivered</option>
+                    <option value="Cancelled" ${currentStatus=='Cancelled'?'selected':''}>Cancelled</option>
+                </select>
+            `;
 
-                    const row = `
-                        <tr>
-                            <td data-label="Date">${d.dateStr}</td>
-                            <td data-label="Customer"><b>${d.customer.name}</b><br><small>${d.customer.phone}</small></td>
-                            <td data-label="Items">${firstItem.name} <span style="background:#f1f5f9; padding:2px;">x${firstItem.qty||1}</span></td>
-                            <td data-label="Action">
-                                <div style="display:flex; gap:5px; align-items:center;">
-                                    ${makeSelect(d.status)}
-                                    <button class="action-btn" onclick="window.viewOrder('${safeOrder}')"><i class="fas fa-eye"></i></button>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
+            const row = `
+                <tr>
+                    <td data-label="Date">${d.dateStr}</td>
+                    <td data-label="Customer"><b>${d.customer.name}</b><br><small>${d.customer.phone}</small></td>
+                    <td data-label="Items">${firstItem.name} <span style="background:#f1f5f9; padding:2px;">x${firstItem.qty||1}</span></td>
+                    <td data-label="Action">
+                        <div style="display:flex; gap:5px; align-items:center;">
+                            ${makeSelect(d.status)}
+                            <button class="action-btn" onclick="window.viewOrder('${safeOrder}')"><i class="fas fa-eye"></i></button>
+                        </div>
+                    </td>
+                </tr>
+            `;
 
-                    // Categorize
-                    if(d.status === 'Pending') lists.pending.push(row);
-                    if(d.status === 'Confirmed') lists.confirmed.push(row);
-                    if(d.status === 'Shipped') lists.shipped.push(row);
-                    if(d.status === 'Delivered') lists.delivered.push(row);
-                    
-                    // All Orders Row (Simplified)
-                    lists.all.push(`
-                        <tr>
-                            <td data-label="Date">${d.dateStr}</td>
-                            <td data-label="Status"><span class="status-badge" style="background:#f1f5f9;">${d.status}</span></td>
-                            <td data-label="Customer">${d.customer.name}</td>
-                            <td data-label="Total">${d.displayTotal || d.totalAmount}</td>
-                        </tr>
-                    `);
-                });
+            // Categorize
+            if(d.status === 'Pending') lists.pending.push(row);
+            if(d.status === 'Confirmed') lists.confirmed.push(row);
+            if(d.status === 'Shipped') lists.shipped.push(row);
+            if(d.status === 'Delivered') lists.delivered.push(row);
+            
+            // All Orders Row
+            lists.all.push(`
+                <tr>
+                    <td data-label="Date">${d.dateStr}</td>
+                    <td data-label="Status"><span class="status-badge" style="background:#f1f5f9;">${d.status}</span></td>
+                    <td data-label="Customer">${d.customer.name}</td>
+                    <td data-label="Total">${d.displayTotal || d.totalAmount}</td>
+                </tr>
+            `);
+        });
 
-                // Update UI
-                document.getElementById('tbody-pending').innerHTML = lists.pending.length ? lists.pending.join('') : '<tr><td colspan="4" style="text-align:center; padding:15px;">No pending orders</td></tr>';
-                document.getElementById('tbody-confirmed').innerHTML = lists.confirmed.length ? lists.confirmed.join('') : '<tr><td colspan="4" style="text-align:center; padding:15px;">No confirmed orders</td></tr>';
-                document.getElementById('tbody-shipped').innerHTML = lists.shipped.join('');
-                document.getElementById('tbody-delivered').innerHTML = lists.delivered.join('');
-                document.getElementById('tbody-all').innerHTML = lists.all.join('');
+        // --- UPDATE UI OUTSIDE THE LOOP ---
+        document.getElementById('tbody-pending').innerHTML = lists.pending.length ? lists.pending.join('') : '<tr><td colspan="4" style="text-align:center; padding:15px;">No pending orders</td></tr>';
+        document.getElementById('tbody-confirmed').innerHTML = lists.confirmed.length ? lists.confirmed.join('') : '<tr><td colspan="4" style="text-align:center; padding:15px;">No confirmed orders</td></tr>';
+        document.getElementById('tbody-shipped').innerHTML = lists.shipped.join('');
+        document.getElementById('tbody-delivered').innerHTML = lists.delivered.join('');
+        document.getElementById('tbody-all').innerHTML = lists.all.join('');
 
-                // Update Counts
-                document.getElementById('count-pending').innerText = lists.pending.length;
-                document.getElementById('stat-pending').innerText = lists.pending.length;
-                document.getElementById('stat-total').innerText = snapshot.size;
+        // Update Counts & Profit
+        document.getElementById('count-pending').innerText = lists.pending.length;
+        document.getElementById('stat-pending').innerText = lists.pending.length;
+        document.getElementById('stat-total').innerText = snapshot.size;
+        
+        // Set final profit text
+        document.getElementById('stat-profit').innerText = totalProfit.toLocaleString();
 
-                window.renderChart(); // Draw Chart
+        // Render Initial Charts (Default 7 Days)
+        window.renderSalesChart(7); 
+        window.renderProfitChart(7);
 
-            } catch (err) { console.error("Order Load Error", err); }
-        }
+    } catch (err) { console.error("Order Load Error", err); }
+}
 
         window.toggleAccordion = (id) => {
             const item = document.getElementById(`acc-${id}`);
@@ -807,79 +853,170 @@
         window.closeEditModal = () => document.getElementById('editModal').style.display = 'none';
 
         document.getElementById('saveEditBtn').addEventListener('click', async () => {
-            const id = document.getElementById('editId').value;
-            const newQty = parseInt(document.getElementById('editQty').value);
+    const id = document.getElementById('editId').value;
+    const inputQty = parseInt(document.getElementById('editQty').value);
+    const status = document.getElementById('editStatus').value;
+    
+    // LOGIC: If Admin selects "Sold Out", force quantity to 0. 
+    // Otherwise use input quantity.
+    const finalQty = status === 'Sold Out' ? 0 : inputQty;
+    const finalStatus = finalQty === 0 ? 'Sold Out' : 'Available'; // Double check status based on 0 logic
+
+    await updateDoc(doc(db, "products", id), {
+        name: document.getElementById('editName').value,
+        sellingPrice: document.getElementById('editPrice').value, // Update selling price
+        price: document.getElementById('editPrice').value,
+        quantity: finalQty,
+        status: finalStatus
+    });
+    
+    window.showToast("Updated!");
+    window.closeEditModal();
+    loadProducts();
+});
+        // --- CHART LOGIC ---
+
+// Helper: Calculate Profit for an Order
+const calculateOrderProfit = (order) => {
+    if(order.status === 'Cancelled' || order.status === 'Pending') return 0; // Only count profit for confirmed/sold
+    
+    let totalProfit = 0;
+    if(order.items && Array.isArray(order.items)) {
+        order.items.forEach(item => {
+            const buyCost = productCostMap[item.productId] || 0; // Get Cost from Map
+            const sellPrice = parseFloat(item.price || 0); // Price sold at
+            const qty = item.qty || 1;
             
-            await updateDoc(doc(db, "products", id), {
-                name: document.getElementById('editName').value,
-                price: document.getElementById('editPrice').value,
-                quantity: newQty,
-                status: newQty > 0 ? 'Available' : 'Sold Out'
-            });
-            
-            window.showToast("Updated!");
-            window.closeEditModal();
-            loadProducts();
+            // Profit = (Selling - Buying) * Qty
+            totalProfit += (sellPrice - buyCost) * qty;
         });
+    }
+    return totalProfit;
+};
 
-        // --- 6. CHART LOGIC ---
-        window.updateChart = (days, btn) => {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            window.renderChart(days);
-        };
+// Update existing loadOrders to calculate total stat
+const originalLoadOrders = loadOrders; // Reference existing if needed, but easier to just Paste this snippet inside loadOrders loop
 
-        window.renderChart = (days = 7) => {
-            const ctx = document.getElementById('salesChart').getContext('2d');
-            
-            // Filter Data by Date
-            const cutoff = new Date();
-            cutoff.setDate(cutoff.getDate() - days);
-            
-            const filtered = allOrdersData.filter(o => o.dateObj >= cutoff);
-            
-            // Group by Date
-            const labels = [];
-            const dataOrders = {}; 
-            const dataCancel = {};
+// NOTE: Please ensure you calculate the Total Profit Stat inside your loadOrders function like this:
+// let grandTotalProfit = 0;
+// ... inside loop ...
+// grandTotalProfit += calculateOrderProfit(d);
+// ... after loop ...
+// document.getElementById('stat-profit').innerText = grandTotalProfit.toLocaleString();
 
-            // Initialize map
-            for(let i=0; i<days; i++) {
-                const d = new Date();
-                d.setDate(d.getDate() - i);
-                const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                labels.unshift(dateStr); // Push to front to have chronological order
-                dataOrders[dateStr] = 0;
-                dataCancel[dateStr] = 0;
+
+window.updateChart = (type, days, btn) => {
+    // Handle UI buttons
+    const parent = btn.parentElement;
+    parent.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    
+    if(type === 'sales') window.renderSalesChart(days);
+    if(type === 'profit') window.renderProfitChart(days);
+};
+
+window.renderSalesChart = (days) => {
+    const ctx = document.getElementById('salesChart').getContext('2d');
+    const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - days);
+    const filtered = allOrdersData.filter(o => o.dateObj >= cutoff);
+    
+    const labels = [];
+    const dataOrders = {}; const dataCancel = {};
+
+    for(let i=0; i<days; i++) {
+        const d = new Date(); d.setDate(d.getDate() - i);
+        const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        labels.unshift(dateStr); 
+        dataOrders[dateStr] = 0; dataCancel[dateStr] = 0;
+    }
+
+    filtered.forEach(o => {
+        const dStr = o.dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        if (dataOrders.hasOwnProperty(dStr)) {
+            if(o.status === 'Cancelled') dataCancel[dStr]++;
+            else dataOrders[dStr]++;
+        }
+    });
+
+    if(chartInstance) chartInstance.destroy();
+    chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                { label: 'Completed Orders', data: Object.values(dataOrders), borderColor: '#3b82f6', tension: 0.4 },
+                { label: 'Cancelled', data: Object.values(dataCancel), borderColor: '#ef4444', tension: 0.4 }
+            ]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+    });
+};
+
+window.renderProfitChart = (days) => {
+    const ctx = document.getElementById('profitChart').getContext('2d');
+    const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - days);
+    
+    // Labels setup
+    const labels = [];
+    const dataProfit = {};
+
+    // Logic for Day grouping vs Month grouping can be added here, 
+    // but for simplicity we will stick to Day-by-Day or Month buckets if days > 30
+    
+    if(days <= 30) {
+        for(let i=0; i<days; i++) {
+            const d = new Date(); d.setDate(d.getDate() - i);
+            const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            labels.unshift(dateStr);
+            dataProfit[dateStr] = 0;
+        }
+    } else {
+        // Simple Month bucket for 1 Year
+        for(let i=0; i<12; i++) {
+            const d = new Date(); d.setMonth(d.getMonth() - i);
+            const dateStr = d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+            labels.unshift(dateStr);
+            dataProfit[dateStr] = 0;
+        }
+    }
+
+    allOrdersData.forEach(o => {
+        if(o.dateObj >= cutoff) {
+            let dStr;
+            if(days <= 30) dStr = o.dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            else dStr = o.dateObj.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+
+            if (dataProfit.hasOwnProperty(dStr)) {
+                dataProfit[dStr] += calculateOrderProfit(o);
             }
+        }
+    });
 
-            filtered.forEach(o => {
-                const dStr = o.dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                if (dataOrders.hasOwnProperty(dStr)) {
-                    if(o.status === 'Cancelled') dataCancel[dStr]++;
-                    else dataOrders[dStr]++;
+    if(profitChartInstance) profitChartInstance.destroy();
+    profitChartInstance = new Chart(ctx, {
+        type: 'bar', // Bar chart often looks better for profit volumes
+        data: {
+            labels: labels,
+            datasets: [
+                { 
+                    label: 'Net Profit', 
+                    data: Object.values(dataProfit), 
+                    backgroundColor: '#10b981', 
+                    borderRadius: 4 
                 }
-            });
+            ]
+        },
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false,
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+};
 
-            if(chartInstance) chartInstance.destroy();
-
-            chartInstance = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [
-                        { label: 'Completed/Active Orders', data: Object.values(dataOrders), borderColor: '#3b82f6', tension: 0.4 },
-                        { label: 'Cancelled', data: Object.values(dataCancel), borderColor: '#ef4444', tension: 0.4 }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom' } },
-                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
-                }
-            });
-        };
+// Initial Render calls (Add inside loadOrders or Auth success)
+// Note: Call window.renderChart('sales', 7, document.querySelector('.filter-btn.active'))
+// and window.renderChart('profit', 7, ...);
 
         // --- 7. MODAL UTILS ---
         window.closeModal = () => document.getElementById('confirmModal').style.display = 'none';

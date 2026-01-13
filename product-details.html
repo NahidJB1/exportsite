@@ -162,14 +162,22 @@
 
         if(!productId) window.location.href = "products.html";
 
+        // Global State
         let currentProduct = null;
         let qty = 1;
+        let maxStock = 10; // Default fallback
+        let unitPrice = 0; // Numeric value for calculation
 
-        // --- 1. Helper: Get Number from "BDT 45,000" ---
-        function parsePrice(priceStr) {
-            if(!priceStr) return 0;
-            // Remove everything except numbers and dots
-            return parseFloat(priceStr.replace(/[^0-9.]/g, '')) || 0;
+        // --- Helper: Clean Price to Number ---
+        function getNumericPrice(priceVal) {
+            if (typeof priceVal === 'number') return priceVal;
+            // Legacy support: remove "RM", "BDT", commas
+            return parseFloat(priceVal.replace(/[^0-9.]/g, '')) || 0;
+        }
+
+        // --- Helper: Format Number to RM Currency ---
+        function formatCurrency(amount) {
+            return "RM " + amount.toLocaleString('en-MY', {minimumFractionDigits: 2, maximumFractionDigits: 2});
         }
 
         // --- 2. Helper: Get Currency Name like "BDT" or "$" ---
@@ -195,105 +203,117 @@
 }
 
         function renderPage(product) {
-    const images = product.images || [product.image];
-    const thumbsHtml = images.map((img, index) => 
-        `<img src="${img}" class="thumb ${index===0?'active':''}" onclick="changeImage('${img}', this)">`
-    ).join('');
-
-    const descriptionText = product.description 
-        ? product.description.replace(/\n/g, '<br>') 
-        : "No description available.";
-
-    // Default guarantee text if none provided in dashboard
-    const guaranteeText = product.guarantee || "100% Authentic Product | 7 Days Return Policy";
-
-    const mainImgSrc = images[0];
-
-    document.getElementById('productContainer').innerHTML = `
-        <div class="gallery-section">
-            <div class="main-img-box">
-                <img src="${mainImgSrc}" class="main-img" id="mainImage">
-            </div>
-            <div class="thumb-grid">
-                ${thumbsHtml} 
-            </div>
-        </div>
-        
-        <div class="details-section">
-            <span class="cat-badge">${product.category}</span>
-            <h1>${product.name}</h1>
-            <div class="price">Unit Price: ${product.price}</div>
+            const images = product.images || [product.image];
+            const mainImgSrc = images[0];
             
-            <div class="guarantee-box">
-                <i class="fas fa-shield-alt" style="font-size:18px;"></i>
-                <div>
-                    <strong style="display:block; margin-bottom:2px;">Shopping Guarantee</strong>
-                    <span>${guaranteeText}</span>
+            // 1. Setup Data
+            unitPrice = getNumericPrice(product.sellingPrice || product.price);
+            
+            // Determine Stock: Priority to 'quantity', fallback to 'status' logic
+            if (product.quantity !== undefined) {
+                maxStock = product.quantity;
+            } else {
+                maxStock = (product.status === 'Sold Out') ? 0 : 10;
+            }
+
+            const isSoldOut = maxStock === 0;
+
+            // 2. Render Gallery
+            const thumbsHtml = images.map((img, index) => 
+                `<img src="${img}" class="thumb ${index===0?'active':''}" onclick="changeImage('${img}', this)">`
+            ).join('');
+
+            const descriptionText = product.description 
+                ? product.description.replace(/\n/g, '<br>') 
+                : "No description available.";
+
+            const guaranteeText = product.guarantee || "100% Authentic Product | 7 Days Return Policy";
+
+            // 3. Inject HTML
+            document.getElementById('productContainer').innerHTML = `
+                <div class="gallery-section">
+                    <div class="main-img-box">
+                        <img src="${mainImgSrc}" class="main-img" id="mainImage">
+                        ${isSoldOut ? '<div style="position:absolute; top:10px; right:10px; background:red; color:white; padding:5px 10px; border-radius:5px; font-weight:bold;">SOLD OUT</div>' : ''}
+                    </div>
+                    <div class="thumb-grid">${thumbsHtml}</div>
                 </div>
-            </div>
+                
+                <div class="details-section">
+                    <span class="cat-badge">${product.category || 'General'}</span>
+                    <h1>${product.name}</h1>
+                    <div class="price">Unit Price: ${formatCurrency(unitPrice)}</div>
+                    
+                    <div class="guarantee-box">
+                        <i class="fas fa-shield-alt" style="font-size:18px;"></i>
+                        <div>
+                            <strong style="display:block; margin-bottom:2px;">Shopping Guarantee</strong>
+                            <span>${guaranteeText}</span>
+                        </div>
+                    </div>
 
-            <div class="qty-wrapper">
-                <span style="font-weight:600; margin-right:10px;">Quantity:</span>
-                <div class="qty-box">
-                    <button class="qty-btn" onclick="updateQty(-1)">-</button>
-                    <input type="text" id="qtyInput" value="1" readonly>
-                    <button class="qty-btn" onclick="updateQty(1)">+</button>
+                    <div class="qty-wrapper" style="opacity: ${isSoldOut ? '0.5' : '1'}; pointer-events: ${isSoldOut ? 'none' : 'auto'};">
+                        <span style="font-weight:600; margin-right:10px;">Quantity:</span>
+                        <div class="qty-box">
+                            <button class="qty-btn" onclick="updateQty(-1)">-</button>
+                            <input type="text" id="qtyInput" value="1" readonly>
+                            <button class="qty-btn" onclick="updateQty(1)">+</button>
+                        </div>
+                    </div>
+
+                    <div class="total-box">
+                        <span style="color:#065f46; font-weight:600;">Total Amount:</span>
+                        <span id="totalPrice" style="font-size:22px; font-weight:700; color:#059669;">
+                            ${formatCurrency(unitPrice)}
+                        </span>
+                    </div>
+
+                    <div class="action-buttons">
+                        <button class="btn-outline" onclick="addToCart()" ${isSoldOut ? 'disabled style="border-color:#ccc; color:#ccc;"' : ''}>
+                            <i class="fas fa-shopping-cart"></i> Add to Cart
+                        </button>
+                        <button class="btn-outline" id="favBtn" onclick="toggleDetailsFav()">
+                            <i class="far fa-heart"></i> Favorite
+                        </button>
+                    </div>
+
+                    <button class="btn-buy" onclick="goToCheckout()" ${isSoldOut ? 'disabled style="background:#ccc; cursor:not-allowed;"' : ''}>
+                        ${isSoldOut ? 'Currently Unavailable' : 'Proceed to Checkout <i class="fas fa-arrow-right"></i>'}
+                    </button>
+
+                    <div class="desc-container">
+                        <h3 style="margin:0 0 10px; color:#333; font-size:16px;">Product Description</h3>
+                        <div class="desc-content" id="descContent">
+                            <p style="margin:0;">${descriptionText}</p>
+                        </div>
+                        <button class="read-more-btn" onclick="toggleDescription()" id="readMoreBtn">Read More <i class="fas fa-chevron-down"></i></button>
+                    </div>
                 </div>
-            </div>
 
-            <div class="total-box">
-                <span style="color:#065f46; font-weight:600;">Total Amount:</span>
-                <span id="totalPrice" style="font-size:22px; font-weight:700; color:#059669;">${product.price}</span>
-            </div>
-
-            <div class="action-buttons">
-                <button class="btn-outline" onclick="addToCart()">
-                    <i class="fas fa-shopping-cart"></i> Add to Cart
-                </button>
-                <button class="btn-outline" id="favBtn" onclick="toggleDetailsFav()">
-                    <i class="far fa-heart"></i> Favorite
-                </button>
-            </div>
-
-            <button class="btn-buy" onclick="goToCheckout()">
-                Proceed to Checkout <i class="fas fa-arrow-right"></i>
-            </button>
-
-            <div class="desc-container">
-                <h3 style="margin:0 0 10px; color:#333; font-size:16px;">Product Description</h3>
-                <div class="desc-content" id="descContent">
-                    <p style="margin:0;">${descriptionText}</p>
+                <div class="reviews-container">
+                    <div class="review-header">
+                        <h3 class="review-title">Customer Reviews</h3>
+                        <div id="reviewBtnContainer"></div> 
+                    </div>
+                    <div id="reviewForm" class="review-form-box">
+                        <h4 style="margin:0 0 10px; color:#003366;">Write a Review</h4>
+                        <div class="star-rating-input" id="starInput">
+                            <i class="fas fa-star" onclick="setRating(1)" data-val="1"></i>
+                            <i class="fas fa-star" onclick="setRating(2)" data-val="2"></i>
+                            <i class="fas fa-star" onclick="setRating(3)" data-val="3"></i>
+                            <i class="fas fa-star" onclick="setRating(4)" data-val="4"></i>
+                            <i class="fas fa-star" onclick="setRating(5)" data-val="5"></i>
+                        </div>
+                        <input type="text" id="reviewName" placeholder="Your Name (Optional)" class="review-input" style="margin-bottom:10px;">
+                        <textarea id="reviewText" rows="3" placeholder="How was the product?" class="review-input"></textarea>
+                        <button class="btn-submit-review" onclick="submitReview()">Post Review</button>
+                    </div>
+                    <div id="reviewsList">
+                        <p class="no-reviews"><i class="fas fa-spinner fa-spin"></i> Loading reviews...</p>
+                    </div>
                 </div>
-                <button class="read-more-btn" onclick="toggleDescription()" id="readMoreBtn">Read More <i class="fas fa-chevron-down"></i></button>
-            </div>
-        </div>
-
-        <div class="reviews-container">
-            <div class="review-header">
-                <h3 class="review-title">Customer Reviews</h3>
-                <div id="reviewBtnContainer"></div> 
-            </div>
-
-            <div id="reviewForm" class="review-form-box">
-                <h4 style="margin:0 0 10px; color:#003366;">Write a Review</h4>
-                <div class="star-rating-input" id="starInput">
-                    <i class="fas fa-star" onclick="setRating(1)" data-val="1"></i>
-                    <i class="fas fa-star" onclick="setRating(2)" data-val="2"></i>
-                    <i class="fas fa-star" onclick="setRating(3)" data-val="3"></i>
-                    <i class="fas fa-star" onclick="setRating(4)" data-val="4"></i>
-                    <i class="fas fa-star" onclick="setRating(5)" data-val="5"></i>
-                </div>
-                <input type="text" id="reviewName" placeholder="Your Name (Optional)" class="review-input" style="margin-bottom:10px;">
-                <textarea id="reviewText" rows="3" placeholder="How was the product?" class="review-input"></textarea>
-                <button class="btn-submit-review" onclick="submitReview()">Post Review</button>
-            </div>
-
-            <div id="reviewsList">
-                <p class="no-reviews"><i class="fas fa-spinner fa-spin"></i> Loading reviews...</p>
-            </div>
-        </div>
-    `;
-}
+            `;
+        }
 
         window.changeImage = (src, el) => {
             document.getElementById('mainImage').src = src;
@@ -301,31 +321,40 @@
             el.classList.add('active');
         };
 
-        // --- 3. Updated Logic: Calculate Total ---
+
+
         window.updateQty = (change) => {
             const input = document.getElementById('qtyInput');
-            let val = parseInt(input.value);
-            val += change;
-            if(val < 1) val = 1;
-            if(val > 10) val = 10; 
-            input.value = val;
-            qty = val;
+            let currentVal = parseInt(input.value);
+            let newVal = currentVal + change;
 
-            // Math Magic
-            const unitPrice = parsePrice(currentProduct.price);
-            const totalPrice = unitPrice * qty;
-            const currency = getCurrency(currentProduct.price);
+            // 1. Prevent negative
+            if(newVal < 1) return;
 
-            // Update the display with commas (e.g., 45,000)
-            document.getElementById('totalPrice').innerText = currency + " " + totalPrice.toLocaleString();
+            // 2. Check Hidden Stock Limit
+            if(newVal > maxStock) {
+                alert(`Sorry, we only have ${maxStock} units left in stock.`);
+                return; // Stop here, do not increase number
+            }
+
+            // 3. Update UI
+            qty = newVal;
+            input.value = qty;
+
+            // 4. Calculate Live Total
+            const total = unitPrice * qty;
+            document.getElementById('totalPrice').innerText = formatCurrency(total);
         };
 
         window.goToCheckout = () => {
+            const finalTotal = unitPrice * qty;
+            
             const params = new URLSearchParams({
                 id: productId,
                 name: currentProduct.name,
-                price: currentProduct.price,
-                img: currentProduct.images ? currentProduct.images[0] : currentProduct.image,
+                unitPrice: unitPrice, // Clean number
+                totalPrice: finalTotal, // Calculated total
+                img: currentProduct.images ? currentProduct.images[0] : (currentProduct.image || ''),
                 qty: qty
             });
             window.location.href = `checkout.html?${params.toString()}`;
@@ -339,19 +368,24 @@
             const existingItem = cart.find(item => item.id === productId);
             
             if (existingItem) {
+                // Check if adding more exceeds stock
+                if ((existingItem.qty + qty) > maxStock) {
+                    alert(`You already have ${existingItem.qty} in cart. We only have ${maxStock} in stock.`);
+                    return;
+                }
                 existingItem.qty += qty;
             } else {
                 cart.push({
                     id: productId,
                     name: currentProduct.name,
-                    price: currentProduct.price,
-                    image: currentProduct.images ? currentProduct.images[0] : currentProduct.image,
+                    price: unitPrice, // Store numeric price
+                    image: currentProduct.images ? currentProduct.images[0] : (currentProduct.image || ''),
                     qty: qty
                 });
             }
             localStorage.setItem('myCart', JSON.stringify(cart));
 
-            // Visual Feedback (Instead of Alert)
+            // Visual Feedback
             const btn = document.querySelector('.btn-outline');
             const originalText = btn.innerHTML;
             btn.innerHTML = `<i class="fas fa-check"></i> Added!`;

@@ -1,3 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details | Nusantara Trade</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 15px; display: flex; flex-wrap: wrap; gap: 40px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
+        
+        .gallery-section { flex: 1; min-width: 300px; }
+        .main-img-box { width: 100%; height: 350px; background: #eee; border-radius: 10px; overflow: hidden; margin-bottom: 15px; }
+        .main-img { width: 100%; height: 100%; object-fit: contain; }
+        .thumb-grid { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; }
+        .thumb { width: 70px; height: 70px; border-radius: 8px; cursor: pointer; border: 2px solid transparent; object-fit: cover; background: #f9f9f9; }
+        .thumb.active { border-color: #003366; }
+
+        .details-section { flex: 1; min-width: 300px; }
+        .cat-badge { background: #e0f2fe; color: #003366; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        h1 { margin: 15px 0; color: #003366; font-size: 28px; }
+        .price { font-size: 24px; color: #00A86B; font-weight: 700; margin-bottom: 25px; }
+        
+        .qty-wrapper { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+        .qty-box { display: flex; align-items: center; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; }
+        .qty-btn { background: #f8fafc; border: none; padding: 10px 15px; cursor: pointer; font-size: 16px; transition: 0.2s; }
+        .qty-btn:hover { background: #e2e8f0; }
+        #qtyInput { width: 50px; text-align: center; border: none; font-weight: 600; font-family: inherit; outline: none; }
+
+        /* NEW: Total Price Box Style */
+        .total-box {
+            background: #f0fdf4; border: 1px solid #bbf7d0; padding: 15px; 
+            border-radius: 8px; margin-bottom: 25px; 
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .btn-buy { background: #003366; color: white; border: none; width: 100%; padding: 15px; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; }
+        .btn-buy:hover { background: #002244; transform: translateY(-2px); }
+        .back-link { display: inline-block; margin-bottom: 20px; color: #666; text-decoration: none; }
+
+        /* ACTION BUTTONS GRID */
+        .action-buttons {
+            display: flex; gap: 10px; margin-bottom: 15px;
+        }
+        .btn-outline {
+            flex: 1; padding: 12px; border-radius: 10px;
+            border: 2px solid #003366; background: white;
+            color: #003366; font-weight: 600; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            transition: 0.2s;
+        }
+        .btn-outline:hover { background: #f0f9ff; }
+        .btn-outline.active-fav { background: #fee2e2; border-color: #ef4444; color: #ef4444; }
+
+        /* REVIEW SECTION STYLES */
+        .reviews-container {
+            width: 100%; margin-top: 40px; border-top: 2px solid #eee; padding-top: 30px;
+        }
+        .review-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+        .review-title { font-size: 22px; font-weight: 700; color: #003366; margin: 0; }
+        
+        /* Write Review Form */
+        .review-form-box {
+            background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 30px;
+            display: none; /* Hidden by default, shown if eligible */
+        }
+        .star-rating-input { display: flex; gap: 10px; margin-bottom: 15px; }
+        .star-rating-input i { font-size: 24px; color: #ddd; cursor: pointer; transition: 0.2s; }
+        .star-rating-input i.active { color: #f59e0b; }
+        
+        .review-input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-family: inherit; margin-bottom: 15px; resize: vertical; }
+        .btn-submit-review { background: #003366; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+        .btn-submit-review:hover { background: #002244; }
+
+        /* Review List */
+        .review-card { background: white; border: 1px solid #eee; border-radius: 10px; padding: 15px; margin-bottom: 15px; }
+        .review-user { font-weight: 700; color: #333; display: flex; justify-content: space-between; }
+        .review-date { font-size: 12px; color: #888; font-weight: 400; }
+        .review-stars { color: #f59e0b; font-size: 14px; margin: 5px 0 8px; }
+        .review-text { font-size: 14px; color: #555; line-height: 1.5; }
+        .no-reviews { color: #666; font-style: italic; }
+
+        @media (max-width: 600px) {
+            .review-header { flex-direction: column; align-items: flex-start; gap: 10px; }
+        }
+
+        /* --- NEW STYLES FOR UPDATES --- */
+.guarantee-box {
+    background: #fffbeb; 
+    border: 1px solid #fcd34d; 
+    color: #92400e; 
+    padding: 12px 15px; 
+    border-radius: 8px; 
+    font-size: 14px; 
+    display: flex; 
+    align-items: center; 
+    gap: 10px; 
+    margin-bottom: 25px; /* Takes the place of description */
+}
+
+/* Description Toggle Styles */
+.desc-container {
+    margin-top: 25px; 
+    border-top: 1px solid #eee; 
+    padding-top: 20px;
+}
+.desc-content {
+    font-size: 14px; 
+    color: #555; 
+    line-height: 1.6;
+    max-height: 80px; /* Short limit initially */
+    overflow: hidden;
+    position: relative;
+    transition: max-height 0.5s ease;
+}
+.desc-content.expanded {
+    max-height: 1000px; /* Large enough to show full text */
+}
+.desc-content::after {
+    content: "";
+    position: absolute; bottom: 0; left: 0; width: 100%; height: 40px;
+    background: linear-gradient(transparent, white);
+    pointer-events: none;
+}
+.desc-content.expanded::after { display: none; }
+
+.read-more-btn {
+    background: none; border: none; color: #003366; 
+    font-weight: 600; font-size: 13px; cursor: pointer; 
+    padding: 5px 0; margin-top: 5px;
+}
+.read-more-btn:hover { text-decoration: underline; }
+
+/* --- MODERN TOAST NOTIFICATION --- */
+        #toast-box {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            z-index: 10000;
+            display: flex; flex-direction: column; gap: 10px;
+            pointer-events: none; /* Allows clicking through empty space */
+        }
+
+        .toast-msg {
+            background: #1e293b; color: white;
+            padding: 12px 24px; border-radius: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            font-size: 14px; font-weight: 500;
+            display: flex; align-items: center; gap: 10px;
+            opacity: 0; transform: translateY(20px);
+            animation: slideUp 0.3s forwards;
+        }
+        
+        /* Variants */
+        .toast-msg.warning { background: #ef4444; } /* Red for stock limit */
+        .toast-msg.success { background: #10b981; } /* Green for added to cart */
+
+        @keyframes slideUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <a href="products.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Shop</a>
+
+    <div class="container" id="productContainer">
+        <div style="width:100%; text-align:center; padding:50px;">
+            <i class="fas fa-spinner fa-spin fa-2x"></i> Loading Product...
+        </div>
+    </div>
+
+    <div id="toast-box"></div>
+
 <script type="module">
         import { db, auth } from './firebase-config.js';
         import { 
@@ -455,3 +628,5 @@
 
         loadProduct();
     </script>
+</body>
+</html>

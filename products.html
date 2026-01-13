@@ -378,8 +378,8 @@
     </section>
     <script type="module">
         import { auth, db } from './firebase-config.js';
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { collection, getDocs, query, orderBy, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { collection, getDocs, query, orderBy, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // DOM Elements
         const shopGrid = document.getElementById('shopGrid');
@@ -387,7 +387,7 @@ import { collection, getDocs, query, orderBy, doc, getDoc } from "https://www.gs
         const searchInput = document.getElementById('searchInput');
         const pills = document.querySelectorAll('.cat-pill');
 
-        // --- ADD MOUSE WHEEL SCROLL FOR PC ---
+        // --- MOUSE WHEEL SCROLL FOR CATEGORIES ---
         const catContainer = document.getElementById('catFilters');
         if (catContainer) {
             catContainer.addEventListener('wheel', (e) => {
@@ -401,36 +401,31 @@ import { collection, getDocs, query, orderBy, doc, getDoc } from "https://www.gs
         let allProducts = []; // Store data locally for fast filtering
 
         // 1. Check Auth & Load Name
-// 1. Check Auth & Load Name
-onAuthStateChanged(auth, async (user) => {
-    if (user) {
-        // SAFETY BLOCK: Try to get the name, but don't crash if it fails
-        try {
-            const userDoc = await getDoc(doc(db, "users", user.uid));
-            if (userDoc.exists() && userDoc.data().fullName) {
-                const firstName = userDoc.data().fullName.split(' ')[0]; 
-                document.getElementById('navUserName').innerText = `Hi, ${firstName}`;
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                // Try to get the name, but don't crash if it fails
+                try {
+                    const userDoc = await getDoc(doc(db, "users", user.uid));
+                    if (userDoc.exists() && userDoc.data().fullName) {
+                        const firstName = userDoc.data().fullName.split(' ')[0]; 
+                        document.getElementById('navUserName').innerText = `Hi, ${firstName}`;
+                    }
+                } catch (error) {
+                    console.log("Could not load name, continuing...");
+                }
+                
+                fetchProducts();
+            } else {
+                window.location.href = "login.html";
             }
-        } catch (error) {
-            console.log("Could not load name (Permission issue), but continuing to load products...");
-        }
-        
-        // This is now OUTSIDE the crash zone, so products will ALWAYS load
-        fetchProducts();
-    } else {
-        window.location.href = "login.html";
-    }
-});
+        });
 
-
-// 2. Fetch Products (FIXED)
+        // 2. Fetch Products
         async function fetchProducts() {
             renderSkeletons(); 
             
             try {
-                // Fixed the syntax error on this line:
                 const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
-                
                 const snapshot = await getDocs(q);
                 
                 allProducts = [];
@@ -441,14 +436,11 @@ onAuthStateChanged(auth, async (user) => {
                 renderProducts(allProducts);
             } catch (error) {
                 console.error(error);
-                const grid = document.getElementById('shopGrid');
-                if(grid) grid.innerHTML = '<p style="text-align:center; width:100%">Error loading data.</p>';
+                if(shopGrid) shopGrid.innerHTML = '<p style="text-align:center; width:100%">Error loading data.</p>';
             } 
         }
 
-        
-
-        // 3. Render HTML
+        // 3. Render HTML (UPDATED FOR DASHBOARD ALIGNMENT)
         function renderProducts(products) {
             shopGrid.innerHTML = '';
             
@@ -457,16 +449,42 @@ onAuthStateChanged(auth, async (user) => {
                 return;
             }
 
-            // NEW: Get current favorites to see which hearts should be red
             const favorites = getFavorites();
 
             products.forEach(item => {
-                const isSold = item.status === 'Sold Out';
-                const displayImg = (item.images && item.images.length > 0) ? item.images[0] : item.image;
-                const detailsUrl = `product-details.html?id=${item.id}`;
+                // --- ALIGNMENT LOGIC START ---
+                
+                // 1. Quantity & Status Check
+                // If quantity is defined, use it. If 0, it is Sold Out.
+                // Fallback: If quantity missing, check old text status.
+                const qty = (item.quantity !== undefined) ? item.quantity : (item.status === 'Sold Out' ? 0 : 10);
+                const isSold = qty === 0;
+                const isLowStock = qty > 0 && qty < 5;
 
-                // NEW: Check if this item is in favorites
+                // 2. Price Formatting
+                // Use new numeric sellingPrice if available, otherwise old string price
+                let displayPrice = "RM 0.00";
+                if (item.sellingPrice !== undefined && item.sellingPrice !== null) {
+                    // It's a number from the new dashboard
+                    displayPrice = "RM " + parseFloat(item.sellingPrice).toLocaleString('en-MY', { minimumFractionDigits: 2 });
+                } else if (item.price) {
+                    // It's a legacy string (e.g., "RM 4500")
+                    displayPrice = item.price; 
+                }
+
+                // --- ALIGNMENT LOGIC END ---
+
+                const displayImg = (item.images && item.images.length > 0) ? item.images[0] : (item.image || 'https://via.placeholder.com/150');
+                const detailsUrl = `product-details.html?id=${item.id}`;
                 const isLiked = favorites.includes(item.id);
+
+                // Determine badges
+                let badgeHTML = '';
+                if (isSold) {
+                    badgeHTML = '<div class="status-overlay">SOLD OUT</div>';
+                } else if (isLowStock) {
+                    badgeHTML = '<div class="status-overlay" style="background:#f59e0b;">LOW STOCK</div>';
+                }
 
                 const card = `
                     <div class="card ${isSold ? 'sold-out' : ''}">
@@ -477,12 +495,12 @@ onAuthStateChanged(auth, async (user) => {
                                 <i class="fas fa-heart"></i>
                             </button>
 
-                            ${isSold ? '<div class="status-overlay">SOLD OUT</div>' : ''}
+                            ${badgeHTML}
                         </div>
                         <div class="card-body">
-                            <span class="card-cat">${item.category}</span>
+                            <span class="card-cat">${item.category || 'General'}</span>
                             <h3 class="card-title">${item.name}</h3>
-                            <div class="card-price">${item.price}</div>
+                            <div class="card-price">${displayPrice}</div>
                             
                             ${isSold 
                                 ? `<button class="whatsapp-btn" style="background:#ccc; cursor:not-allowed;">Sold Out</button>` 
@@ -495,15 +513,11 @@ onAuthStateChanged(auth, async (user) => {
             });
         }
 
-        
-        
-        // 4. Filter Functions (Updated)
+        // 4. Filter Functions
         window.filterData = (category) => {
-            // UI Active State
             pills.forEach(p => p.classList.remove('active'));
             event.target.classList.add('active');
 
-            // Logic: Case-insensitive comparison
             if(category === 'All') {
                 renderProducts(allProducts);
             } else {
@@ -521,12 +535,9 @@ onAuthStateChanged(auth, async (user) => {
             renderProducts(filtered);
         });
 
-        // REMOVED: window.logout function (It is now handled in profile.html)
-
-        // --- FEATURE: SKELETON LOADER ---
+        // 6. Skeleton Loader
         function renderSkeletons() {
             shopGrid.innerHTML = '';
-            // Create 4 dummy cards
             for(let i=0; i<4; i++) {
                 shopGrid.innerHTML += `
                     <div class="card skeleton-card">
@@ -542,35 +553,28 @@ onAuthStateChanged(auth, async (user) => {
             }
         }
 
-        // --- FEATURE: WISHLIST LOGIC (Local Storage) ---
-        // 1. Get Favorites list
+        // 7. Wishlist Logic
         function getFavorites() {
             const stored = localStorage.getItem('myFavorites');
             return stored ? JSON.parse(stored) : [];
         }
 
-        // 2. Toggle Function (Attached to window so HTML can see it)
         window.toggleWishlist = (id, btn) => {
-            // Stop the click from opening the product details page (if we wrap card in link later)
             event.preventDefault(); 
-            
             let favs = getFavorites();
             const index = favs.indexOf(id);
 
             if (index === -1) {
-                // Add to favorites
                 favs.push(id);
                 btn.classList.add('active');
             } else {
-                // Remove from favorites
                 favs.splice(index, 1);
                 btn.classList.remove('active');
             }
-
             localStorage.setItem('myFavorites', JSON.stringify(favs));
         };
 
-        // --- 6. UPDATE CART COUNT ON LOAD ---
+        // 8. Update Cart Count
         function updateCartBadge() {
             const cart = JSON.parse(localStorage.getItem('myCart')) || [];
             const badge = document.getElementById('navCartCount');
@@ -581,21 +585,14 @@ onAuthStateChanged(auth, async (user) => {
                 badge.style.display = 'none';
             }
         }
-        // Run immediately
         updateCartBadge();
 
-        // ... (Existing code)
-
-        // --- 7. TOGGLE FILTER BAR VISIBILITY ---
+        // 9. Toggle Filters
         window.toggleFilters = (btn) => {
             const section = document.getElementById('filterSection');
-            
-            // Toggle the CSS class
             section.classList.toggle('open');
-            btn.classList.toggle('active'); // Rotates the arrow
+            btn.classList.toggle('active');
         };
-
-
     </script>
 </body>
 </html>

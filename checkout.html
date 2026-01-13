@@ -174,7 +174,12 @@
         import { collection, addDoc, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // --- 1. GLOBALS & HELPERS ---
-        function parsePrice(str) { return parseFloat(str.replace(/[^0-9.]/g, '')) || 0; }
+        // FIXED: Handles Strings, Numbers, and Nulls safely
+        function parsePrice(value) {
+            if (typeof value === 'number') return value;
+            if (!value) return 0;
+            return parseFloat(value.toString().replace(/[^0-9.]/g, '')) || 0;
+        }
         function getCurrency(str) { return str.replace(/[0-9.,]/g, '').trim(); }
 
         let currentUser = null;
@@ -215,11 +220,14 @@
             orderItems.push({
                 id: urlParams.get('id'),
                 name: urlParams.get('name'),
-                price: urlParams.get('price'),
+                // FIXED: Looks for 'price' OR 'unitPrice' to prevent errors
+                price: urlParams.get('price') || urlParams.get('unitPrice') || 0,
                 image: urlParams.get('img'),
                 qty: parseInt(urlParams.get('qty')) || 1
             });
-        } else {
+        }
+         
+        else {
             // MODE B: CART
             const cartData = JSON.parse(localStorage.getItem('myCart')) || [];
             if(cartData.length > 0) {

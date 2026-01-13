@@ -376,44 +376,36 @@
     <section class="shop-container">
         <div class="grid" id="shopGrid"></div>
     </section>
-    <script type="module">
+<script type="module">
         import { auth, db } from './firebase-config.js';
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { collection, getDocs, query, orderBy, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // DOM Elements
         const shopGrid = document.getElementById('shopGrid');
-        const loader = document.getElementById('loader');
         const searchInput = document.getElementById('searchInput');
         const pills = document.querySelectorAll('.cat-pill');
-
-        // --- MOUSE WHEEL SCROLL FOR CATEGORIES ---
-        const catContainer = document.getElementById('catFilters');
-        if (catContainer) {
-            catContainer.addEventListener('wheel', (e) => {
-                if (e.deltaY !== 0) {
-                    e.preventDefault();
-                    catContainer.scrollLeft += e.deltaY;
-                }
-            });
-        }
         
-        let allProducts = []; // Store data locally for fast filtering
+        let allProducts = []; 
+        let currentUserUid = null; // Store UID globally
 
-        // 1. Check Auth & Load Name
+        // 1. Auth Listener
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // Try to get the name, but don't crash if it fails
+                currentUserUid = user.uid;
+                
+                // Load Name
                 try {
                     const userDoc = await getDoc(doc(db, "users", user.uid));
                     if (userDoc.exists() && userDoc.data().fullName) {
                         const firstName = userDoc.data().fullName.split(' ')[0]; 
                         document.getElementById('navUserName').innerText = `Hi, ${firstName}`;
                     }
-                } catch (error) {
-                    console.log("Could not load name, continuing...");
-                }
+                } catch (e) { console.log("Name load error"); }
                 
+                // Update Cart Badge with USER SPECIFIC data
+                updateCartBadge();
+                
+                // Load Products
                 fetchProducts();
             } else {
                 window.location.href = "login.html";
@@ -423,88 +415,62 @@
         // 2. Fetch Products
         async function fetchProducts() {
             renderSkeletons(); 
-            
             try {
                 const q = query(collection(db, "products"), orderBy("createdAt", "desc"));
                 const snapshot = await getDocs(q);
-                
                 allProducts = [];
-                snapshot.forEach(doc => {
-                    allProducts.push({ id: doc.id, ...doc.data() });
-                });
-
+                snapshot.forEach(doc => allProducts.push({ id: doc.id, ...doc.data() }));
                 renderProducts(allProducts);
             } catch (error) {
-                console.error(error);
-                if(shopGrid) shopGrid.innerHTML = '<p style="text-align:center; width:100%">Error loading data.</p>';
+                if(shopGrid) shopGrid.innerHTML = '<p style="text-align:center;">Error loading data.</p>';
             } 
         }
 
-        // 3. Render HTML (UPDATED FOR DASHBOARD ALIGNMENT)
+        // 3. Render
         function renderProducts(products) {
             shopGrid.innerHTML = '';
-            
             if(products.length === 0) {
-                shopGrid.innerHTML = '<p style="text-align:center; width:100%; grid-column: 1/-1;">No products found.</p>';
+                shopGrid.innerHTML = '<p style="text-align:center; width:100%;">No products found.</p>';
                 return;
             }
 
+            // Get USER SPECIFIC favorites
             const favorites = getFavorites();
 
             products.forEach(item => {
-                // --- ALIGNMENT LOGIC START ---
-                
-                // 1. Quantity & Status Check
-                // If quantity is defined, use it. If 0, it is Sold Out.
-                // Fallback: If quantity missing, check old text status.
                 const qty = (item.quantity !== undefined) ? item.quantity : (item.status === 'Sold Out' ? 0 : 10);
                 const isSold = qty === 0;
                 const isLowStock = qty > 0 && qty < 5;
 
-                // 2. Price Formatting
-                // Use new numeric sellingPrice if available, otherwise old string price
                 let displayPrice = "RM 0.00";
-                if (item.sellingPrice !== undefined && item.sellingPrice !== null) {
-                    // It's a number from the new dashboard
+                if (item.sellingPrice) {
                     displayPrice = "RM " + parseFloat(item.sellingPrice).toLocaleString('en-MY', { minimumFractionDigits: 2 });
                 } else if (item.price) {
-                    // It's a legacy string (e.g., "RM 4500")
                     displayPrice = item.price; 
                 }
 
-                // --- ALIGNMENT LOGIC END ---
-
                 const displayImg = (item.images && item.images.length > 0) ? item.images[0] : (item.image || 'https://via.placeholder.com/150');
-                const detailsUrl = `product-details.html?id=${item.id}`;
                 const isLiked = favorites.includes(item.id);
 
-                // Determine badges
-                let badgeHTML = '';
-                if (isSold) {
-                    badgeHTML = '<div class="status-overlay">SOLD OUT</div>';
-                } else if (isLowStock) {
-                    badgeHTML = '<div class="status-overlay" style="background:#f59e0b;">LOW STOCK</div>';
-                }
+                let badgeHTML = isSold ? '<div class="status-overlay">SOLD OUT</div>' : 
+                               (isLowStock ? '<div class="status-overlay" style="background:#f59e0b;">LOW STOCK</div>' : '');
 
                 const card = `
                     <div class="card ${isSold ? 'sold-out' : ''}">
                         <div class="card-img-box">
                             <img src="${displayImg}" class="card-img" loading="lazy" alt="${item.name}">
-                            
                             <button class="wishlist-btn ${isLiked ? 'active' : ''}" onclick="toggleWishlist('${item.id}', this)">
                                 <i class="fas fa-heart"></i>
                             </button>
-
                             ${badgeHTML}
                         </div>
                         <div class="card-body">
                             <span class="card-cat">${item.category || 'General'}</span>
                             <h3 class="card-title">${item.name}</h3>
                             <div class="card-price">${displayPrice}</div>
-                            
                             ${isSold 
-                                ? `<button class="whatsapp-btn" style="background:#ccc; cursor:not-allowed;">Sold Out</button>` 
-                                : `<a href="${detailsUrl}" class="whatsapp-btn">View Details</a>` 
+                                ? `<button class="whatsapp-btn" style="background:#ccc;">Sold Out</button>` 
+                                : `<a href="product-details.html?id=${item.id}" class="whatsapp-btn">View Details</a>` 
                             }
                         </div>
                     </div>
@@ -517,15 +483,18 @@
         window.filterData = (category) => {
             pills.forEach(p => p.classList.remove('active'));
             event.target.classList.add('active');
+            if(category === 'All') renderProducts(allProducts);
+            else renderProducts(allProducts.filter(p => p.category && p.category.toLowerCase().trim() === category.toLowerCase().trim()));
+        };
+        
+        searchInput.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            renderProducts(allProducts.filter(p => p.name.toLowerCase().includes(term)));
+        });
 
-            if(category === 'All') {
-                renderProducts(allProducts);
-            } else {
-                const filtered = allProducts.filter(p => 
-                    p.category && p.category.toLowerCase().trim() === category.toLowerCase().trim()
-                );
-                renderProducts(filtered);
-            }
+        window.toggleFilters = (btn) => {
+            document.getElementById('filterSection').classList.toggle('open');
+            btn.classList.toggle('active');
         };
 
         // 5. Search Function
@@ -555,12 +524,15 @@
 
         // 7. Wishlist Logic
         function getFavorites() {
-            const stored = localStorage.getItem('myFavorites');
+            if(!currentUserUid) return [];
+            const stored = localStorage.getItem(`favorites_${currentUserUid}`);
             return stored ? JSON.parse(stored) : [];
         }
 
         window.toggleWishlist = (id, btn) => {
             event.preventDefault(); 
+            if(!currentUserUid) return; // Guard
+
             let favs = getFavorites();
             const index = favs.indexOf(id);
 
@@ -571,12 +543,14 @@
                 favs.splice(index, 1);
                 btn.classList.remove('active');
             }
-            localStorage.setItem('myFavorites', JSON.stringify(favs));
+            // Save to User Specific Key
+            localStorage.setItem(`favorites_${currentUserUid}`, JSON.stringify(favs));
         };
 
         // 8. Update Cart Count
         function updateCartBadge() {
-            const cart = JSON.parse(localStorage.getItem('myCart')) || [];
+            if(!currentUserUid) return;
+            const cart = JSON.parse(localStorage.getItem(`cart_${currentUserUid}`)) || [];
             const badge = document.getElementById('navCartCount');
             if (cart.length > 0) {
                 badge.style.display = 'flex';
@@ -585,7 +559,6 @@
                 badge.style.display = 'none';
             }
         }
-        updateCartBadge();
 
         // 9. Toggle Filters
         window.toggleFilters = (btn) => {

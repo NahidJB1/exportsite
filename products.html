@@ -136,7 +136,23 @@
         .card-body { padding: 15px; flex: 1; display: flex; flex-direction: column; }
         
         .card-cat { font-size: 10px; text-transform: uppercase; color: #999; letter-spacing: 1px; }
-        .card-title { font-size: 16px; font-weight: 600; color: var(--primary); margin: 5px 0; }
+       
+       .card-title { 
+            font-size: 16px; 
+            font-weight: 600; 
+            color: var(--primary); 
+            margin: 5px 0;
+            
+            /* Logic to limit text to 2 lines */
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.4; /* Adjusts spacing between lines */
+            height: 45px; /* Ensures consistent alignment across cards */
+        }
+
         .card-price { font-size: 18px; font-weight: 700; color: var(--secondary); margin-bottom: 15px; }
         
         .whatsapp-btn {
@@ -433,6 +449,9 @@
                 shopGrid.innerHTML = '<p style="text-align:center; width:100%;">No products found.</p>';
                 return;
             }
+
+            
+
 
             // Get USER SPECIFIC favorites
             const favorites = getFavorites();

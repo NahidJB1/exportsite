@@ -131,6 +131,32 @@
     padding: 5px 0; margin-top: 5px;
 }
 .read-more-btn:hover { text-decoration: underline; }
+
+/* --- MODERN TOAST NOTIFICATION --- */
+        #toast-box {
+            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
+            z-index: 10000;
+            display: flex; flex-direction: column; gap: 10px;
+            pointer-events: none; /* Allows clicking through empty space */
+        }
+
+        .toast-msg {
+            background: #1e293b; color: white;
+            padding: 12px 24px; border-radius: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            font-size: 14px; font-weight: 500;
+            display: flex; align-items: center; gap: 10px;
+            opacity: 0; transform: translateY(20px);
+            animation: slideUp 0.3s forwards;
+        }
+        
+        /* Variants */
+        .toast-msg.warning { background: #ef4444; } /* Red for stock limit */
+        .toast-msg.success { background: #10b981; } /* Green for added to cart */
+
+        @keyframes slideUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body>
@@ -142,6 +168,8 @@
             <i class="fas fa-spinner fa-spin fa-2x"></i> Loading Product...
         </div>
     </div>
+
+    <div id="toast-box"></div>
 
     <script type="module">
         import { db } from './firebase-config.js';
@@ -321,6 +349,28 @@
             el.classList.add('active');
         };
 
+        // --- Helper: Show Modern Notification ---
+        window.showToast = (msg, type = 'default') => {
+            const box = document.getElementById('toast-box');
+            const el = document.createElement('div');
+            el.className = `toast-msg ${type}`;
+            
+            // Choose icon based on type
+            let icon = '<i class="fas fa-info-circle"></i>';
+            if(type === 'warning') icon = '<i class="fas fa-exclamation-circle"></i>';
+            if(type === 'success') icon = '<i class="fas fa-check-circle"></i>';
+
+            el.innerHTML = `${icon} <span>${msg}</span>`;
+            box.appendChild(el);
+
+            // Remove after 3 seconds
+            setTimeout(() => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(10px)';
+                setTimeout(() => el.remove(), 300);
+            }, 3000);
+        };
+
 
 
         window.updateQty = (change) => {
@@ -331,10 +381,18 @@
             // 1. Prevent negative
             if(newVal < 1) return;
 
-            // 2. Check Hidden Stock Limit
+            // 2. Check Hidden Stock Limit (MODERN NOTIFICATION)
             if(newVal > maxStock) {
-                alert(`Sorry, we only have ${maxStock} units left in stock.`);
-                return; // Stop here, do not increase number
+                // Shake animation for visual feedback
+                const qtyBox = document.querySelector('.qty-box');
+                qtyBox.style.transform = "translateX(5px)";
+                setTimeout(() => qtyBox.style.transform = "translateX(0)", 100);
+                setTimeout(() => qtyBox.style.transform = "translateX(-5px)", 200);
+                setTimeout(() => qtyBox.style.transform = "translateX(0)", 300);
+
+                // Show Toast
+                showToast(`Maximum limit reached. Only ${maxStock} available.`, 'warning');
+                return; 
             }
 
             // 3. Update UI
@@ -346,6 +404,7 @@
             document.getElementById('totalPrice').innerText = formatCurrency(total);
         };
 
+        
         window.goToCheckout = () => {
             const finalTotal = unitPrice * qty;
             
@@ -363,14 +422,14 @@
         loadProduct();
 
 // --- CART LOGIC (No Alert) ---
-        window.addToCart = () => {
+       window.addToCart = () => {
             let cart = JSON.parse(localStorage.getItem('myCart')) || [];
             const existingItem = cart.find(item => item.id === productId);
             
             if (existingItem) {
                 // Check if adding more exceeds stock
                 if ((existingItem.qty + qty) > maxStock) {
-                    alert(`You already have ${existingItem.qty} in cart. We only have ${maxStock} in stock.`);
+                    showToast(`You already have ${existingItem.qty} in your cart. Limit reached.`, 'warning');
                     return;
                 }
                 existingItem.qty += qty;
@@ -378,12 +437,16 @@
                 cart.push({
                     id: productId,
                     name: currentProduct.name,
-                    price: unitPrice, // Store numeric price
+                    price: unitPrice, 
                     image: currentProduct.images ? currentProduct.images[0] : (currentProduct.image || ''),
                     qty: qty
                 });
             }
             localStorage.setItem('myCart', JSON.stringify(cart));
+
+            // Show Success Notification
+            showToast("Added to your cart!", 'success');
+        };
 
             // Visual Feedback
             const btn = document.querySelector('.btn-outline');

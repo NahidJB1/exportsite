@@ -585,29 +585,30 @@
 
             // Escape name for JS string
             const safeName = item.name.replace(/'/g, "\\'");
+            const displayPrice = (item.sellingPrice || item.price) ? `RM ${item.sellingPrice || item.price}` : 'RM 0';
 
             // Add row to table
             tbody.innerHTML += `
-                <tr>
-                    <td data-label="Image"><img src="${imgUrl}" class="thumb"></td>
-                    <td data-label="Name" style="font-weight:600;">${item.name}</td>
-                    <td data-label="Price" style="color:var(--accent);">${item.sellingPrice || item.price}</td>
-                    <td data-label="Stock">
-                        <span style="font-weight:700; color:${qty < 5 ? 'red' : 'inherit'}">${qty}</span>
-                    </td>
-                    <td data-label="Status"><span class="status-badge ${statusClass}">${statusText}</span></td>
-                    <td data-label="Actions">
-                        <div style="display:flex; gap:10px;">
-                            <button class="action-btn btn-edit" onclick="window.prepareEdit('${doc.id}', '${safeName}', '${item.sellingPrice || item.price}', '${qty}', '${item.buyingCost || 0}')">
-                                <i class="fas fa-pen"></i>
-                            </button>
-                            <button class="action-btn btn-delete" onclick="window.askDelete('${doc.id}')">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            `;
+               <tr>
+        <td data-label="Image"><img src="${imgUrl}" class="thumb"></td>
+        <td data-label="Name" style="font-weight:600;">${item.name}</td>
+        <td data-label="Price" style="color:var(--accent); font-weight:600;">${displayPrice}</td>
+        <td data-label="Stock">
+            <span style="font-weight:700; color:${qty < 5 ? 'red' : 'inherit'}">${qty}</span>
+        </td>
+        <td data-label="Status"><span class="status-badge ${statusClass}">${statusText}</span></td>
+        <td data-label="Actions">
+            <div style="display:flex; gap:10px;">
+                <button class="action-btn btn-edit" onclick="window.prepareEdit('${doc.id}', '${safeName}', '${item.sellingPrice || item.price}', '${qty}', '${item.buyingCost || 0}')">
+                    <i class="fas fa-pen"></i>
+                </button>
+                <button class="action-btn btn-delete" onclick="window.askDelete('${doc.id}')">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </td>
+    </tr>
+`;
         });
         
         // After loading products, reload orders to update profit stats based on new costs
@@ -676,61 +677,67 @@
         let totalProfit = 0;
         
         // Loop through orders ONCE to calculate data
-        snapshot.forEach(doc => {
-            const d = doc.data();
-            d.id = doc.id; // Attach ID
-            d.dateObj = d.createdAt ? d.createdAt.toDate() : new Date();
-            d.dateStr = d.dateObj.toLocaleDateString();
-            allOrdersData.push(d);
-            
-            // Calculate profit accumulation
-            totalProfit += calculateOrderProfit(d);
+       snapshot.forEach(doc => {
+    const d = doc.data();
+    d.id = doc.id; 
+    d.dateObj = d.createdAt ? d.createdAt.toDate() : new Date();
+    d.dateStr = d.dateObj.toLocaleDateString();
+    allOrdersData.push(d);
+    
+    // Calculate profit accumulation
+    totalProfit += calculateOrderProfit(d);
 
-            const firstItem = (d.items && d.items[0]) ? d.items[0] : {name:'?', qty:1};
-            const safeOrder = encodeURIComponent(JSON.stringify(d));
+    const firstItem = (d.items && d.items[0]) ? d.items[0] : {name:'?', qty:1};
+    const safeOrder = encodeURIComponent(JSON.stringify(d));
 
-            // Status Dropdown Generator
-            const makeSelect = (currentStatus) => `
-                <select onchange="window.askStatusUpdate('${d.id}', '${currentStatus}', this.value)" style="padding:5px; font-size:12px;">
-                    <option value="Pending" ${currentStatus=='Pending'?'selected':''}>Pending</option>
-                    <option value="Confirmed" ${currentStatus=='Confirmed'?'selected':''}>Confirm</option>
-                    <option value="Shipped" ${currentStatus=='Shipped'?'selected':''}>Shipped</option>
-                    <option value="Delivered" ${currentStatus=='Delivered'?'selected':''}>Delivered</option>
-                    <option value="Cancelled" ${currentStatus=='Cancelled'?'selected':''}>Cancelled</option>
-                </select>
-            `;
+    // FORMATTING CURRENCY HERE
+    // Use totalAmount if number, otherwise fallback to displayTotal or 0
+    let rawTotal = d.totalAmount || 0;
+    // If it's a legacy string like "RM 50", strip it to be safe, but usually it's a number now
+    if (typeof rawTotal === 'string') rawTotal = parseFloat(rawTotal.replace(/[^\d.-]/g, ''));
+    const formattedTotal = "RM " + rawTotal.toLocaleString('en-MY', {minimumFractionDigits: 0, maximumFractionDigits: 2});
 
-            const row = `
-                <tr>
-                    <td data-label="Date">${d.dateStr}</td>
-                    <td data-label="Customer"><b>${d.customer.name}</b><br><small>${d.customer.phone}</small></td>
-                    <td data-label="Items">${firstItem.name} <span style="background:#f1f5f9; padding:2px;">x${firstItem.qty||1}</span></td>
-                    <td data-label="Action">
-                        <div style="display:flex; gap:5px; align-items:center;">
-                            ${makeSelect(d.status)}
-                            <button class="action-btn" onclick="window.viewOrder('${safeOrder}')"><i class="fas fa-eye"></i></button>
-                        </div>
-                    </td>
-                </tr>
-            `;
+    // Status Dropdown
+    const makeSelect = (currentStatus) => `
+        <select onchange="window.askStatusUpdate('${d.id}', '${currentStatus}', this.value)" style="padding:5px; font-size:12px;">
+            <option value="Pending" ${currentStatus=='Pending'?'selected':''}>Pending</option>
+            <option value="Confirmed" ${currentStatus=='Confirmed'?'selected':''}>Confirm</option>
+            <option value="Shipped" ${currentStatus=='Shipped'?'selected':''}>Shipped</option>
+            <option value="Delivered" ${currentStatus=='Delivered'?'selected':''}>Delivered</option>
+            <option value="Cancelled" ${currentStatus=='Cancelled'?'selected':''}>Cancelled</option>
+        </select>
+    `;
 
-            // Categorize
-            if(d.status === 'Pending') lists.pending.push(row);
-            if(d.status === 'Confirmed') lists.confirmed.push(row);
-            if(d.status === 'Shipped') lists.shipped.push(row);
-            if(d.status === 'Delivered') lists.delivered.push(row);
-            
-            // All Orders Row
-            lists.all.push(`
-                <tr>
-                    <td data-label="Date">${d.dateStr}</td>
-                    <td data-label="Status"><span class="status-badge" style="background:#f1f5f9;">${d.status}</span></td>
-                    <td data-label="Customer">${d.customer.name}</td>
-                    <td data-label="Total">${d.displayTotal || d.totalAmount}</td>
-                </tr>
-            `);
-        });
+    const row = `
+        <tr>
+            <td data-label="Date">${d.dateStr}</td>
+            <td data-label="Customer"><b>${d.customer.name}</b><br><small>${d.customer.phone}</small></td>
+            <td data-label="Items">${firstItem.name} <span style="background:#f1f5f9; padding:2px;">x${firstItem.qty||1}</span></td>
+            <td data-label="Action">
+                <div style="display:flex; gap:5px; align-items:center;">
+                    ${makeSelect(d.status)}
+                    <button class="action-btn" onclick="window.viewOrder('${safeOrder}')"><i class="fas fa-eye"></i></button>
+                </div>
+            </td>
+        </tr>
+    `;
 
+    // Categorize
+    if(d.status === 'Pending') lists.pending.push(row);
+    if(d.status === 'Confirmed') lists.confirmed.push(row);
+    if(d.status === 'Shipped') lists.shipped.push(row);
+    if(d.status === 'Delivered') lists.delivered.push(row);
+    
+    // All Orders Row with RM
+    lists.all.push(`
+        <tr>
+            <td data-label="Date">${d.dateStr}</td>
+            <td data-label="Status"><span class="status-badge" style="background:#f1f5f9;">${d.status}</span></td>
+            <td data-label="Customer">${d.customer.name}</td>
+            <td data-label="Total" style="font-weight:600;">${formattedTotal}</td>
+        </tr>
+    `);
+});
         // --- UPDATE UI OUTSIDE THE LOOP ---
         document.getElementById('tbody-pending').innerHTML = lists.pending.length ? lists.pending.join('') : '<tr><td colspan="4" style="text-align:center; padding:15px;">No pending orders</td></tr>';
         document.getElementById('tbody-confirmed').innerHTML = lists.confirmed.length ? lists.confirmed.join('') : '<tr><td colspan="4" style="text-align:center; padding:15px;">No confirmed orders</td></tr>';
@@ -744,7 +751,7 @@
         document.getElementById('stat-total').innerText = snapshot.size;
         
         // Set final profit text
-        document.getElementById('stat-profit').innerText = totalProfit.toLocaleString();
+        document.getElementById('stat-profit').innerText = "RM " + totalProfit.toLocaleString('en-MY');
 
         // Render Initial Charts (Default 7 Days)
         window.renderSalesChart(7); 
@@ -1043,30 +1050,40 @@ window.renderProfitChart = (days) => {
         };
 
         window.viewOrder = (json) => {
-            const d = JSON.parse(decodeURIComponent(json));
-            const itemsHtml = d.items.map(i => `
-                <div style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding:8px 0;">
-                    <span>${i.name} <small>x${i.qty||1}</small></span>
-                    <span>${i.price}</span>
-                </div>
-            `).join('');
+    const d = JSON.parse(decodeURIComponent(json));
+    
+    // Format Items with RM
+    const itemsHtml = d.items.map(i => {
+        const p = parseFloat(i.price || 0);
+        const subtotal = p * (i.qty || 1);
+        return `
+        <div style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding:8px 0;">
+            <span>${i.name} <small>x${i.qty||1}</small></span>
+            <span>RM ${subtotal.toLocaleString()}</span>
+        </div>`;
+    }).join('');
 
-            document.getElementById('orderModalContent').innerHTML = `
-                <div style="background:#f8fafc; padding:15px; border-radius:8px; font-size:14px; margin-bottom:15px;">
-                    <div><b>Order ID:</b> #${d.id.slice(-6).toUpperCase()}</div>
-                    <div><b>Date:</b> ${new Date(d.createdAt.seconds*1000).toLocaleString()}</div>
-                    <div><b>Status:</b> ${d.status}</div>
-                    <hr style="border:0; border-top:1px dashed #cbd5e1; margin:10px 0;">
-                    <b>${d.customer.name}</b><br>${d.customer.phone}<br>${d.customer.address}
-                </div>
-                <h4>Items</h4>
-                ${itemsHtml}
-                <div style="display:flex; justify-content:space-between; margin-top:15px; font-weight:700; font-size:16px;">
-                    <span>TOTAL</span><span>${d.displayTotal || d.totalAmount}</span>
-                </div>
-            `;
-            document.getElementById('orderModal').style.display = 'flex';
-        };
+    // Format Total with RM
+    let rawTotal = d.totalAmount || 0;
+    if (typeof rawTotal === 'string') rawTotal = parseFloat(rawTotal.replace(/[^\d.-]/g, ''));
+    const formattedTotal = "RM " + rawTotal.toLocaleString('en-MY');
+
+    document.getElementById('orderModalContent').innerHTML = `
+        <div style="background:#f8fafc; padding:15px; border-radius:8px; font-size:14px; margin-bottom:15px;">
+            <div><b>Order ID:</b> #${d.id.slice(-6).toUpperCase()}</div>
+            <div><b>Date:</b> ${new Date(d.createdAt.seconds*1000).toLocaleString()}</div>
+            <div><b>Status:</b> ${d.status}</div>
+            <hr style="border:0; border-top:1px dashed #cbd5e1; margin:10px 0;">
+            <b>${d.customer.name}</b><br>${d.customer.phone}<br>${d.customer.address}
+        </div>
+        <h4>Items</h4>
+        ${itemsHtml}
+        <div style="display:flex; justify-content:space-between; margin-top:15px; font-weight:700; font-size:16px;">
+            <span>TOTAL</span><span style="color:var(--primary);">${formattedTotal}</span>
+        </div>
+    `;
+    document.getElementById('orderModal').style.display = 'flex';
+};
         window.closeOrderModal = () => document.getElementById('orderModal').style.display = 'none';
 
     </script>

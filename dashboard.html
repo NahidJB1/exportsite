@@ -583,10 +583,10 @@
             // Store cost for profit calculation (Default to 0 if not set)
             productCostMap[doc.id] = parseFloat(item.buyingCost || 0);
 
-            <button class="action-btn btn-edit" onclick="window.prepareEdit('${doc.id}', '${safeName}', '${item.sellingPrice || item.price}', '${qty}', '${item.buyingCost || 0}')">
-    <i class="fas fa-pen"></i>
-</button>
+            // Escape name for JS string
+            const safeName = item.name.replace(/'/g, "\\'");
 
+            // Add row to table
             tbody.innerHTML += `
                 <tr>
                     <td data-label="Image"><img src="${imgUrl}" class="thumb"></td>
@@ -598,7 +598,7 @@
                     <td data-label="Status"><span class="status-badge ${statusClass}">${statusText}</span></td>
                     <td data-label="Actions">
                         <div style="display:flex; gap:10px;">
-                            <button class="action-btn btn-edit" onclick="window.prepareEdit('${doc.id}', '${safeName}', '${item.sellingPrice || item.price}', '${qty}')">
+                            <button class="action-btn btn-edit" onclick="window.prepareEdit('${doc.id}', '${safeName}', '${item.sellingPrice || item.price}', '${qty}', '${item.buyingCost || 0}')">
                                 <i class="fas fa-pen"></i>
                             </button>
                             <button class="action-btn btn-delete" onclick="window.askDelete('${doc.id}')">

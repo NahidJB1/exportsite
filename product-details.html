@@ -1,189 +1,17 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Product Details | Nusantara Trade</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        body { font-family: 'Poppins', sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
-        .container { max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 15px; display: flex; flex-wrap: wrap; gap: 40px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
-        
-        .gallery-section { flex: 1; min-width: 300px; }
-        .main-img-box { width: 100%; height: 350px; background: #eee; border-radius: 10px; overflow: hidden; margin-bottom: 15px; }
-        .main-img { width: 100%; height: 100%; object-fit: contain; }
-        .thumb-grid { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px; }
-        .thumb { width: 70px; height: 70px; border-radius: 8px; cursor: pointer; border: 2px solid transparent; object-fit: cover; background: #f9f9f9; }
-        .thumb.active { border-color: #003366; }
-
-        .details-section { flex: 1; min-width: 300px; }
-        .cat-badge { background: #e0f2fe; color: #003366; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
-        h1 { margin: 15px 0; color: #003366; font-size: 28px; }
-        .price { font-size: 24px; color: #00A86B; font-weight: 700; margin-bottom: 25px; }
-        
-        .qty-wrapper { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
-        .qty-box { display: flex; align-items: center; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; }
-        .qty-btn { background: #f8fafc; border: none; padding: 10px 15px; cursor: pointer; font-size: 16px; transition: 0.2s; }
-        .qty-btn:hover { background: #e2e8f0; }
-        #qtyInput { width: 50px; text-align: center; border: none; font-weight: 600; font-family: inherit; outline: none; }
-
-        /* NEW: Total Price Box Style */
-        .total-box {
-            background: #f0fdf4; border: 1px solid #bbf7d0; padding: 15px; 
-            border-radius: 8px; margin-bottom: 25px; 
-            display: flex; justify-content: space-between; align-items: center;
-        }
-
-        .btn-buy { background: #003366; color: white; border: none; width: 100%; padding: 15px; border-radius: 10px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; text-decoration: none; }
-        .btn-buy:hover { background: #002244; transform: translateY(-2px); }
-        .back-link { display: inline-block; margin-bottom: 20px; color: #666; text-decoration: none; }
-
-        /* ACTION BUTTONS GRID */
-        .action-buttons {
-            display: flex; gap: 10px; margin-bottom: 15px;
-        }
-        .btn-outline {
-            flex: 1; padding: 12px; border-radius: 10px;
-            border: 2px solid #003366; background: white;
-            color: #003366; font-weight: 600; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; gap: 8px;
-            transition: 0.2s;
-        }
-        .btn-outline:hover { background: #f0f9ff; }
-        .btn-outline.active-fav { background: #fee2e2; border-color: #ef4444; color: #ef4444; }
-
-        /* REVIEW SECTION STYLES */
-        .reviews-container {
-            width: 100%; margin-top: 40px; border-top: 2px solid #eee; padding-top: 30px;
-        }
-        .review-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
-        .review-title { font-size: 22px; font-weight: 700; color: #003366; margin: 0; }
-        
-        /* Write Review Form */
-        .review-form-box {
-            background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; margin-bottom: 30px;
-            display: none; /* Hidden by default, shown if eligible */
-        }
-        .star-rating-input { display: flex; gap: 10px; margin-bottom: 15px; }
-        .star-rating-input i { font-size: 24px; color: #ddd; cursor: pointer; transition: 0.2s; }
-        .star-rating-input i.active { color: #f59e0b; }
-        
-        .review-input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-family: inherit; margin-bottom: 15px; resize: vertical; }
-        .btn-submit-review { background: #003366; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; }
-        .btn-submit-review:hover { background: #002244; }
-
-        /* Review List */
-        .review-card { background: white; border: 1px solid #eee; border-radius: 10px; padding: 15px; margin-bottom: 15px; }
-        .review-user { font-weight: 700; color: #333; display: flex; justify-content: space-between; }
-        .review-date { font-size: 12px; color: #888; font-weight: 400; }
-        .review-stars { color: #f59e0b; font-size: 14px; margin: 5px 0 8px; }
-        .review-text { font-size: 14px; color: #555; line-height: 1.5; }
-        .no-reviews { color: #666; font-style: italic; }
-
-        @media (max-width: 600px) {
-            .review-header { flex-direction: column; align-items: flex-start; gap: 10px; }
-        }
-
-        /* --- NEW STYLES FOR UPDATES --- */
-.guarantee-box {
-    background: #fffbeb; 
-    border: 1px solid #fcd34d; 
-    color: #92400e; 
-    padding: 12px 15px; 
-    border-radius: 8px; 
-    font-size: 14px; 
-    display: flex; 
-    align-items: center; 
-    gap: 10px; 
-    margin-bottom: 25px; /* Takes the place of description */
-}
-
-/* Description Toggle Styles */
-.desc-container {
-    margin-top: 25px; 
-    border-top: 1px solid #eee; 
-    padding-top: 20px;
-}
-.desc-content {
-    font-size: 14px; 
-    color: #555; 
-    line-height: 1.6;
-    max-height: 80px; /* Short limit initially */
-    overflow: hidden;
-    position: relative;
-    transition: max-height 0.5s ease;
-}
-.desc-content.expanded {
-    max-height: 1000px; /* Large enough to show full text */
-}
-.desc-content::after {
-    content: "";
-    position: absolute; bottom: 0; left: 0; width: 100%; height: 40px;
-    background: linear-gradient(transparent, white);
-    pointer-events: none;
-}
-.desc-content.expanded::after { display: none; }
-
-.read-more-btn {
-    background: none; border: none; color: #003366; 
-    font-weight: 600; font-size: 13px; cursor: pointer; 
-    padding: 5px 0; margin-top: 5px;
-}
-.read-more-btn:hover { text-decoration: underline; }
-
-/* --- MODERN TOAST NOTIFICATION --- */
-        #toast-box {
-            position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-            z-index: 10000;
-            display: flex; flex-direction: column; gap: 10px;
-            pointer-events: none; /* Allows clicking through empty space */
-        }
-
-        .toast-msg {
-            background: #1e293b; color: white;
-            padding: 12px 24px; border-radius: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            font-size: 14px; font-weight: 500;
-            display: flex; align-items: center; gap: 10px;
-            opacity: 0; transform: translateY(20px);
-            animation: slideUp 0.3s forwards;
-        }
-        
-        /* Variants */
-        .toast-msg.warning { background: #ef4444; } /* Red for stock limit */
-        .toast-msg.success { background: #10b981; } /* Green for added to cart */
-
-        @keyframes slideUp {
-            to { opacity: 1; transform: translateY(0); }
-        }
-    </style>
-</head>
-<body>
-
-    <a href="products.html" class="back-link"><i class="fas fa-arrow-left"></i> Back to Shop</a>
-
-    <div class="container" id="productContainer">
-        <div style="width:100%; text-align:center; padding:50px;">
-            <i class="fas fa-spinner fa-spin fa-2x"></i> Loading Product...
-        </div>
-    </div>
-
-    <div id="toast-box"></div>
-
-    <script type="module">
-        import { db } from './firebase-config.js';
-    import { 
-        doc, 
-        getDoc, 
-        collection, 
-        addDoc, 
-        query, 
-        where, 
-        getDocs, 
-        orderBy, 
-        serverTimestamp 
-    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+<script type="module">
+        import { db, auth } from './firebase-config.js';
+        import { 
+            doc, 
+            getDoc, 
+            collection, 
+            addDoc, 
+            query, 
+            where, 
+            getDocs, 
+            orderBy, 
+            serverTimestamp 
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const urlParams = new URLSearchParams(window.location.search);
         const productId = urlParams.get('id');
@@ -192,52 +20,57 @@
 
         // Global State
         let currentProduct = null;
+        let currentUserUid = null; // Store UID
         let qty = 1;
-        let maxStock = 10; // Default fallback
-        let unitPrice = 0; // Numeric value for calculation
+        let maxStock = 10;
+        let unitPrice = 0;
 
-        // --- Helper: Clean Price to Number ---
+        // --- 1. AUTH LISTENER (CRITICAL FIX) ---
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUserUid = user.uid;
+                // Now that we have the User ID, we can check if it's already a favorite
+                if(currentProduct) checkFavState(); 
+            } else {
+                // Optional: Redirect if you want to force login to view details
+                // window.location.href = "login.html";
+            }
+        });
+
+        // --- Helpers ---
         function getNumericPrice(priceVal) {
             if (typeof priceVal === 'number') return priceVal;
-            // Legacy support: remove "RM", "BDT", commas
             return parseFloat(priceVal.replace(/[^0-9.]/g, '')) || 0;
         }
 
-        // --- Helper: Format Number to RM Currency ---
         function formatCurrency(amount) {
             return "RM " + amount.toLocaleString('en-MY', {minimumFractionDigits: 2, maximumFractionDigits: 2});
         }
 
-        // --- 2. Helper: Get Currency Name like "BDT" or "$" ---
-        function getCurrency(priceStr) {
-            if(!priceStr) return '';
-            // Remove numbers, commas and dots to find text
-            return priceStr.replace(/[0-9.,]/g, '').trim();
-        }
-
         async function loadProduct() {
-    const docRef = doc(db, "products", productId);
-    const docSnap = await getDoc(docRef);
+            const docRef = doc(db, "products", productId);
+            const docSnap = await getDoc(docRef);
 
-    if (docSnap.exists()) {
-        currentProduct = docSnap.data();
-        renderPage(currentProduct);
-        checkFavState(); // <--- This line was commented out in your file
-        checkReviewEligibility();
-        loadReviews();
-    } else {
-        document.getElementById('productContainer').innerHTML = "<p>Product not found.</p>";
-    }
-}
+            if (docSnap.exists()) {
+                currentProduct = docSnap.data();
+                renderPage(currentProduct);
+                
+                // If auth loaded before product, check state now
+                if(currentUserUid) checkFavState();
+                
+                checkReviewEligibility();
+                loadReviews();
+            } else {
+                document.getElementById('productContainer').innerHTML = "<p>Product not found.</p>";
+            }
+        }
 
         function renderPage(product) {
             const images = product.images || [product.image];
             const mainImgSrc = images[0];
             
-            // 1. Setup Data
             unitPrice = getNumericPrice(product.sellingPrice || product.price);
             
-            // Determine Stock: Priority to 'quantity', fallback to 'status' logic
             if (product.quantity !== undefined) {
                 maxStock = product.quantity;
             } else {
@@ -246,7 +79,6 @@
 
             const isSoldOut = maxStock === 0;
 
-            // 2. Render Gallery
             const thumbsHtml = images.map((img, index) => 
                 `<img src="${img}" class="thumb ${index===0?'active':''}" onclick="changeImage('${img}', this)">`
             ).join('');
@@ -257,7 +89,6 @@
 
             const guaranteeText = product.guarantee || "100% Authentic Product | 7 Days Return Policy";
 
-            // 3. Inject HTML
             document.getElementById('productContainer').innerHTML = `
                 <div class="gallery-section">
                     <div class="main-img-box">
@@ -349,13 +180,11 @@
             el.classList.add('active');
         };
 
-        // --- Helper: Show Modern Notification ---
         window.showToast = (msg, type = 'default') => {
             const box = document.getElementById('toast-box');
             const el = document.createElement('div');
             el.className = `toast-msg ${type}`;
             
-            // Choose icon based on type
             let icon = '<i class="fas fa-info-circle"></i>';
             if(type === 'warning') icon = '<i class="fas fa-exclamation-circle"></i>';
             if(type === 'success') icon = '<i class="fas fa-check-circle"></i>';
@@ -363,7 +192,6 @@
             el.innerHTML = `${icon} <span>${msg}</span>`;
             box.appendChild(el);
 
-            // Remove after 3 seconds
             setTimeout(() => {
                 el.style.opacity = '0';
                 el.style.transform = 'translateY(10px)';
@@ -371,65 +199,57 @@
             }, 3000);
         };
 
-
-
         window.updateQty = (change) => {
             const input = document.getElementById('qtyInput');
             let currentVal = parseInt(input.value);
             let newVal = currentVal + change;
 
-            // 1. Prevent negative
             if(newVal < 1) return;
 
-            // 2. Check Hidden Stock Limit (MODERN NOTIFICATION)
             if(newVal > maxStock) {
-                // Shake animation for visual feedback
                 const qtyBox = document.querySelector('.qty-box');
                 qtyBox.style.transform = "translateX(5px)";
                 setTimeout(() => qtyBox.style.transform = "translateX(0)", 100);
                 setTimeout(() => qtyBox.style.transform = "translateX(-5px)", 200);
                 setTimeout(() => qtyBox.style.transform = "translateX(0)", 300);
-
-                // Show Toast
                 showToast(`Maximum limit reached. Only ${maxStock} available.`, 'warning');
                 return; 
             }
 
-            // 3. Update UI
             qty = newVal;
             input.value = qty;
-
-            // 4. Calculate Live Total
             const total = unitPrice * qty;
             document.getElementById('totalPrice').innerText = formatCurrency(total);
         };
 
-        
         window.goToCheckout = () => {
             const finalTotal = unitPrice * qty;
-            
             const params = new URLSearchParams({
                 id: productId,
                 name: currentProduct.name,
-                unitPrice: unitPrice, // Clean number
-                totalPrice: finalTotal, // Calculated total
+                unitPrice: unitPrice,
+                totalPrice: finalTotal, 
                 img: currentProduct.images ? currentProduct.images[0] : (currentProduct.image || ''),
                 qty: qty
             });
             window.location.href = `checkout.html?${params.toString()}`;
         };
 
-        loadProduct();
-
-// --- CART LOGIC (No Alert) ---
-       // --- CART LOGIC (Fixed) ---
+        // --- CART LOGIC (User Specific Fix) ---
         window.addToCart = () => {
-            let cart = JSON.parse(localStorage.getItem('myCart')) || [];
+            if(!currentUserUid) {
+                showToast("Please login first", "warning");
+                setTimeout(() => window.location.href="login.html", 1500);
+                return;
+            }
+
+            // Key Change: Use UID in storage key
+            const storageKey = `cart_${currentUserUid}`;
+            let cart = JSON.parse(localStorage.getItem(storageKey)) || [];
+            
             const existingItem = cart.find(item => item.id === productId);
             
-            // 1. Update Logic
             if (existingItem) {
-                // Check if adding more exceeds stock
                 if ((existingItem.qty + qty) > maxStock) {
                     showToast(`You already have ${existingItem.qty} in your cart. Limit reached.`, 'warning');
                     return;
@@ -439,18 +259,15 @@
                 cart.push({
                     id: productId,
                     name: currentProduct.name,
-                    price: unitPrice, 
+                    price: formatCurrency(unitPrice), 
                     image: currentProduct.images ? currentProduct.images[0] : (currentProduct.image || ''),
                     qty: qty
                 });
             }
-            localStorage.setItem('myCart', JSON.stringify(cart));
+            localStorage.setItem(storageKey, JSON.stringify(cart));
 
-            // 2. Show Notification
             showToast("Added to your cart!", 'success');
 
-            // 3. Visual Feedback (Button Animation)
-            // This is now properly INSIDE the function
             const btn = document.querySelector('.btn-outline');
             if(btn) {
                 const originalText = btn.innerHTML;
@@ -468,9 +285,17 @@
             }
         };
 
-        // --- FAVORITE LOGIC (Details Page) ---
+        // --- FAVORITE LOGIC (User Specific Fix) ---
         window.toggleDetailsFav = () => {
-            let favs = JSON.parse(localStorage.getItem('myFavorites')) || [];
+            if(!currentUserUid) {
+                showToast("Please login first", "warning");
+                return;
+            }
+
+            // Key Change: Use UID in storage key
+            const storageKey = `favorites_${currentUserUid}`;
+            let favs = JSON.parse(localStorage.getItem(storageKey)) || [];
+            
             const index = favs.indexOf(productId);
             const btn = document.getElementById('favBtn');
             const icon = btn.querySelector('i');
@@ -486,76 +311,60 @@
                 icon.classList.add('far');
                 icon.classList.remove('fas');
             }
-            localStorage.setItem('myFavorites', JSON.stringify(favs));
+            localStorage.setItem(storageKey, JSON.stringify(favs));
         };
         
-        // Check initial Fav state when page loads
         function checkFavState() {
-            const favs = JSON.parse(localStorage.getItem('myFavorites')) || [];
+            if(!currentUserUid) return;
+            const storageKey = `favorites_${currentUserUid}`;
+            const favs = JSON.parse(localStorage.getItem(storageKey)) || [];
+            
             if(favs.includes(productId)) {
                 const btn = document.getElementById('favBtn');
                 if(btn) {
                     btn.classList.add('active-fav');
-                    btn.querySelector('i').classList.replace('far', 'fas');
+                    const icon = btn.querySelector('i');
+                    icon.classList.remove('far');
+                    icon.classList.add('fas');
                 }
             }
         }
-        // Add this line inside your loadProduct() function, right after renderPage(currentProduct):
-        // checkFavState();
 
-        // --- 4. REVIEW SYSTEM LOGIC ---
-        
+        // --- REVIEW SYSTEM ---
         let selectedRating = 0;
 
-        // A. Load Reviews from Firestore
         async function loadReviews() {
             const list = document.getElementById('reviewsList');
             const reviewsRef = collection(db, "reviews");
-            // Query reviews for THIS product, ordered by newest first
-            const q = query(
-                reviewsRef, 
-                where("productId", "==", productId),
-                orderBy("createdAt", "desc") 
-            );
+            const q = query(reviewsRef, where("productId", "==", productId), orderBy("createdAt", "desc"));
 
             try {
                 const querySnapshot = await getDocs(q);
-                
                 if (querySnapshot.empty) {
                     list.innerHTML = `<p class="no-reviews">No reviews yet. Be the first to review!</p>`;
                     return;
                 }
-
                 let html = '';
                 querySnapshot.forEach((doc) => {
                     const r = doc.data();
-                    // Convert Timestamp to readable date
                     const date = r.createdAt ? r.createdAt.toDate().toLocaleDateString() : 'Just now';
-                    
                     html += `
                         <div class="review-card">
                             <div class="review-user">
                                 <span>${r.userName}</span>
                                 <span class="review-date">${date}</span>
                             </div>
-                            <div class="review-stars">
-                                ${getStarHtml(r.rating)}
-                            </div>
+                            <div class="review-stars">${getStarHtml(r.rating)}</div>
                             <div class="review-text">${r.comment}</div>
                         </div>
                     `;
                 });
                 list.innerHTML = html;
-
             } catch (error) {
-                console.error("Error loading reviews:", error);
-                // If index error occurs (common in Firestore for composite queries), 
-                // fallback to simple text or check console for link to create index.
-                list.innerHTML = `<p class="no-reviews">Could not load reviews at this time.</p>`;
+                list.innerHTML = `<p class="no-reviews">Could not load reviews.</p>`;
             }
         }
 
-        // B. Helper to generate Star Icons
         function getStarHtml(rating) {
             let stars = '';
             for(let i=1; i<=5; i++) {
@@ -565,16 +374,10 @@
             return stars;
         }
 
-        // C. Check Eligibility & Handle Form
         function checkReviewEligibility() {
-            // LOGIC: Check localStorage for "delivered_orders"
-            // You must save delivered order IDs here when order status updates to "Delivered"
+            // Using generic logic for now, could be updated to user specific if needed later
             const deliveredOrders = JSON.parse(localStorage.getItem('delivered_orders')) || [];
-            
-            // FOR TESTING: We assume TRUE so you can see the form. 
-            // Change "true" to "deliveredOrders.includes(productId)" for production.
             const isEligible = true; 
-
             if(isEligible) {
                 document.getElementById('reviewBtnContainer').innerHTML = 
                     `<button class="btn-outline" style="padding:5px 15px; font-size:14px;" onclick="document.getElementById('reviewForm').style.display='block'">
@@ -583,34 +386,31 @@
             }
         }
 
-        // D. Star Selection Logic (UPDATED)
         window.setRating = (val) => {
             selectedRating = val;
             updateStarInputUI();
         };
 
         function updateStarInputUI() {
-            // Select stars using the ID ensures we get the right specific elements
             const stars = document.querySelectorAll('#starInput i');
             stars.forEach(star => {
                 const starVal = parseInt(star.getAttribute('data-val'));
                 if(starVal <= selectedRating) {
                     star.classList.add('active');
-                    star.style.color = "#f59e0b"; // Force color update
+                    star.style.color = "#f59e0b";
                 } else {
                     star.classList.remove('active');
-                    star.style.color = "#ddd"; // Force inactive color
+                    star.style.color = "#ddd";
                 }
             });
         }
 
-        // E. Submit Review to Firestore
         window.submitReview = async () => {
             const comment = document.getElementById('reviewText').value;
             const name = document.getElementById('reviewName').value || "Anonymous Customer";
 
             if(selectedRating === 0) {
-                alert("Please select a star rating.");
+                showToast("Please select a star rating", "warning");
                 return;
             }
 
@@ -626,20 +426,15 @@
                     userName: name,
                     createdAt: serverTimestamp()
                 });
-
-                // Reset Form
                 document.getElementById('reviewForm').style.display = 'none';
                 document.getElementById('reviewText').value = '';
                 selectedRating = 0;
                 updateStarInputUI();
-                
-                // Reload Reviews
                 loadReviews();
-                alert("Thank you for your review!");
-
+                showToast("Review submitted successfully!", "success");
             } catch (e) {
-                console.error("Error adding review: ", e);
-                alert("Error submitting review.");
+                console.error(e);
+                showToast("Error submitting review.", "warning");
             } finally {
                 btn.innerHTML = "Post Review";
                 btn.disabled = false;
@@ -647,22 +442,16 @@
         };
 
         window.toggleDescription = () => {
-    const content = document.getElementById('descContent');
-    const btn = document.getElementById('readMoreBtn');
-    
-    if (content.classList.contains('expanded')) {
-        content.classList.remove('expanded');
-        btn.innerHTML = 'Read More <i class="fas fa-chevron-down"></i>';
-    } else {
-        content.classList.add('expanded');
-        btn.innerHTML = 'Show Less <i class="fas fa-chevron-up"></i>';
-    }
-};
+            const content = document.getElementById('descContent');
+            const btn = document.getElementById('readMoreBtn');
+            if (content.classList.contains('expanded')) {
+                content.classList.remove('expanded');
+                btn.innerHTML = 'Read More <i class="fas fa-chevron-down"></i>';
+            } else {
+                content.classList.add('expanded');
+                btn.innerHTML = 'Show Less <i class="fas fa-chevron-up"></i>';
+            }
+        };
 
-        // Trigger loading
-        // Add this check after renderPage finishes in loadProduct()
-        // But for now, we can just call it safely here:
-        // (Wait for renderPage to inject HTML before calling these)
+        loadProduct();
     </script>
-</body>
-</html>

@@ -96,14 +96,32 @@
         <button onclick="goToCheckout()" class="checkout-btn">Checkout <i class="fas fa-arrow-right"></i></button>
     </div>
 
-    <script>
-        // 1. Helpers
+<script type="module">
+        import { auth } from './firebase-config.js';
+        import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        let currentUserUid = null;
+
+        // 1. Wait for User Login
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUserUid = user.uid;
+                loadCart();
+            } else {
+                window.location.href = "login.html";
+            }
+        });
+
+        // 2. Helpers
         const parsePrice = (str) => parseFloat(str.replace(/[^0-9.]/g, '')) || 0;
         const getCurrency = (str) => str.replace(/[0-9.,]/g, '').trim();
 
-        // 2. Render Cart
+        // 3. Render Cart
         function loadCart() {
-            const cart = JSON.parse(localStorage.getItem('myCart')) || [];
+            if(!currentUserUid) return;
+
+            // Load from USER SPECIFIC key
+            const cart = JSON.parse(localStorage.getItem(`cart_${currentUserUid}`)) || [];
             const container = document.getElementById('cartContainer');
             const summary = document.getElementById('summaryBox');
 
@@ -120,7 +138,6 @@
             }
 
             summary.style.display = 'flex'; 
-            
             container.innerHTML = '';
             
             let grandTotal = 0;
@@ -151,46 +168,31 @@
                 `;
             });
 
-            document.getElementById('cartTotal').innerText = currencySymbol + ' ' + grandTotal.toLocaleString();
+            document.getElementById('cartTotal').innerText = (currencySymbol || 'RM') + ' ' + grandTotal.toLocaleString();
         }
 
-        // 3. Actions
+        // 4. Actions (Attached to window for HTML access)
         window.updateItemQty = (index, change) => {
-            let cart = JSON.parse(localStorage.getItem('myCart'));
-            cart[index].qty += change;
+            if(!currentUserUid) return;
+            let cart = JSON.parse(localStorage.getItem(`cart_${currentUserUid}`));
             
+            cart[index].qty += change;
             if(cart[index].qty < 1) cart[index].qty = 1;
             
-            localStorage.setItem('myCart', JSON.stringify(cart));
+            localStorage.setItem(`cart_${currentUserUid}`, JSON.stringify(cart));
             loadCart();
         };
 
         window.removeItem = (index) => {
-            let cart = JSON.parse(localStorage.getItem('myCart'));
+            if(!currentUserUid) return;
+            let cart = JSON.parse(localStorage.getItem(`cart_${currentUserUid}`));
+            
             cart.splice(index, 1);
-            localStorage.setItem('myCart', JSON.stringify(cart));
+            localStorage.setItem(`cart_${currentUserUid}`, JSON.stringify(cart));
             loadCart();
         };
 
-        window.processCheckout = () => {
-            let cart = JSON.parse(localStorage.getItem('myCart'));
-            let message = "Hi, I want to order these items:%0a";
-            let total = document.getElementById('cartTotal').innerText;
-
-            cart.forEach(item => {
-                message += `- ${item.name} (x${item.qty}): ${item.price}%0a`;
-            });
-            message += `%0a*Total Amount: ${total}*`;
-            
-            // Replace with your WhatsApp number
-            window.open(`https://wa.me/601139304675?text=${message}`, '_blank');
-        };
-
-        // Initialize
-        loadCart();
-
         window.goToCheckout = () => {
-            // No need to pass params, checkout.html will read localStorage
             window.location.href = "checkout.html";
         };
     </script>

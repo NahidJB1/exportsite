@@ -180,7 +180,11 @@
             if (!value) return 0;
             return parseFloat(value.toString().replace(/[^0-9.]/g, '')) || 0;
         }
-        function getCurrency(str) { return str.replace(/[0-9.,]/g, '').trim(); }
+        // FIXED: Returns 'RM' if price is a number or missing, prevents crash
+        function getCurrency(str) { 
+            if (!str || typeof str !== 'string') return 'RM';
+            return str.replace(/[0-9.,]/g, '').trim(); 
+        }
 
         let currentUser = null;
         let orderItems = []; 
@@ -226,7 +230,7 @@
                 qty: parseInt(urlParams.get('qty')) || 1
             });
         }
-         
+
         else {
             // MODE B: CART
             const cartData = JSON.parse(localStorage.getItem('myCart')) || [];
@@ -264,9 +268,12 @@
         document.getElementById('grandTotalDisplay').innerText = currencySym + ' ' + finalGrandTotal.toLocaleString();
 
         // --- 5. AUTO-FILL USER DATA ---
+        // --- 5. AUTH LISTENER & DATA LOADING ---
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
+                
+                // A. Load User Profile
                 try {
                     const userDoc = await getDoc(doc(db, "users", user.uid));
                     if (userDoc.exists()) {
@@ -276,9 +283,57 @@
                         if(data.address) document.getElementById('cAddress').value = data.address;
                     }
                 } catch (err) { console.log("Guest checkout"); }
+
+                // B. Load Cart Data (Only if NOT 'Buy Now' mode)
+                // This fixes the empty checkout issue by using the correct User ID key
+                if (!urlParams.get('id')) {
+                    const userCartKey = `cart_${user.uid}`;
+                    const cartData = JSON.parse(localStorage.getItem(userCartKey)) || JSON.parse(localStorage.getItem('myCart')) || [];
+                    
+                    if(cartData.length > 0) {
+                        orderItems = cartData;
+                        renderOrderItems(); // Re-render with correct data
+                    } else {
+                        // Optional: Redirect if empty
+                        // window.location.href = "products.html";
+                    }
+                }
             }
         });
 
+        // Helper to render items (Call this initially and after auth)
+        function renderOrderItems() {
+            const container = document.getElementById('orderItemsContainer');
+            container.innerHTML = '';
+            finalGrandTotal = 0; // Reset total
+
+            orderItems.forEach(item => {
+                const unitVal = parsePrice(item.price);
+                const lineTotal = unitVal * item.qty;
+                finalGrandTotal += lineTotal;
+                
+                // Safe currency check
+                if(!currencySym) currencySym = getCurrency(item.price);
+
+                container.innerHTML += `
+                    <div class="product-summary">
+                        <img src="${item.image}" class="summary-img">
+                        <div class="summary-details" style="flex:1;">
+                            <h4>${item.name}</h4>
+                            <div style="display:flex; justify-content:space-between; margin-top:4px;">
+                                <span class="unit-info">Qty: ${item.qty}</span>
+                                <span class="price-tag">${currencySym} ${unitVal.toLocaleString()}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            document.getElementById('grandTotalDisplay').innerText = (currencySym || 'RM') + ' ' + finalGrandTotal.toLocaleString();
+        }
+
+        // Initial render for "Buy Now" items (runs immediately)
+        if(orderItems.length > 0) renderOrderItems();
+        
         // --- 6. SUBMIT ORDER ---
         document.getElementById('orderForm').addEventListener('submit', async (e) => {
             e.preventDefault();

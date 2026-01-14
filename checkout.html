@@ -105,7 +105,9 @@
         <h2>Secure Checkout</h2>
         
         <div id="orderItemsContainer" style="max-height: 250px; overflow-y: auto; margin-bottom: 20px; padding-right: 5px;">
-            <div style="text-align:center; color:#999; padding:20px;">Loading items...</div>
+            <div style="text-align:center; color:#999; padding:20px;">
+                <i class="fas fa-spinner fa-spin"></i> Loading items...
+            </div>
         </div>
 
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
@@ -174,13 +176,12 @@
         import { collection, addDoc, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // --- 1. GLOBALS & HELPERS ---
-        // FIXED: Handles Strings, Numbers, and Nulls safely
         function parsePrice(value) {
             if (typeof value === 'number') return value;
             if (!value) return 0;
             return parseFloat(value.toString().replace(/[^0-9.]/g, '')) || 0;
         }
-        // FIXED: Returns 'RM' if price is a number or missing, prevents crash
+        
         function getCurrency(str) { 
             if (!str || typeof str !== 'string') return 'RM';
             return str.replace(/[0-9.,]/g, '').trim(); 
@@ -190,85 +191,44 @@
         let orderItems = []; 
         let finalGrandTotal = 0;
         let currencySym = '';
-        
-        // Default Payment Method
         let selectedPaymentMethod = 'COD'; 
 
         // --- 2. PAYMENT SELECTION LOGIC (Attached to Window) ---
         window.selectPayment = (method, el) => {
             selectedPaymentMethod = method;
-
-            // Update UI (Active Class)
             document.querySelectorAll('.pay-option').forEach(opt => opt.classList.remove('active'));
             el.classList.add('active');
 
-            // Show/Hide Bank Details
             const bankBox = document.getElementById('bankDetailsContainer');
             const trxInput = document.getElementById('trxID');
             
             if (method === 'BANK') {
                 bankBox.classList.add('show');
-                trxInput.setAttribute('required', 'true'); // Make Trx ID mandatory
+                trxInput.setAttribute('required', 'true'); 
             } else {
                 bankBox.classList.remove('show');
-                trxInput.removeAttribute('required'); // Remove mandatory requirement
-                trxInput.value = ''; // Clear input if switching back
+                trxInput.removeAttribute('required'); 
+                trxInput.value = ''; 
             }
         };
 
-        // --- 3. LOAD CART DATA ---
+        // --- 3. CHECK FOR "BUY NOW" PARAMS FIRST ---
+        // (These don't require auth to detect, so we can check immediately)
         const urlParams = new URLSearchParams(window.location.search);
         
         if(urlParams.get('id')) {
-            // MODE A: BUY NOW
             orderItems.push({
                 id: urlParams.get('id'),
                 name: urlParams.get('name'),
-                // FIXED: Looks for 'price' OR 'unitPrice' to prevent errors
                 price: urlParams.get('price') || urlParams.get('unitPrice') || 0,
                 image: urlParams.get('img'),
                 qty: parseInt(urlParams.get('qty')) || 1
             });
+            // Don't render yet, wait for Auth to get user details, 
+            // but we have the items so we won't redirect.
         }
 
-        else {
-            // MODE B: CART
-            const cartData = JSON.parse(localStorage.getItem('myCart')) || [];
-            if(cartData.length > 0) {
-                orderItems = cartData;
-            } else {
-                window.location.href = "products.html"; 
-            }
-        }
-
-        // --- 4. RENDER ITEMS ---
-        const container = document.getElementById('orderItemsContainer');
-        container.innerHTML = '';
-        
-        orderItems.forEach(item => {
-            const unitVal = parsePrice(item.price);
-            const lineTotal = unitVal * item.qty;
-            finalGrandTotal += lineTotal;
-            if(!currencySym) currencySym = getCurrency(item.price);
-
-            container.innerHTML += `
-                <div class="product-summary">
-                    <img src="${item.image}" class="summary-img">
-                    <div class="summary-details" style="flex:1;">
-                        <h4>${item.name}</h4>
-                        <div style="display:flex; justify-content:space-between; margin-top:4px;">
-                            <span class="unit-info">Qty: ${item.qty}</span>
-                            <span class="price-tag">${item.price}</span>
-                        </div>
-                    </div>
-                </div>
-            `;
-        });
-
-        document.getElementById('grandTotalDisplay').innerText = currencySym + ' ' + finalGrandTotal.toLocaleString();
-
-        // --- 5. AUTO-FILL USER DATA ---
-        // --- 5. AUTH LISTENER & DATA LOADING ---
+        // --- 4. AUTH LISTENER (The Core Logic) ---
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
@@ -284,35 +244,42 @@
                     }
                 } catch (err) { console.log("Guest checkout"); }
 
-                // B. Load Cart Data (Only if NOT 'Buy Now' mode)
-                // This fixes the empty checkout issue by using the correct User ID key
+                // B. Load Cart Data (ONLY IF NOT Buy Now Mode)
                 if (!urlParams.get('id')) {
                     const userCartKey = `cart_${user.uid}`;
-                    const cartData = JSON.parse(localStorage.getItem(userCartKey)) || JSON.parse(localStorage.getItem('myCart')) || [];
+                    // Try User Key First, then Fallback to Generic (just in case)
+                    const cartData = JSON.parse(localStorage.getItem(userCartKey)) || [];
                     
                     if(cartData.length > 0) {
                         orderItems = cartData;
-                        renderOrderItems(); // Re-render with correct data
                     } else {
-                        // Optional: Redirect if empty
-                        // window.location.href = "products.html";
+                        // --- HERE IS THE CORRECT PLACE FOR REDIRECT ---
+                        alert("Your cart is empty!");
+                        window.location.href = "products.html";
+                        return; // Stop execution
                     }
                 }
+                
+                // C. Render Items (Now that we are sure we have them)
+                renderOrderItems();
+
+            } else {
+                // Not logged in -> Redirect to Login
+                window.location.href = "login.html";
             }
         });
 
-        // Helper to render items (Call this initially and after auth)
+        // --- 5. RENDER FUNCTION ---
         function renderOrderItems() {
             const container = document.getElementById('orderItemsContainer');
             container.innerHTML = '';
-            finalGrandTotal = 0; // Reset total
+            finalGrandTotal = 0; 
 
             orderItems.forEach(item => {
                 const unitVal = parsePrice(item.price);
                 const lineTotal = unitVal * item.qty;
                 finalGrandTotal += lineTotal;
                 
-                // Safe currency check
                 if(!currencySym) currencySym = getCurrency(item.price);
 
                 container.innerHTML += `
@@ -331,9 +298,6 @@
             document.getElementById('grandTotalDisplay').innerText = (currencySym || 'RM') + ' ' + finalGrandTotal.toLocaleString();
         }
 
-        // Initial render for "Buy Now" items (runs immediately)
-        if(orderItems.length > 0) renderOrderItems();
-        
         // --- 6. SUBMIT ORDER ---
         document.getElementById('orderForm').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -344,7 +308,6 @@
             const addressVal = document.getElementById('cAddress').value;
             const trxVal = document.getElementById('trxID').value;
 
-            // Extra Validation for Manual Payment
             if (selectedPaymentMethod === 'BANK' && !trxVal.trim()) {
                 alert("Please enter the Transaction ID for your payment.");
                 return;
@@ -370,12 +333,9 @@
                     totalAmount: finalGrandTotal,
                     displayTotal: document.getElementById('grandTotalDisplay').innerText,
                     customer: { name: nameVal, phone: phoneVal, address: addressVal },
-                    
-                    // NEW: Payment Info
                     paymentMethod: selectedPaymentMethod === 'COD' ? 'Cash on Delivery' : 'Bank Transfer',
-                    paymentStatus: "Pending", // Admin will verify bank transfers
+                    paymentStatus: "Pending", 
                     transactionId: selectedPaymentMethod === 'BANK' ? trxVal : null,
-                    
                     status: "Pending",
                     userId: currentUser ? currentUser.uid : "guest",
                     createdAt: serverTimestamp()
@@ -383,12 +343,11 @@
 
                 await addDoc(collection(db, "orders"), orderData);
 
-                // Clear Cart
-                if(!urlParams.get('id')) {
-                    localStorage.removeItem('myCart');
+                // Clear Cart (Only if from Cart Mode)
+                if(!urlParams.get('id') && currentUser) {
+                    localStorage.removeItem(`cart_${currentUser.uid}`);
                 }
 
-                // Show Success
                 document.getElementById('successScreen').style.display = 'flex';
                 setTimeout(() => {
                     window.location.href = `track-order.html?phone=${phoneVal}`;

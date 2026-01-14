@@ -3,198 +3,363 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Cart | Nusantara Trade</title>
+    <title>Secure Checkout | Nusantara Trade</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-<style>
-        :root { --primary: #003366; --secondary: #00A86B; --bg: #F8F9FA; --white: #fff; }
-        body { font-family: 'Poppins', sans-serif; background: var(--bg); margin: 0; padding-bottom: 80px; }
+    <style>
+        /* --- GENERAL STYLES --- */
+        body { font-family: 'Poppins', sans-serif; background: #f4f7f6; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
         
-        /* --- NAVBAR (Matches Favorites) --- */
-        .navbar {
-            background: var(--white); padding: 1rem 5%; 
-            display: flex; align-items: center; justify-content: space-between;
-            position: sticky; top: 0; z-index: 100; 
-            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+        .checkout-card {
+            background: white; width: 100%; max-width: 500px; padding: 30px;
+            border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); position: relative;
         }
-        .nav-left a { 
-            text-decoration: none; color: var(--primary); font-weight: 600; font-size: 0.95rem; 
-            display: flex; align-items: center; gap: 8px; transition: 0.3s;
-        }
-        .nav-left a:hover { transform: translateX(-5px); }
-        .page-title { font-size: 1.2rem; font-weight: 700; color: var(--primary); }
-
-        .container { max-width: 800px; margin: 30px auto; padding: 0 20px; }
-
-        /* Card Style */
-        .cart-item {
-            background: white; border-radius: 16px; padding: 15px;
-            display: flex; align-items: center; gap: 15px;
-            margin-bottom: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.03);
-            border: 1px solid rgba(0,0,0,0.04);
-        }
-        .cart-img { width: 80px; height: 80px; border-radius: 10px; object-fit: cover; background: #eee; }
-        .item-details { flex: 1; }
-        .item-title { font-weight: 600; color: #333; margin-bottom: 5px; display: block; }
-        .item-price { color: var(--secondary); font-weight: 700; font-size: 15px; }
         
-        .qty-control { display: flex; align-items: center; gap: 10px; margin-top: 8px; }
-        .qty-btn { background: #f0f0f0; border: none; width: 28px; height: 28px; border-radius: 50%; cursor: pointer; font-weight:bold;}
-        .qty-btn:hover { background: #e0e0e0; }
-        .qty-val { font-weight: 600; font-size: 14px; min-width: 20px; text-align: center;}
-
-        .remove-btn { color: #999; background: none; border: none; cursor: pointer; font-size: 16px; padding: 8px; transition: 0.2s; }
-        .remove-btn:hover { color: #ff4444; }
-
-/* Summary Bar - Aligned to Right */
-        .summary-box {
-            background: white; padding: 20px 5%; /* Added % padding for better spacing */
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.05);
-            position: fixed; bottom: 0; left: 0; width: 100%;
-            display: flex; 
-            justify-content: flex-end;
-            align-items: center;
-            gap: 30px; box-sizing: border-box; z-index: 100;
-        }
-        .total-col span { display: block; font-size: 12px; color: #666; }
-        .total-col strong { font-size: 20px; color: var(--primary); }
+        h2 { color: #003366; margin-bottom: 20px; text-align: center; }
         
-        .checkout-btn {
-            background: var(--primary); color: white; border: none;
-            padding: 12px 30px; border-radius: 30px; font-size: 16px; font-weight: 600;
-            cursor: pointer; text-decoration: none; transition: 0.3s;
+        /* --- PRODUCT SUMMARY --- */
+        .product-summary {
+            background: #e6fffa; padding: 15px; border-radius: 8px;
+            border-left: 5px solid #00A86B; margin-bottom: 10px; display: flex; gap: 15px; align-items: center;
         }
-        .checkout-btn:hover { background: #002244; transform: translateY(-2px); }
+        .summary-img { width: 50px; height: 50px; object-fit: cover; border-radius: 5px; background: #ddd; }
+        .summary-details h4 { margin: 0; color: #003366; font-size: 14px; }
+        .summary-details .unit-info { font-size: 12px; color: #666; }
+        .summary-details .price-tag { color: #00A86B; font-weight: 700; font-size: 14px; }
+
+        /* --- FORM ELEMENTS --- */
+        label { display: block; margin-bottom: 5px; font-weight: 600; color: #333; font-size: 14px; }
+        input, textarea {
+            width: 100%; padding: 12px; margin-bottom: 15px;
+            border: 1px solid #ccc; border-radius: 5px; font-family: inherit; box-sizing: border-box;
+        }
         
-        /* Empty State */
-        .empty-state { text-align: center; padding: 80px 20px; }
-        .empty-icon { font-size: 4rem; color: #e0e0e0; margin-bottom: 1.5rem; }
-        .btn-shop { 
-            display: inline-block; background: var(--secondary); color: white; 
-            padding: 12px 30px; border-radius: 30px; text-decoration: none; 
-            font-weight: 600; margin-top: 20px; transition: 0.2s;
+        .btn-confirm {
+            width: 100%; padding: 15px; background: #003366; color: white; border: none;
+            border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s;
         }
+        .btn-confirm:hover { background: #002244; }
+        .btn-back { display: block; text-align: center; margin-top: 15px; color: #666; text-decoration: none; font-size: 13px; }
+
+        /* --- SUCCESS OVERLAY --- */
+        .success-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.98); border-radius: 10px;
+            display: none; flex-direction: column; justify-content: center; align-items: center; text-align: center; z-index: 10;
+        }
+        .success-icon { font-size: 50px; color: #00A86B; margin-bottom: 20px; }
+
+        /* --- NEW: PAYMENT METHOD STYLES --- */
+        .payment-section { margin-bottom: 25px; border-top: 1px solid #eee; padding-top: 20px; }
+        .payment-title { font-size: 16px; font-weight: 600; color: #333; margin-bottom: 10px; }
+        
+        .payment-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        
+        .pay-option {
+            border: 2px solid #eee; border-radius: 8px; padding: 15px; cursor: pointer;
+            text-align: center; transition: 0.2s; background: #fff; position: relative;
+        }
+        
+        .pay-option:hover { border-color: #cbd5e1; }
+        
+        .pay-option.active {
+            border-color: #003366; background: #f0f9ff; color: #003366;
+        }
+        /* Checkmark icon for active state */
+        .pay-option.active::after {
+            content: '\f00c'; font-family: "Font Awesome 6 Free"; font-weight: 900;
+            position: absolute; top: 5px; right: 5px; font-size: 12px; color: #003366;
+        }
+
+        .pay-icon { font-size: 24px; margin-bottom: 5px; display: block; color: #666; }
+        .pay-option.active .pay-icon { color: #003366; }
+        .pay-label { font-size: 12px; font-weight: 600; }
+
+        /* Bank Details Box */
+        .bank-details-box {
+            display: none; /* Hidden by default */
+            background: #f8fafc; border: 1px solid #e2e8f0; 
+            border-radius: 8px; padding: 15px; font-size: 13px; color: #475569;
+            margin-bottom: 15px;
+        }
+        .bank-details-box.show { display: block; animation: fadeIn 0.3s; }
+        
+        .bank-group { margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dashed #cbd5e1; }
+        .bank-group:last-child { margin-bottom: 0; border-bottom: none; padding-bottom: 0; }
+        .bank-name { font-weight: 700; color: #003366; margin-bottom: 4px; display: flex; align-items: center; gap: 5px; }
+        .bank-row { display: flex; justify-content: space-between; margin-bottom: 2px; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+
     </style>
 </head>
 <body>
 
-   <nav class="navbar">
-        <div class="nav-left">
-            <a href="products.html"><i class="fas fa-arrow-left"></i> Continue Shopping</a>
-        </div>
-        <div class="page-title">My Cart</div>
-    </nav>
-
-    <div class="container" id="cartContainer">
+    <div class="checkout-card">
+        <div id="successScreen" class="success-overlay">
+            <div class="success-icon"><i class="fas fa-check-circle"></i></div>
+            <h3 style="color:#003366;">Order Confirmed!</h3>
+            <p style="color:#666;">Redirecting to order tracking...</p>
         </div>
 
-    <div class="summary-box" id="summaryBox" style="display:none;">
-        <div class="total-col">
-            <span>Total Amount</span>
-            <strong id="cartTotal">0</strong>
+        <h2>Secure Checkout</h2>
+        
+        <div id="orderItemsContainer" style="max-height: 250px; overflow-y: auto; margin-bottom: 20px; padding-right: 5px;">
+            <div style="text-align:center; color:#999; padding:20px;">
+                <i class="fas fa-spinner fa-spin"></i> Loading items...
+            </div>
         </div>
-        <button onclick="goToCheckout()" class="checkout-btn">Checkout <i class="fas fa-arrow-right"></i></button>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
+             <span style="font-weight:600; color:#555;">Total Amount:</span>
+             <span id="grandTotalDisplay" style="font-size: 22px; font-weight: 700; color: #003366;">...</span>
+        </div>
+
+        <form id="orderForm">
+            
+            <div class="payment-section">
+                <div class="payment-title">Select Payment Method</div>
+                
+                <div class="payment-grid">
+                    <div class="pay-option active" onclick="selectPayment('COD', this)">
+                        <i class="fas fa-truck pay-icon"></i>
+                        <span class="pay-label">Cash on Delivery</span>
+                    </div>
+                    
+                    <div class="pay-option" onclick="selectPayment('BANK', this)">
+                        <i class="fas fa-university pay-icon"></i>
+                        <span class="pay-label">Bank Transfer</span>
+                    </div>
+                </div>
+
+                <div id="bankDetailsContainer" class="bank-details-box">
+                    <p style="margin: 0 0 10px; font-weight: 600; color: #d97706;">
+                        <i class="fas fa-info-circle"></i> Please transfer the total amount to:
+                    </p>
+
+                    <div class="bank-group">
+                        <div class="bank-name"><i class="fas fa-flag"></i> NRBC BANK (Bangladesh)</div>
+                        <div class="bank-row"><span>Branch:</span> <span>MYMENSINGH BRANCH</span></div>
+                        <div class="bank-row"><span>Name:</span> <span>MD.FUAD HASAN SAKIR</span></div>
+                        <div class="bank-row"><span>AC No:</span> <span style="font-weight:700; color:#333;">0152 3110 000 8216</span></div>
+                    </div>
+
+                    <div class="bank-group">
+                        <div class="bank-name"><i class="fas fa-flag"></i> Touch 'n Go (Malaysia)</div>
+                        <div class="bank-row"><span>Name:</span> <span>SAKIR MD.FUAD HASAN</span></div>
+                        <div class="bank-row"><span>Account:</span> <span style="font-weight:700; color:#333;">1700 6073 2648</span></div>
+                    </div>
+
+                    <label style="margin-top:15px; color:#003366;">Transaction ID (Required)</label>
+                    <input type="text" id="trxID" placeholder="Enter TrxID / Ref No.">
+                </div>
+            </div>
+
+            <label>Full Name</label>
+            <input type="text" id="cName" placeholder="e.g. Rahim Uddin" required>
+
+            <label>Phone Number</label>
+            <input type="tel" id="cPhone" placeholder="e.g. 01712345678" required>
+
+            <label>Shipping Address</label>
+            <textarea id="cAddress" rows="3" placeholder="House, Road, Area, City..." required></textarea>
+
+            <button type="submit" id="submitBtn" class="btn-confirm">Confirm Order</button>
+        </form>
+
+        <a href="products.html" class="btn-back">Cancel & Go Back</a>
     </div>
 
-<script type="module">
-        import { auth } from './firebase-config.js';
+    <script type="module">
+        import { db, auth } from './firebase-config.js'; 
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { collection, addDoc, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        let currentUserUid = null;
+        // --- 1. GLOBALS & HELPERS ---
+        function parsePrice(value) {
+            if (typeof value === 'number') return value;
+            if (!value) return 0;
+            return parseFloat(value.toString().replace(/[^0-9.]/g, '')) || 0;
+        }
+        
+        function getCurrency(str) { 
+            if (!str || typeof str !== 'string') return 'RM';
+            return str.replace(/[0-9.,]/g, '').trim(); 
+        }
 
-        // 1. Wait for User Login
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                currentUserUid = user.uid;
-                loadCart();
+        let currentUser = null;
+        let orderItems = []; 
+        let finalGrandTotal = 0;
+        let currencySym = '';
+        let selectedPaymentMethod = 'COD'; 
+
+        // --- 2. PAYMENT SELECTION LOGIC (Attached to Window) ---
+        window.selectPayment = (method, el) => {
+            selectedPaymentMethod = method;
+            document.querySelectorAll('.pay-option').forEach(opt => opt.classList.remove('active'));
+            el.classList.add('active');
+
+            const bankBox = document.getElementById('bankDetailsContainer');
+            const trxInput = document.getElementById('trxID');
+            
+            if (method === 'BANK') {
+                bankBox.classList.add('show');
+                trxInput.setAttribute('required', 'true'); 
             } else {
+                bankBox.classList.remove('show');
+                trxInput.removeAttribute('required'); 
+                trxInput.value = ''; 
+            }
+        };
+
+        // --- 3. CHECK FOR "BUY NOW" PARAMS FIRST ---
+        // (These don't require auth to detect, so we can check immediately)
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        if(urlParams.get('id')) {
+            orderItems.push({
+                id: urlParams.get('id'),
+                name: urlParams.get('name'),
+                price: urlParams.get('price') || urlParams.get('unitPrice') || 0,
+                image: urlParams.get('img'),
+                qty: parseInt(urlParams.get('qty')) || 1
+            });
+            // Don't render yet, wait for Auth to get user details, 
+            // but we have the items so we won't redirect.
+        }
+
+        // --- 4. AUTH LISTENER (The Core Logic) ---
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                
+                // A. Load User Profile
+                try {
+                    const userDoc = await getDoc(doc(db, "users", user.uid));
+                    if (userDoc.exists()) {
+                        const data = userDoc.data();
+                        if(data.fullName) document.getElementById('cName').value = data.fullName;
+                        if(data.phone) document.getElementById('cPhone').value = data.phone;
+                        if(data.address) document.getElementById('cAddress').value = data.address;
+                    }
+                } catch (err) { console.log("Guest checkout"); }
+
+                // B. Load Cart Data (ONLY IF NOT Buy Now Mode)
+                if (!urlParams.get('id')) {
+                    const userCartKey = `cart_${user.uid}`;
+                    // Try User Key First, then Fallback to Generic (just in case)
+                    const cartData = JSON.parse(localStorage.getItem(userCartKey)) || [];
+                    
+                    if(cartData.length > 0) {
+                        orderItems = cartData;
+                    } else {
+                        // --- HERE IS THE CORRECT PLACE FOR REDIRECT ---
+                        alert("Your cart is empty!");
+                        window.location.href = "products.html";
+                        return; // Stop execution
+                    }
+                }
+                
+                // C. Render Items (Now that we are sure we have them)
+                renderOrderItems();
+
+            } else {
+                // Not logged in -> Redirect to Login
                 window.location.href = "login.html";
             }
         });
 
-        // 2. Helpers
-        const parsePrice = (str) => parseFloat(str.replace(/[^0-9.]/g, '')) || 0;
-        const getCurrency = (str) => str.replace(/[0-9.,]/g, '').trim();
-
-        // 3. Render Cart
-        function loadCart() {
-            if(!currentUserUid) return;
-
-            // Load from USER SPECIFIC key
-            const cart = JSON.parse(localStorage.getItem(`cart_${currentUserUid}`)) || [];
-            const container = document.getElementById('cartContainer');
-            const summary = document.getElementById('summaryBox');
-
-            if(cart.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-icon"><i class="fas fa-shopping-cart"></i></div>
-                        <h3>Your cart is empty</h3>
-                        <p style="color:#666; margin-bottom:20px;">Looks like you haven't added anything yet.</p>
-                        <a href="products.html" class="btn-shop">Start Shopping</a>
-                    </div>`;
-                summary.style.display = 'none';
-                return;
-            }
-
-            summary.style.display = 'flex'; 
+        // --- 5. RENDER FUNCTION ---
+        function renderOrderItems() {
+            const container = document.getElementById('orderItemsContainer');
             container.innerHTML = '';
-            
-            let grandTotal = 0;
-            let currencySymbol = '';
+            finalGrandTotal = 0; 
 
-            cart.forEach((item, index) => {
-                const unitPrice = parsePrice(item.price);
-                if(!currencySymbol) currencySymbol = getCurrency(item.price);
+            orderItems.forEach(item => {
+                const unitVal = parsePrice(item.price);
+                const lineTotal = unitVal * item.qty;
+                finalGrandTotal += lineTotal;
                 
-                grandTotal += unitPrice * item.qty;
+                if(!currencySym) currencySym = getCurrency(item.price);
 
                 container.innerHTML += `
-                    <div class="cart-item">
-                        <img src="${item.image}" class="cart-img">
-                        <div class="item-details">
-                            <span class="item-title">${item.name}</span>
-                            <span class="item-price">${item.price}</span>
-                            <div class="qty-control">
-                                <button class="qty-btn" onclick="updateItemQty(${index}, -1)">-</button>
-                                <span class="qty-val">${item.qty}</span>
-                                <button class="qty-btn" onclick="updateItemQty(${index}, 1)">+</button>
+                    <div class="product-summary">
+                        <img src="${item.image}" class="summary-img">
+                        <div class="summary-details" style="flex:1;">
+                            <h4>${item.name}</h4>
+                            <div style="display:flex; justify-content:space-between; margin-top:4px;">
+                                <span class="unit-info">Qty: ${item.qty}</span>
+                                <span class="price-tag">${currencySym} ${unitVal.toLocaleString()}</span>
                             </div>
                         </div>
-                        <button class="remove-btn" onclick="removeItem(${index})">
-                            <i class="fas fa-trash"></i>
-                        </button>
                     </div>
                 `;
             });
-
-            document.getElementById('cartTotal').innerText = (currencySymbol || 'RM') + ' ' + grandTotal.toLocaleString();
+            document.getElementById('grandTotalDisplay').innerText = (currencySym || 'RM') + ' ' + finalGrandTotal.toLocaleString();
         }
 
-        // 4. Actions (Attached to window for HTML access)
-        window.updateItemQty = (index, change) => {
-            if(!currentUserUid) return;
-            let cart = JSON.parse(localStorage.getItem(`cart_${currentUserUid}`));
+        // --- 6. SUBMIT ORDER ---
+        document.getElementById('orderForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
             
-            cart[index].qty += change;
-            if(cart[index].qty < 1) cart[index].qty = 1;
-            
-            localStorage.setItem(`cart_${currentUserUid}`, JSON.stringify(cart));
-            loadCart();
-        };
+            const btn = document.getElementById('submitBtn');
+            const nameVal = document.getElementById('cName').value;
+            const phoneVal = document.getElementById('cPhone').value;
+            const addressVal = document.getElementById('cAddress').value;
+            const trxVal = document.getElementById('trxID').value;
 
-        window.removeItem = (index) => {
-            if(!currentUserUid) return;
-            let cart = JSON.parse(localStorage.getItem(`cart_${currentUserUid}`));
-            
-            cart.splice(index, 1);
-            localStorage.setItem(`cart_${currentUserUid}`, JSON.stringify(cart));
-            loadCart();
-        };
+            if (selectedPaymentMethod === 'BANK' && !trxVal.trim()) {
+                alert("Please enter the Transaction ID for your payment.");
+                return;
+            }
 
-        window.goToCheckout = () => {
-            window.location.href = "checkout.html";
-        };
+            btn.disabled = true;
+            btn.innerText = "Processing...";
+
+            try {
+                // Update User Profile
+                if (currentUser) {
+                    await setDoc(doc(db, "users", currentUser.uid), {
+                        fullName: nameVal,
+                        phone: phoneVal,
+                        address: addressVal,
+                        updatedAt: serverTimestamp()
+                    }, { merge: true });
+                }
+
+                // Create Order Object
+                const orderData = {
+                    items: orderItems, 
+                    totalAmount: finalGrandTotal,
+                    displayTotal: document.getElementById('grandTotalDisplay').innerText,
+                    customer: { name: nameVal, phone: phoneVal, address: addressVal },
+                    paymentMethod: selectedPaymentMethod === 'COD' ? 'Cash on Delivery' : 'Bank Transfer',
+                    paymentStatus: "Pending", 
+                    transactionId: selectedPaymentMethod === 'BANK' ? trxVal : null,
+                    status: "Pending",
+                    userId: currentUser ? currentUser.uid : "guest",
+                    createdAt: serverTimestamp()
+                };
+
+                await addDoc(collection(db, "orders"), orderData);
+
+                // Clear Cart (Only if from Cart Mode)
+                if(!urlParams.get('id') && currentUser) {
+                    localStorage.removeItem(`cart_${currentUser.uid}`);
+                }
+
+                document.getElementById('successScreen').style.display = 'flex';
+                setTimeout(() => {
+                    window.location.href = `track-order.html?phone=${phoneVal}`;
+                }, 2000);
+
+            } catch (error) {
+                console.error("Error:", error);
+                btn.disabled = false;
+                btn.innerText = "Confirm Order";
+                alert("Order failed. Please try again.");
+            }
+        });
     </script>
 </body>
 </html>
